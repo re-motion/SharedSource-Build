@@ -47,8 +47,6 @@
       <Output PropertyName="_failures" TaskParameter="Result"/>
     </MSBuild.ExtensionPack.Science.Maths>
     
-    <CallTarget Targets="CreateNUnitErrorsProperty" />
-    
     <Error
       Text="Running Unit-Tests failed because of $(_failures) failures and/or $(_errors) errors in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures and %(Errors) errors','%0A')"
       Condition="$(_failures) &gt; 0 or $(_errors) &gt; 0"/>
@@ -223,50 +221,6 @@
 
     <!-- Print all created configurations -->
     <Message Text="Created test configuration: $(ConfigurationID) %(_testOutputFiles.FullPath) %(_testOutputFiles.Platform) %(_testOutputFiles.DatabaseSystem)" Importance="high"/>
-  </Target>
-  
-  
-  <Target Name="CreateNUnitErrorsProperty" Condition="'$(TEAMCITY_VERSION)' != ''">
-
-    <!-- Create temp directory for transformed files -->
-    <PropertyGroup>
-      <_tempDir>$(LogDirectory)\output\</_tempDir>
-    </PropertyGroup>
-    <MakeDir Directories="$(_tempDir)"/>
-  
-    <!-- Find all NUnit result files -->
-    <ItemGroup>
-      <_nunitTestResultFiles Include="$(LogDirectory)\Remotion.*Tests.*.xml">
-        <OutputPath></OutputPath>
-      </_nunitTestResultFiles>
-      <_nunitTestResultFiles>
-        <OutputPath>$(_tempDir)\%(FileName).output.xml</OutputPath>
-      </_nunitTestResultFiles>
-    </ItemGroup>
-    
-    <!-- Transform NUnit result files to temporary files containing failures/errors only -->
-    <XslTransformation XmlInputPaths="%(_nunitTestResultFiles.Identity)"
-                       XslInputPath="$(MSBuildProjectDirectory)\NUnitErrors.xslt"
-                       OutputPaths="%(_nunitTestResultFiles.OutputPath)"
-                       Condition="@(_nunitTestResultFiles) != ''"/>
-
-    <!-- XslTransformation outputs files, read all files into one single property -->
-    <ItemGroup>
-      <_fileContents Include="$([System.IO.File]::ReadAllText (%(_nunitTestResultFiles.OutputPath)))"/>
-    </ItemGroup>
-    <PropertyGroup>
-      <!-- Two new lines are required, do not reformat! -->
-      <_mergedFileContents>@(_fileContents,'
-
-')</_mergedFileContents>
-    </PropertyGroup>
-    
-    <!-- Output for TeamCity -->
-    <Message Condition="'$(TEAMCITY_VERSION)' != '' and '$(_mergedFileContents)' != ''" Text="##teamcity[setParameter name='nunit_errors' value='$(_mergedFileContents)']" />
-    
-    <!-- Delete temp directory containing transformed files -->
-    <RemoveDir Directories="$(_tempDir)"/>
-    
   </Target>
 
 </Project>

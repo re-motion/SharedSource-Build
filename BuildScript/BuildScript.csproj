@@ -54,23 +54,23 @@
     <None Include="Remotion.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.DebugSymbols.include.build">
+    <None Include="BuildTargets.DebugSymbols.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.Documentation.include.build">
+    <None Include="BuildTargets.Documentation.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.include.build">
+    <None Include="BuildTargets.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.NuGet.include.build">
+    <None Include="BuildTargets.NuGet.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.Properties.include.build" />
-    <None Include="Remotion.BuildTargets.Testing.include.build">
+    <None Include="BuildTargets.Properties.build" />
+    <None Include="BuildTargets.Testing.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.BuildTargets.UpdateAssemblyInfos.include.build">
+    <None Include="BuildTargets.UpdateAssemblyInfos.build">
       <SubType>Designer</SubType>
     </None>
     <None Include="Remotion.Local.build">
@@ -79,10 +79,9 @@
     <None Include="Remotion.Server.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.Tasks.include.build" />
+    <None Include="Tasks.build" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="NUnitErrors.xslt" />
     <Content Include="SandcastleProjectTemplate.shfbproj" />
   </ItemGroup>
   <ItemGroup>
