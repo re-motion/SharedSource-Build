@@ -34,9 +34,57 @@
     <None Include="..\license\Apache-2.0.licenseheader">
       <Link>Apache-2.0.licenseheader</Link>
     </None>
+    <None Include="ContentLayout.content" />
+    <None Include="Customizations.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations.Configurations.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations.Projects.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations.Properties.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations.Version.build">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
+    <None Include="Remotion.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.DebugSymbols.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.Documentation.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.NuGet.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.Properties.include.build" />
+    <None Include="Remotion.BuildTargets.Testing.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.BuildTargets.UpdateAssemblyInfos.include.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.Local.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.Server.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Remotion.Tasks.include.build" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="NUnitErrors.xslt" />
+    <Content Include="SandcastleProjectTemplate.shfbproj" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Build\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>

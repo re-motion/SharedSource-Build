@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
+ !
+ ! See the NOTICE file distributed with this work for additional information
+ ! regarding copyright ownership.  rubicon licenses this file to you under 
+ ! the Apache License, Version 2.0 (the "License"); you may not use this 
+ ! file except in compliance with the License.  You may obtain a copy of the 
+ ! License at
+ !
+ !   http://www.apache.org/licenses/LICENSE-2.0
+ !
+ ! Unless required by applicable law or agreed to in writing, software 
+ ! distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ ! WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the 
+ ! License for the specific language governing permissions and limitations
+ ! under the License.
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+
+    <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
+    
+    <AllConfigurations Include="Debug"/>
+    <AllConfigurations Include="Release"/>
+  </ItemGroup>
+    
+  <Target Name="CreateTestConfigurations">
+
+    <Error Text="'Platforms' was not defined." Condition="'$(Platforms)' == ''" />
+    <ItemGroup>
+      <PlatformsList Include="$(Platforms.Split('+'))" />
+    </ItemGroup>
+    
+    <Error Text="'DatabaseSystems' was not defined." Condition="'$(DatabaseSystems)' == ''" />
+    <ItemGroup>
+      <DatabaseSystemsList Include="$(DatabaseSystems.Split('+'))" />
+    </ItemGroup>
+
+    
+    <ItemGroup>
+      <AllPlatforms Include="x86" Condition="'%(PlatformsList.Identity)' == 'x86'">
+        <Use32Bit>True</Use32Bit>
+      </AllPlatforms>
+      
+      <AllPlatforms Include="x64" Condition="'%(PlatformsList.Identity)' == 'x64'">
+        <Use32Bit>False</Use32Bit>
+      </AllPlatforms>
+    </ItemGroup>
+
+    <ItemGroup>
+      <AllDatabaseSystems Include="SqlServerDefault" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServerDefault'">
+        <DataSource>localhost</DataSource>
+        <DatabaseDirectory>C:\Databases</DatabaseDirectory>
+      </AllDatabaseSystems>
+        
+      <AllDatabaseSystems Include="SqlServer2005" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2005'">
+        <DataSource>localhost\MSSQL2005</DataSource>
+        <DatabaseDirectory>C:\Databases\MsSql2005</DatabaseDirectory>
+      </AllDatabaseSystems>
+
+      <AllDatabaseSystems Include="SqlServer2008" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008'">
+        <DataSource>localhost\MSSQL2008</DataSource>
+        <DatabaseDirectory>C:\Databases\MsSql2008</DatabaseDirectory>
+      </AllDatabaseSystems>
+
+      <AllDatabaseSystems Include="SqlServer2008R2" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008R2'">
+        <DataSource>localhost\MSSQL2008R2</DataSource>
+        <DatabaseDirectory>C:\Databases\MsSql2008R2</DatabaseDirectory>
+      </AllDatabaseSystems>
+
+      <AllDatabaseSystems Include="SqlServer2012" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2012'">
+        <DataSource>localhost\MSSQL2012</DataSource>
+        <DatabaseDirectory>C:\Databases\MsSql2012</DatabaseDirectory>
+      </AllDatabaseSystems>
+
+      <AllDatabaseSystems Include="SqlServer2014" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2014'">
+        <DataSource>localhost\MSSQL2014</DataSource>
+        <DatabaseDirectory>C:\Databases\MsSql2014</DatabaseDirectory>
+      </AllDatabaseSystems>
+    </ItemGroup>
+  
+  </Target>
+
+</Project>

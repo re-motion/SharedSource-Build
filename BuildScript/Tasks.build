@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
+ !
+ ! See the NOTICE file distributed with this work for additional information
+ ! regarding copyright ownership.  rubicon licenses this file to you under 
+ ! the Apache License, Version 2.0 (the "License"); you may not use this 
+ ! file except in compliance with the License.  You may obtain a copy of the 
+ ! License at
+ !
+ !   http://www.apache.org/licenses/LICENSE-2.0
+ !
+ ! Unless required by applicable law or agreed to in writing, software 
+ ! distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ ! WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the 
+ ! License for the specific language governing permissions and limitations
+ ! under the License.
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildExtensionPackPath Condition="'$(MSBuildExtensionPackPath)' == ''">$(MSBuildExtensionsPath)\MSBuildExtensionPack\</MSBuildExtensionPackPath>
+    <RemotionBuildTasksPath Condition="'$(RemotionBuildTasksPath)' == ''">$(MSBuildExtensionsPath)\Remotion.BuildTools.MSBuildTasks\</RemotionBuildTasksPath>
+    <ExtensionTasksPath>$(MSBuildExtensionPackPath)</ExtensionTasksPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionPackPath)MSBuild.ExtensionPack.tasks" />
+  <Import Project="$(NuGetForMSBuildPath)NuGet.For.MSBuild.tasks" />
+
+  <!-- Use tasks of the re-motion BuildTools MSBuild Tasks library -->
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.CodeplexCreateRelease" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.CodeplexUploadFiles" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.NDocProjectBuilder" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.SandcastleProjectBuilder" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.NuGetPack" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.NuGetPush" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.InsertSourceLinks" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.Jira.JiraGetEarliestUnreleasedVersion" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.Jira.JiraGetLatestReleasedVersion" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.Jira.JiraCreateNewVersion" />
+  <UsingTask AssemblyFile="$(RemotionBuildTasksPath)Remotion.BuildTools.MSBuildTasks.dll" TaskName="Remotion.BuildTools.MSBuildTasks.Jira.JiraReleaseVersion" />
+
+</Project>

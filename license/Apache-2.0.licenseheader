@@ -16,7 +16,7 @@ extensions: .cs
 // License for the specific language governing permissions and limitations
 // under the License.
 // 
-extensions: .xml .build
+extensions: .xml .build .shfbproj
 <!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
  !
  ! See the NOTICE file distributed with this work for additional information

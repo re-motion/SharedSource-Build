@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
+ !
+ ! See the NOTICE file distributed with this work for additional information
+ ! regarding copyright ownership.  rubicon licenses this file to you under 
+ ! the Apache License, Version 2.0 (the "License"); you may not use this 
+ ! file except in compliance with the License.  You may obtain a copy of the 
+ ! License at
+ !
+ !   http://www.apache.org/licenses/LICENSE-2.0
+ !
+ ! Unless required by applicable law or agreed to in writing, software 
+ ! distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ ! WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the 
+ ! License for the specific language governing permissions and limitations
+ ! under the License.
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <VersionPattern>^(\d+)\.(\d+)\.(\d+)(\-([a-zA-Z])[a-zA-Z]*([0-9]{1,3})[a-zA-Z0-9-]*)?$</VersionPattern>
+  </PropertyGroup>
+
+  <Target Name="CheckVersion" DependsOnTargets="CheckVersionIsSemVer">
+    <Error Text="The property 'Version' is not set." Condition="'$(Version)' == ''" />
+  </Target>
+
+  <Target Name="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
+    <Error Text="Only versions following the SemVer implementation of NuGet 2.0 are supported. Version='$(Version)'" 
+           Condition="'$( [System.Text.RegularExpressions.Regex]::IsMatch ( $(Version), $(VersionPattern) ) )' == 'False'" />
+  </Target>
+
+  <Target Name="UpdateAssemblyInfos" 
+          DependsOnTargets="PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion" 
+          Condition="$(Version) != ''">
+    <Message Text="Updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <Error Text="The property 'SolutionDirectory' is not set." Condition="'$(SolutionDirectory)' == ''" />
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+    <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
+    <Error Text="The property 'AssemblyFileVersion' is not set." Condition="'$(AssemblyFileVersion)' == ''" />
+    <Error Text="The property 'AssemblyInformationalVersion' is not set." Condition="'$(AssemblyInformationalVersion)' == ''" />
+
+    <ItemGroup>
+      <_assemblyInfos Remove="@(_assemblyInfoFiles)"/>
+      <_assemblyInfos Include="$(SolutionDirectory)$(AssemblyInfoFile)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_configuration>.NET Framework: $(ActiveConfigurationFramework), build type: $(ConfigurationID)</_configuration>
+    </PropertyGroup>
+
+    <MSBuild.ExtensionPack.Framework.AssemblyInfo AssemblyInfoFiles="%(_assemblyInfos.Identity)"
+                                                  AssemblyVersion="$(AssemblyVersion)"
+                                                  AssemblyFileVersion="$(AssemblyFileVersion)"
+                                                  AssemblyConfiguration="$(_configuration)"
+                                                  AssemblyCopyright="$(Copyright)"
+                                                  AssemblyCompany="$(CompanyName)"
+                                                  AssemblyProduct="$(ProductName)"
+                                                  AssemblyInformationalVersion="$(AssemblyInformationalVersion)"
+                                                  UpdateAssemblyInformationalVersion="True" />
+
+    <Message Text="Done updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="PrepareAssemblyVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
+
+    <!-- Support binding-redirect-free patching of a production deployment -->
+    <PropertyGroup>
+      <_assemblyVersionReplacementPattern>$1.$2.0.0</_assemblyVersionReplacementPattern>
+      <AssemblyVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyVersionReplacementPattern) ) )</AssemblyVersion>
+    </PropertyGroup>
+    
+    <Message Text="Done preparing AssemblyVersion '$(AssemblyVersion)'" Importance="High"/>
+  </Target>
+
+  <Target Name="PrepareAssemblyFileVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
+
+    <PropertyGroup>
+      <_revisionType>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "$5" ) )</_revisionType>
+      <_revisionPrefix Condition="'$(_revisionType)' != ''">$( [MSBuild]::Subtract( $( [System.Convert]::ToByte( $(_revisionType.ToLower()[0]) ) ), 96 ) )</_revisionPrefix>
+      <_revisionPrefix Condition="'$(_revisionType)' == ''">30</_revisionPrefix>
+      <_revisionSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "$6" ) )</_revisionSuffix>
+      <_revisionSuffix Condition="'$(_revisionSuffix)' == ''">000</_revisionSuffix>
+    </PropertyGroup>
+    <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_revisionPrefix)" String1="0" Count="2"> 
+      <Output PropertyName="_revisionPrefix" TaskParameter="NewString"/> 
+    </MSBuild.ExtensionPack.Framework.TextString> 
+    <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_revisionSuffix)" String1="0" Count="3"> 
+      <Output PropertyName="_revisionSuffix" TaskParameter="NewString"/> 
+    </MSBuild.ExtensionPack.Framework.TextString> 
+    <PropertyGroup>
+      <_assemblyFileVersionReplacementPattern>$1.$2.$3.$(_revisionPrefix)$(_revisionSuffix)</_assemblyFileVersionReplacementPattern>
+      <AssemblyFileVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyFileVersionReplacementPattern) ) )</AssemblyFileVersion>
+    </PropertyGroup>
+
+    <Message Text="Done preparing AssemblyFileVersion '$(AssemblyFileVersion)'" Importance="High"/>
+  </Target>
+
+  <Target Name="PrepareAssemblyInformationalVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+
+    <PropertyGroup>
+      <AssemblyInformationalVersion>$(Version) $(ConfigurationID); $(AdditionalBuildMetadata)</AssemblyInformationalVersion>
+    </PropertyGroup>
+
+    <Message Text="Done preparing AssemblyInformationalVersion '$(AssemblyInformationalVersion)'" Importance="High"/>
+  </Target>
+</Project>
