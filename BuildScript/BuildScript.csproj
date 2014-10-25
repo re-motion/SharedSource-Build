@@ -37,7 +37,7 @@
     <None Include="BuildScript.nuspec">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.TestingConfigurations.build">
+    <None Include="BuildTargets\TestingConfigurations.targets">
       <SubType>Designer</SubType>
     </None>
     <None Include="BuildTargets\ContentLayout.content" />
@@ -63,23 +63,23 @@
     <None Include="Main\Remotion.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.DebugSymbols.build">
+    <None Include="BuildTargets\DebugSymbols.targets">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.Documentation.build">
+    <None Include="BuildTargets\Documentation.targets">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.build">
+    <None Include="BuildTargets\Build.targets">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.NuGet.build">
+    <None Include="BuildTargets\NuGet.targets">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.Properties.build" />
-    <None Include="BuildTargets\BuildTargets.Testing.build">
+    <None Include="BuildTargets\Properties.targets" />
+    <None Include="BuildTargets\Testing.targets">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\BuildTargets.UpdateAssemblyInfos.build">
+    <None Include="BuildTargets\UpdateAssemblyInfos.targets">
       <SubType>Designer</SubType>
     </None>
     <None Include="Main\Remotion.Local.build">
@@ -88,7 +88,7 @@
     <None Include="Main\Remotion.Server.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\Tasks.build" />
+    <None Include="BuildTargets\Tasks.targets" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTargets\SandcastleProjectTemplate.shfbproj" />

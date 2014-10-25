@@ -29,7 +29,7 @@
     <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\build\</RemotionBuildScriptPath>
   </PropertyGroup>
 
-  <Import Project="$(RemotionBuildScriptPath)*.build" />
+  <Import Project="$(RemotionBuildScriptPath)*.targets" />
 
   <PropertyGroup>
     <!-- Define settings that can be overridden in Customizations.build script. -->
