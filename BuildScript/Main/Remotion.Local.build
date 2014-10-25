@@ -34,14 +34,18 @@
     <PropertyGroup>
       <Platforms>x86</Platforms>
       <DatabaseSystems>SqlServerDefault</DatabaseSystems>
+      <Browsers></Browsers>
       <SkipTests>False</SkipTests>
     </PropertyGroup>
   </Target>
   
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
-      <Platforms>x86+x64</Platforms>
+      <!-- Skip x86 -->
+      <Platforms>x64</Platforms>
       <DatabaseSystems>SqlServerDefault</DatabaseSystems>
+      <!-- Skip Internet Explorer -->
+      <Browsers>Chrome</Browsers>
       <SkipTests>False</SkipTests>
       <SkipNuGet>False</SkipNuGet>
     </PropertyGroup>
@@ -51,6 +55,7 @@
     <PropertyGroup>
       <Platforms>x86</Platforms>
       <DatabaseSystems>SqlServerDefault</DatabaseSystems>
+      <Browsers></Browsers>
       <SkipDocumentation>False</SkipDocumentation>
     </PropertyGroup>
   </Target>
@@ -59,6 +64,7 @@
     <PropertyGroup>
       <Platforms>x86</Platforms>
       <DatabaseSystems>SqlServerDefault</DatabaseSystems>
+      <Browsers></Browsers>
       <SkipNuGet>False</SkipNuGet>
     </PropertyGroup>
   </Target>

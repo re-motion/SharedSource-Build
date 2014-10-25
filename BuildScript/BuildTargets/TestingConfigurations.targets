@@ -31,7 +31,11 @@
       <DatabaseSystemsList Include="$(DatabaseSystems.Split('+'))" />
     </ItemGroup>
 
-    
+    <!-- Browsers-property is optional -->
+    <ItemGroup>
+      <BrowsersList Include="$(Browsers.Split('+'))" />
+    </ItemGroup>
+
     <ItemGroup>
       <AllPlatforms Include="x86" Condition="'%(PlatformsList.Identity)' == 'x86'">
         <Use32Bit>True</Use32Bit>
@@ -73,7 +77,12 @@
         <DatabaseDirectory>C:\Databases\MsSql2014</DatabaseDirectory>
       </AllDatabaseSystems>
     </ItemGroup>
-  
+
+    <ItemGroup>
+      <AllBrowsers Include="Chrome" Condition="'%(BrowsersList.Identity)' == 'Chrome'" />
+      <AllBrowsers Include="InternetExplorer" Condition="'%(BrowsersList.Identity)' == 'InternetExplorer'" />
+    </ItemGroup>
+
   </Target>
 
 </Project>

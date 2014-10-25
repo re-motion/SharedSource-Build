@@ -56,6 +56,10 @@
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(FileName)</AssemblyName>
         <NuSpecFile>$([System.IO.Path]::GetDirectoryName (%(MSBuildSourceProjectFile)))\$([System.IO.Path]::GetFileNameWithoutExtension (%(MSBuildSourceProjectFile))).nuspec</NuSpecFile>
+        <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' == ''">False</IsDatabaseTest>
+        <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
+        <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' == ''">False</IsWebTest>
+        <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' != ''">%(TestOutputFiles.IsWebTest)</IsWebTest>
       </_projectFiles>
     </ItemGroup>
 
@@ -66,6 +70,8 @@
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
+        <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
+        <IsWebTest>%(IsWebTest)</IsWebTest>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
       </TestOutputFiles>
     </ItemGroup>

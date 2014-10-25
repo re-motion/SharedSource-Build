@@ -20,21 +20,29 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
 
   <ItemGroup xdt:Transform="InsertIfMissing">
+
     <ReleaseProjectFiles Include="$(SolutionDirectory)Core\Core.csproj">
+      <!-- Optional Metadata to override the defaults: -->
       <CreateNuGetPackageWithSymbolServerSupport>True</CreateNuGetPackageWithSymbolServerSupport>
       <CreateDocumentationFile>True</CreateDocumentationFile>
     </ReleaseProjectFiles>
-    <ReleaseProjectFiles Include="$(SolutionDirectory)Development\Development.csproj">
-    </ReleaseProjectFiles>
+
+    <ReleaseProjectFiles Include="$(SolutionDirectory)Development\Development.csproj" />
+
     <UnitTestProjectFiles Include="$(SolutionDirectory)UnitTests\UnitTests.csproj">
-      <IsDatabaseTest>False</IsDatabaseTest>
+      <!-- Optional Metadata to override the defaults: -->
+      <IsDatabaseTest>True</IsDatabaseTest>
+      <IsWebTest>True</IsWebTest>
     </UnitTestProjectFiles>
-    <UnitTestProjectFiles Include="$(SolutionDirectory)Development.UnitTests\Development.UnitTests.csproj">
-      <IsDatabaseTest>False</IsDatabaseTest>
-    </UnitTestProjectFiles>
+
+    <UnitTestProjectFiles Include="$(SolutionDirectory)Development.UnitTests\Development.UnitTests.csproj" />
+
     <IntegrationTestProjectFiles Include="$(SolutionDirectory)IntegrationTests\IntegrationTests.csproj">
-      <IsDatabaseTest>False</IsDatabaseTest>
+      <!-- Optional Metadata to override the defaults: -->
+      <IsDatabaseTest>True</IsDatabaseTest>
+      <IsWebTest>True</IsWebTest>
     </IntegrationTestProjectFiles>
+
   </ItemGroup>
 
 </Project>

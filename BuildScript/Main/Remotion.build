@@ -71,7 +71,8 @@
           Version=$(Version);
           AdditionalBuildMetadata=$(AdditionalBuildMetadata);
           Platforms=$(Platforms);
-          DatabaseSystems=$(DatabaseSystems)
+          DatabaseSystems=$(DatabaseSystems);
+          Browsers=$(Browsers)
       </BuildProperties>
     </PropertyGroup>
   </Target>
