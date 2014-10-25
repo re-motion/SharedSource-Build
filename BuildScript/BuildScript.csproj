@@ -34,61 +34,67 @@
     <None Include="..\license\Apache-2.0.licenseheader">
       <Link>Apache-2.0.licenseheader</Link>
     </None>
-    <None Include="ContentLayout.content" />
-    <None Include="Customizations.build">
+    <None Include="BuildScript.nuspec">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations.Configurations.build">
+    <None Include="BuildTargets\ContentLayout.content" />
+    <None Include="Customizations\Customizations.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations.Projects.build">
+    <None Include="Customizations\Customizations.Configurations.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations.Properties.build">
+    <None Include="Customizations\Customizations.Projects.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations.Version.build">
+    <None Include="Customizations\Customizations.Properties.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Customizations.Version.build">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="Remotion.build">
+    <None Include="Main\Remotion.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.DebugSymbols.build">
+    <None Include="BuildTargets\BuildTargets.DebugSymbols.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.Documentation.build">
+    <None Include="BuildTargets\BuildTargets.Documentation.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.build">
+    <None Include="BuildTargets\BuildTargets.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.NuGet.build">
+    <None Include="BuildTargets\BuildTargets.NuGet.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.Properties.build" />
-    <None Include="BuildTargets.Testing.build">
+    <None Include="BuildTargets\BuildTargets.Properties.build" />
+    <None Include="BuildTargets\BuildTargets.Testing.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets.UpdateAssemblyInfos.build">
+    <None Include="BuildTargets\BuildTargets.UpdateAssemblyInfos.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.Local.build">
+    <None Include="Main\Remotion.Local.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Remotion.Server.build">
+    <None Include="Main\Remotion.Server.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Tasks.build" />
+    <None Include="BuildTargets\Tasks.build" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SandcastleProjectTemplate.shfbproj" />
+    <None Include="BuildTargets\SandcastleProjectTemplate.shfbproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Build\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets" Condition="Exists('..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets')" />
