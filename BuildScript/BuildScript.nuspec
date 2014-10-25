@@ -15,7 +15,7 @@
   </metadata>
   <files>
     <file src="BuildTargets\*.*" target="build" />
-    <file src="Customizations\*.*" target="content" />
+    <file src="Customizations\*.*" target="content/Customizations" />
     <file src="Main\*.*" target="content" />
   </files>
 </package>

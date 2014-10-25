@@ -43,10 +43,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CustomizationsDirectory Condition="'$(CustomizationsDirectory)' == ''">$(MSBuildProjectDirectory)\</CustomizationsDirectory>
+    <CustomizationsDirectory Condition="'$(CustomizationsDirectory)' == ''">$(MSBuildProjectDirectory)\Customizations\</CustomizationsDirectory>
   </PropertyGroup>
 
-  <Import Project="$(CustomizationsDirectory)Customizations.build" />
+  <Import Project="$(CustomizationsDirectory)*.build" />
 
   <PropertyGroup>
     <!-- Define settings that use previously defined properties. -->
