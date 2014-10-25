@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildScript", "BuildScript\BuildScript.csproj", "{3A916206-FEEC-4968-8E07-13607275637B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{9A97FBA1-143B-49DC-B68A-383F011A98FD}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E183529C-6003-4D4D-BA72-C865A710A31E}"
+	ProjectSection(SolutionItems) = preProject
+		license\Apache-2.0.licenseheader = license\Apache-2.0.licenseheader
+		license\Apache-2.0.txt = license\Apache-2.0.txt
+		Build\AssemblyInfoShared.cs = Build\AssemblyInfoShared.cs
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A916206-FEEC-4968-8E07-13607275637B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A916206-FEEC-4968-8E07-13607275637B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A916206-FEEC-4968-8E07-13607275637B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3A916206-FEEC-4968-8E07-13607275637B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A916206-FEEC-4968-8E07-13607275637B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A916206-FEEC-4968-8E07-13607275637B}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
