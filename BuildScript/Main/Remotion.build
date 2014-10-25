@@ -29,6 +29,8 @@
     <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\build\</RemotionBuildScriptPath>
   </PropertyGroup>
 
+  <Import Project="$(RemotionBuildScriptPath)*.build" />
+
   <PropertyGroup>
     <!-- Define settings that can be overridden in Customizations.build script. -->
     <Version></Version>
@@ -40,9 +42,11 @@
     <SkipNuGet>False</SkipNuGet>
   </PropertyGroup>
 
-  <Import Project="$(RemotionBuildScriptPath)*.build" />
+  <PropertyGroup>
+    <CustomizationsDirectory Condition="'$(CustomizationsDirectory)' == ''">$(MSBuildProjectDirectory)\</CustomizationsDirectory>
+  </PropertyGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\Customizations.build" />
+  <Import Project="$(CustomizationsDirectory)Customizations.build" />
 
   <PropertyGroup>
     <!-- Define settings that use previously defined properties. -->
