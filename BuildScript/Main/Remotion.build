@@ -20,12 +20,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <PackagesDirectory>$(MSBuildProjectDirectory)\..\packages\</PackagesDirectory>
-    <NUnitToolPath>$(PackagesDirectory)NUnit.Runners.2.6.3\tools\</NUnitToolPath>
-    <NuGetToolPath>$(PackagesDirectory)NuGet.CommandLine.2.8.2\tools\</NuGetToolPath>
-    <NuGetForMSBuildPath>$(PackagesDirectory)NuGet.for.MSBuild.1.4.3\build\</NuGetForMSBuildPath>
-    <MSBuildExtensionPackPath>$(PackagesDirectory)MSBuild.Extension.Pack.1.5.0\tools\net40\</MSBuildExtensionPackPath>
-    <RemotionBuildTasksPath>$(PackagesDirectory)Remotion.BuildTools.MSBuildTasks.1.0.5354.20249\tools\</RemotionBuildTasksPath>
+    <PackagesDirectory Condition="'$(PackagesDirectory)' == ''">$(MSBuildProjectDirectory)\..\packages\</PackagesDirectory>
+    <NUnitToolPath Condition="'$(NUnitToolPath)' == ''">$(PackagesDirectory)NUnit.Runners.2.6.3\tools\</NUnitToolPath>
+    <NuGetToolPath Condition="'$(NuGetToolPath)' == ''">$(PackagesDirectory)NuGet.CommandLine.2.8.2\tools\</NuGetToolPath>
+    <NuGetForMSBuildPath Condition="'$(NuGetForMSBuildPath)' == ''">$(PackagesDirectory)NuGet.for.MSBuild.1.4.3\build\</NuGetForMSBuildPath>
+    <MSBuildExtensionPackPath Condition="'$(MSBuildExtensionPackPath)' == ''">$(PackagesDirectory)MSBuild.Extension.Pack.1.5.0\tools\net40\</MSBuildExtensionPackPath>
+    <RemotionBuildTasksPath Condition="'$(RemotionBuildTasksPath)' == ''">$(PackagesDirectory)Remotion.BuildTools.MSBuildTasks.1.0.5354.20249\tools\</RemotionBuildTasksPath>
+    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\build\</RemotionBuildScriptPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,15 +40,9 @@
     <SkipNuGet>False</SkipNuGet>
   </PropertyGroup>
 
-  <Import Project="Tasks.build" />
-  <Import Project="BuildTargets.build" />
-  <Import Project="BuildTargets.UpdateAssemblyInfos.build"/>
-  <Import Project="BuildTargets.Properties.build" />
-  <Import Project="BuildTargets.Testing.build" />
-  <Import Project="BuildTargets.DebugSymbols.build" />
-  <Import Project="BuildTargets.NuGet.build" />
-  <Import Project="BuildTargets.Documentation.build" />
-  <Import Project="Customizations.build" />
+  <Import Project="$(RemotionBuildScriptPath)*.build" />
+
+  <Import Project="$(MSBuildProjectDirectory)\Customizations.build" />
 
   <PropertyGroup>
     <!-- Define settings that use previously defined properties. -->

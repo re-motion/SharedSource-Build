@@ -87,8 +87,8 @@
     <Error Text="The property 'DocumentationVersion' is not set." Condition="'$(DocumentationVersion)' == ''" />
 
     <PropertyGroup>
-      <_sandcastleProjectTemplate>$(MSBuildProjectDirectory)\SandcastleProjectTemplate.shfbproj</_sandcastleProjectTemplate>
-      <_contentLayout>$(MSBuildProjectDirectory)\ContentLayout.content</_contentLayout>
+      <_sandcastleProjectTemplate>$(MSBuildThisFileDirectory)SandcastleProjectTemplate.shfbproj</_sandcastleProjectTemplate>
+      <_contentLayout>$(MSBuildThisFileDirectory)ContentLayout.content</_contentLayout>
     </PropertyGroup>
 
     <MakeDir Directories="$(DocumentationBaseDirectory)" />

@@ -14,12 +14,8 @@
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
-    <file src="bin\$configuration$\*.*" exclude="bin\**\*.*"/>
-    <file src="BuildTargets\*.*" target="content\App_Packages\Remotion.BuildScript.Sources.$version$" />
+    <file src="BuildTargets\*.*" target="build" />
     <file src="Customizations\*.*" target="content" />
-    <file src="Main\Remotion.build" target="content\App_Packages\Remotion.BuildScript.Sources.$version$" />
-    <file src="Main\Remotion.Local.build" target="content" />
-    <file src="Main\Remotion.Server.build" target="content" />
-    <file src="..\license\*.licenseheader" target="content\App_Packages\Remotion.BuildScript.Sources.$version$" />
+    <file src="Main\*.*" target="content" />
   </files>
 </package>
