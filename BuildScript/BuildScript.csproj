@@ -37,11 +37,13 @@
     <None Include="BuildScript.nuspec">
       <SubType>Designer</SubType>
     </None>
+    <None Include="BuildTargets\BuildTargets.TestingConfigurations.build">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="BuildTargets\ContentLayout.content" />
     <None Include="Customizations\Customizations.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Customizations.Configurations.build">
       <SubType>Designer</SubType>
     </None>
     <None Include="Customizations\Customizations.Projects.build">

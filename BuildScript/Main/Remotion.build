@@ -112,10 +112,18 @@
   </Target>
 
   <Target Name="BuildAll" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">
+
+    <ItemGroup>
+      <_allConfigurations Remove="@(_allConfigurations)" />
+      <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
+      <_allConfigurations Include="Debug" />
+      <_allConfigurations Include="Release" />
+    </ItemGroup>
+
     <MSBuild Projects="$(MSBuildProjectFile)"
              BuildInParallel="false"
              Targets="$(FullBuildTargets)"
-             Properties="ConfigurationID=%(AllConfigurations.Identity);$(BuildProperties);"/>
+             Properties="ConfigurationID=%(_allConfigurations.Identity);$(BuildProperties);"/>
   </Target>
   
   <Target Name="TestBuildDebugOnly" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">

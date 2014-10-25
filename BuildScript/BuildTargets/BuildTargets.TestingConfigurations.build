@@ -19,14 +19,6 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <ItemGroup>
-
-    <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
-    
-    <AllConfigurations Include="Debug"/>
-    <AllConfigurations Include="Release"/>
-  </ItemGroup>
-    
   <Target Name="CreateTestConfigurations">
 
     <Error Text="'Platforms' was not defined." Condition="'$(Platforms)' == ''" />
