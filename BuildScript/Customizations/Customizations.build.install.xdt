@@ -17,11 +17,10 @@
  ! under the License.
 -->
 
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
 
-  <Import Project="Customizations.Properties.build" />
-  <Import Project="Customizations.Configurations.build" />
-  <Import Project="Customizations.Projects.build" />
-  <Import Project="Customizations.Version.build" />
+  <ImportGroup xdt:Transform="InsertIfMissing">
+    <Import Project="Customizations.*.build" />
+  </ImportGroup>
 
 </Project>

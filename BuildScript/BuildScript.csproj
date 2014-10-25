@@ -41,18 +41,28 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="BuildTargets\ContentLayout.content" />
-    <None Include="Customizations\Customizations.build">
+    <None Include="Customizations\Customizations.build.install.xdt">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Customizations\Customizations.build.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Customizations.Projects.build">
+    <None Include="Customizations\Customizations.Projects.build.install.xdt">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Customizations.Properties.build">
+    <None Include="Customizations\Customizations.Projects.build.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Customizations.Version.build">
+    <None Include="Customizations\Customizations.Properties.build.install.xdt">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Customizations.Properties.build.transform">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Customizations.Version.build.transform">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Customizations.Version.build.install.xdt">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />

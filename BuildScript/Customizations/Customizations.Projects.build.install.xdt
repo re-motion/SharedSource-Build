@@ -17,9 +17,9 @@
  ! under the License.
 -->
 
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
 
-  <ItemGroup>
+  <ItemGroup xdt:Transform="InsertIfMissing">
     <ReleaseProjectFiles Include="$(SolutionDirectory)Core\Core.csproj">
       <CreateNuGetPackageWithSymbolServerSupport>True</CreateNuGetPackageWithSymbolServerSupport>
       <CreateDocumentationFile>True</CreateDocumentationFile>
