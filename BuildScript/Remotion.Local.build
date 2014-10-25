@@ -64,12 +64,12 @@
   </Target>
 
   <Target Name="SetVersion" DependsOnTargets="CheckVersion">
-    <MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="yyMMddHHmmss"> 
+    <MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="yyMMdd-HHmmss"> 
       <Output TaskParameter="Result" PropertyName="_formattedDateTime"/> 
     </MSBuild.ExtensionPack.Framework.DateAndTime>
 
     <PropertyGroup>
-      <Version>$(Version)-9$(_formattedDateTime)</Version>
+      <Version>$(Version)-9-$(_formattedDateTime)</Version>
     </PropertyGroup>
 
     <Message Text="##teamcity[buildNumber '$(Version)']" />

@@ -83,7 +83,7 @@
     </MSBuild.ExtensionPack.Framework.TextString> 
 
     <PropertyGroup>
-      <Version>$(Version)-0$(_formattedVersionSuffix)</Version>
+      <Version>$(Version)-0-$(_formattedVersionSuffix)</Version>
     </PropertyGroup>
     
     <Message Text="##teamcity[buildNumber '$(Version)']" />
