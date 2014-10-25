@@ -60,6 +60,8 @@
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' == ''">False</IsWebTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' != ''">%(TestOutputFiles.IsWebTest)</IsWebTest>
+        <ExecutionRuntime Condition="'%(TestOutputFiles.ExecutionRuntime)' == ''">$(DefaultTestExecutionRuntime)</ExecutionRuntime>
+        <ExecutionRuntime Condition="'%(TestOutputFiles.ExecutionRuntime)' != ''">%(TestOutputFiles.ExecutionRuntime)</ExecutionRuntime>
       </_projectFiles>
     </ItemGroup>
 
@@ -72,6 +74,7 @@
         <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
         <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest>%(IsWebTest)</IsWebTest>
+        <ExecutionRuntime>%(ExecutionRuntime)</ExecutionRuntime>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
       </TestOutputFiles>
     </ItemGroup>

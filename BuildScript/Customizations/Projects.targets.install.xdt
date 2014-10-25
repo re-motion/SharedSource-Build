@@ -33,6 +33,7 @@
       <!-- Optional Metadata to override the defaults: -->
       <IsDatabaseTest>True</IsDatabaseTest>
       <IsWebTest>True</IsWebTest>
+      <ExecutionRuntime>net-4.5</ExecutionRuntime>
     </UnitTestProjectFiles>
 
     <UnitTestProjectFiles Include="$(SolutionDirectory)Development.UnitTests\Development.UnitTests.csproj" />
@@ -41,6 +42,7 @@
       <!-- Optional Metadata to override the defaults: -->
       <IsDatabaseTest>True</IsDatabaseTest>
       <IsWebTest>True</IsWebTest>
+      <ExecutionRuntime>net-4.5</ExecutionRuntime>
     </IntegrationTestProjectFiles>
 
   </ItemGroup>
