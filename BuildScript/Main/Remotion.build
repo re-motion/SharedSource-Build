@@ -26,7 +26,7 @@
     <NuGetForMSBuildPath Condition="'$(NuGetForMSBuildPath)' == ''">$(PackagesDirectory)NuGet.for.MSBuild.1.4.3\build\</NuGetForMSBuildPath>
     <MSBuildExtensionPackPath Condition="'$(MSBuildExtensionPackPath)' == ''">$(PackagesDirectory)MSBuild.Extension.Pack.1.5.0\tools\net40\</MSBuildExtensionPackPath>
     <RemotionBuildTasksPath Condition="'$(RemotionBuildTasksPath)' == ''">$(PackagesDirectory)Remotion.BuildTools.MSBuildTasks.1.0.5354.20249\tools\</RemotionBuildTasksPath>
-    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\build\</RemotionBuildScriptPath>
+    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\BuildTargets\</RemotionBuildScriptPath>
   </PropertyGroup>
 
   <Import Project="$(RemotionBuildScriptPath)*.targets" />
