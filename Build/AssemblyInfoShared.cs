@@ -14,14 +14,15 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 // 
+
 using System;
 using System.Reflection;
 
-[assembly: AssemblyConfiguration(".NET Framework: net-4.5, build type: Debug")]
-[assembly: AssemblyCompany("rubicon IT GmbH")]
+[assembly: AssemblyCompany ("rubicon IT GmbH")]
 [assembly: AssemblyProduct ("re-motion Build Infrastructure (www.re-motion.org)")]
 [assembly: AssemblyCopyright ("Copyright (c) rubicon IT GmbH, www.rubicon.eu - Licensed under Apache License, Version 2.0")]
 [assembly: AssemblyTrademark ("")]
-[assembly: AssemblyInformationalVersion ("2.0.0-x0 Debug; ")]
-[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyConfiguration ("")]
+[assembly: AssemblyVersion ("2.0.0.0")]
 [assembly: AssemblyFileVersion ("2.0.0.24000")]
+[assembly: AssemblyInformationalVersion ("2.0.0-x0")]
