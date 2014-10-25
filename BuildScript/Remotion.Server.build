@@ -64,11 +64,7 @@
   <Target Name="TestBuild" DependsOnTargets="TestBuild_Configuration;TestBuildDebugOnly;" />
 
   <Target Name="FullBuild" DependsOnTargets="FullBuild_Configuration;CreateAdditionalBuildMetadata;BuildAll;" />
-  
-  <Target Name="Deploy" DependsOnTargets="CreateAdditionalBuildMetadata;DeployAll">
-    <Message Text="Deployed re-motion, version '$(Version)', revision '$(SvnRevision)'." Importance="High"/>
-  </Target>
-  
+
   <!-- Check properties -->
   
   <Target Name="CheckProperties" DependsOnTargets="
