@@ -88,7 +88,6 @@
     <None Include="Main\Remotion.Server.build">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\Tasks.targets" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTargets\SandcastleProjectTemplate.shfbproj" />
