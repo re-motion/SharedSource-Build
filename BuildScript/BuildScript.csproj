@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="NOP" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -34,16 +34,81 @@
     <None Include="..\license\Apache-2.0.licenseheader">
       <Link>Apache-2.0.licenseheader</Link>
     </None>
+    <None Include="BuildScript.nuspec">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\TestingConfigurations.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\ContentLayout.content" />
+    <None Include="Customizations\Projects.targets.install.xdt">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Projects.targets.transform">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Properties.targets.install.xdt">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Properties.targets.transform">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Version.targets.transform">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Customizations\Version.targets.install.xdt">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
+    <None Include="Main\Remotion.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\DebugSymbols.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\Documentation.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\Build.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\NuGet.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\Properties.targets" />
+    <None Include="BuildTargets\Testing.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="BuildTargets\UpdateAssemblyInfos.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Main\Remotion.Local.build">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Main\Remotion.Server.build">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="BuildTargets\SandcastleProjectTemplate.shfbproj" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Build\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets" Condition="Exists('..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -51,5 +116,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="NOP" />
 </Project>

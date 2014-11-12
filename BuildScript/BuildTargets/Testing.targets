@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
+ !
+ ! See the NOTICE file distributed with this work for additional information
+ ! regarding copyright ownership.  rubicon licenses this file to you under 
+ ! the Apache License, Version 2.0 (the "License"); you may not use this 
+ ! file except in compliance with the License.  You may obtain a copy of the 
+ ! License at
+ !
+ !   http://www.apache.org/licenses/LICENSE-2.0
+ !
+ ! Unless required by applicable law or agreed to in writing, software 
+ ! distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ ! WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the 
+ ! License for the specific language governing permissions and limitations
+ ! under the License.
+-->
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Constants -->
+  <PropertyGroup>
+    <DefaultTestExecutionRuntime>net-4.5</DefaultTestExecutionRuntime>
+    <NoDatabaseRequired>NoDatabaseRequired</NoDatabaseRequired>
+    <NoBrowserRequired>NoBrowserRequired</NoBrowserRequired>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NumberOfTestFailuresPerProject Include="0"/>
+    <NumberOfTestErrorsPerProject Include="0"/>
+  </ItemGroup>
+
+  <!-- Main target; reporting only, calls RunTestsInternal for actual work -->
+  <Target Name="RunTests" DependsOnTargets="CreateTestConfigurations;CreateLogDirectory;BuildTestProjects;LogRunTestsStartTime;RunTestsInternal">
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+    <Error Text="ItemGroup 'NumberOfTestFailuresPerProject' is empty, but should contain test results!" Condition="@(NumberOfTestFailuresPerProject) == ''"/>
+    <Error Text="ItemGroup 'NumberOfTestErrorsPerProject' is empty, but should contain test results!" Condition="@(NumberOfTestErrorsPerProject) == ''"/>
+
+    <MSBuild.ExtensionPack.Science.Maths TaskAction="Add" Numbers="@(NumberOfTestFailuresPerProject)">
+      <Output PropertyName="_failures" TaskParameter="Result"/>
+    </MSBuild.ExtensionPack.Science.Maths>
+    <MSBuild.ExtensionPack.Science.Maths TaskAction="Add" Numbers="@(NumberOfTestErrorsPerProject)">
+      <Output PropertyName="_errors" TaskParameter="Result"/>
+    </MSBuild.ExtensionPack.Science.Maths>
+
+    <Error
+      Text="Running Unit-Tests failed because of $(_failures) failures and/or $(_errors) errors in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures and %(Errors) errors','%0A')"
+      Condition="$(_failures) &gt; 0 or $(_errors) &gt; 0"/>
+
+    <PropertyGroup>
+      <_timeTaken>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse($(RunTestsStartTime)))).TotalMilliseconds.ToString(0))</_timeTaken>
+    </PropertyGroup>
+
+    <Message Text="##teamcity[buildStatisticValue key='Duration.RunTests.$(ConfigurationID)' value='$(_timeTaken)']"
+             Condition="'$(TEAMCITY_VERSION)' != ''" />
+
+    <Message Text="Done running tests, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="LogRunTestsStartTime">
+    <PropertyGroup>
+      <RunTestsStartTime>$([System.DateTime]::UtcNow)</RunTestsStartTime>
+    </PropertyGroup>
+  </Target>
+  
+  <!-- 
+    Actual testing happens here.
+    BuildTestOutputFilesCrossProduct creates all test configurations 
+    (the result is a cross product of TestOutputFiles x AllPlatforms x AllDatabaseSystems x AllBrowsers), 
+    see description on the target for more information. Afterwards _testOutputFiles contains entries like:
+    
+      Identity = MyUnitTests1.dll ; Platform = x86 ; DatabaseSystem = SqlServer2005 ; Browser = NoBrowserRequired
+      Identity = MyUnitTests1.dll ; Platform = x64 ; DatabaseSystem = SqlServer2005 ; Browser = NoBrowserRequired
+      Identity = MyUnitTests1.dll ; Platform = x86 ; DatabaseSystem = SqlServer2008 ; Browser = NoBrowserRequired
+      ...
+      Identity = MyUnitTests2.dll ; Platform = x86 ; DatabaseSystem = NoDatabaseRequired ; Browser = NoBrowserRequired
+      ...
+      Identity = MyWebTests1.dll ; Platform = x86 ; DatabaseSystem = NoDatabaseRequired ; Browser = Chrome
+      ...
+      (only relevant metadata shown)
+      
+    RunTestsInternal uses target batching to be called once for each combination of "Identity;Platform;DatabaseSystem;Browser".
+    By batching over all the parameters, the _testOutputFiles-ItemGroup contains only a single item per batch.
+  -->
+  <Target Name="RunTestsInternal" DependsOnTargets="AddAdditionalMetadataToOutputFiles;BuildTestOutputFilesCrossProduct" Outputs="%(_testOutputFiles.Identity);%(_testOutputFiles.Platform);%(_testOutputFiles.DatabaseSystem);%(_testOutputFiles.Browser)">
+    <Message Text="Running tests %(_testOutputFiles.FullPath), ConfigurationID=$(ConfigurationID), Additional Configuration Information = %(_testOutputFiles.Platform), %(_testOutputFiles.DatabaseSystem), %(_testOutputFiles.Browser)" Importance="High"/>
+
+    <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(_testOutputFiles)">
+      <Output TaskParameter="ItemCount" PropertyName="_testOutputFilesCount"/>
+    </MSBuild.ExtensionPack.Framework.MsBuildHelper>
+    <Error Text="More than one item found in _testOutputFiles." Condition="$(_testOutputFilesCount) &gt; 1" />
+
+    <PropertyGroup>
+      <_testAssemblyFileName>%(_testOutputFiles.Filename)</_testAssemblyFileName>
+      <_testAssemblyFullPath>%(_testOutputFiles.FullPath)</_testAssemblyFullPath>
+      <_use32Bit>%(_testOutputFiles.Use32Bit)</_use32Bit>
+      <_executionRuntime>%(_testOutputFiles.ExecutionRuntime)</_executionRuntime>
+      <_platform>%(_testOutputFiles.Platform)</_platform>
+      <_databaseSystem>%(_testOutputFiles.DatabaseSystem)</_databaseSystem>
+      <_dataSource>%(_testOutputFiles.DataSource)</_dataSource>
+      <_databaseDirectory>%(_testOutputFiles.DatabaseDirectory)</_databaseDirectory>
+      <_browser>%(_testOutputFiles.Browser)</_browser>
+      <_appConfigFile>%(_testOutputFiles.FullPath).config</_appConfigFile>
+    </PropertyGroup>
+
+    <!-- Adapt App.Config to use correct database -->
+    <ItemGroup>
+      <_appConfigAttributes Remove="@(_appConfigAttributes)"/>
+      <_appConfigAttributes Include="/configuration/appSettings/add[@key='DataSource']">
+        <Key>value</Key>
+        <Value>$(_dataSource)</Value>
+      </_appConfigAttributes>
+      <_appConfigAttributes Include="/configuration/appSettings/add[@key='DatabaseDirectory']">
+        <Key>value</Key>
+        <Value>$(_databaseDirectory)</Value>
+      </_appConfigAttributes>
+    </ItemGroup>
+
+    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateAttribute"
+                                       File="$(_appConfigFile)"
+                                       XPath="%(_appConfigAttributes.Identity)"
+                                       Key="%(_appConfigAttributes.Key)"
+                                       Value="%(_appConfigAttributes.Value)"
+                                       Condition="'$(_databaseSystem)' != '$(NoDatabaseRequired)'"/>
+
+    <!-- Adapt App.Config to use correct browser -->
+    <ItemGroup>
+      <_appConfigAttributes Remove="@(_appConfigAttributes)"/>
+      <_appConfigAttributes Include="/configuration/webTestConfiguration">
+        <Key>browser</Key>
+        <Value>$(_browser)</Value>
+      </_appConfigAttributes>
+      <_appConfigAttributes Include="/configuration/webTestConfiguration">
+        <Key>screenshotDirectory</Key>
+        <Value>.\screenshots\$(_browser)_$(_platform)</Value>
+      </_appConfigAttributes>
+    </ItemGroup>
+    
+    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateAttribute"
+                                       File="$(_appConfigFile)"
+                                       XPath="%(_appConfigAttributes.Identity)"
+                                       Key="%(_appConfigAttributes.Key)"
+                                       Value="%(_appConfigAttributes.Value)"
+                                       Condition="'$(_browser)' != '$(NoBrowserRequired)'"/>
+                                       
+    <!-- Run tests -->
+    
+    <PropertyGroup>
+      <_testName>$(_testAssemblyFileName).$(ConfigurationID).$(_platform)</_testName>
+      <_testName Condition="'$(_databaseSystem)' != '$(NoDatabaseRequired)'">$(_testName).$(_databaseSystem)</_testName>
+      <_testName Condition="'$(_browser)' != '$(NoBrowserRequired)'">$(_testName).$(_browser)</_testName>
+      <_testResultFile>$(LogDirectory)$(_testName).xml</_testResultFile>
+    </PropertyGroup>
+
+    <MSBuild.ExtensionPack.CodeQuality.NUnit
+        ToolPath="$(NUnitToolPath)"
+        Assemblies="$(_testAssemblyFullPath)"
+        ContinueOnError="True"
+        Framework="$(_executionRuntime)"
+        Use32Bit="$(_use32Bit)"
+        NoShadow="True"
+        OutputXmlFile="$(_testResultFile)">
+      <Output TaskParameter="Failures" PropertyName="_nunit_failures"/>
+      <Output TaskParameter="Errors" PropertyName="_nunit_errors"/>
+    </MSBuild.ExtensionPack.CodeQuality.NUnit>
+    
+    <Message Text="##teamcity[importData type='nunit' path='$(_testResultFile)' verbose='true' whenNoDataPublished='error']"
+             Condition="'$(TEAMCITY_VERSION)' != ''" />
+
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="$(_testResultFile)"
+        XPath="/test-results/test-suite/@time">
+      <Output TaskParameter="Value" PropertyName="_testTime" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
+      <Output TaskParameter="NewString" PropertyName="_testTime" />
+    </MSBuild.ExtensionPack.Framework.TextString>
+    
+    <Message Text="##teamcity[buildStatisticValue key='$(_testName)' value='$(_testTime)']" 
+             Condition="'$(TEAMCITY_VERSION)' != ''" />
+
+    <ItemGroup  Condition="$(_nunit_failures) &gt; 0 or $(_nunit_errors) &gt; 0">
+      <NumberOfTestFailuresPerProject Include="$(_nunit_failures)" />
+      <NumberOfTestErrorsPerProject Include="$(_nunit_errors)" />
+      <FailedProjects Include="$(_testAssemblyFullPath)">
+        <Platform>$(_platform)</Platform>
+        <DatabaseSystem>$(_databaseSystem)</DatabaseSystem>
+        <Browser>$(_browser)</Browser>
+        <Failures>$(_nunit_failures)</Failures>
+        <Errors>$(_nunit_errors)</Errors>
+      </FailedProjects>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    BuildTestOutputFilesCrossProduct creates all test configurations 
+    (the result is a cross product of TestOutputFiles x AllPlatforms x AllDatabaseSystems x AllBrowsers).
+    
+    Building cross products with MSBuild is not straightforward, see:
+    http://coding-insomnia.com/2007/02/02/generating-a-cross-product-with-msbuild/
+    for more details.    
+  -->
+  <Target Name="BuildTestOutputFilesCrossProduct">
+    <!-- Step 1: Build the cross product testOutputFiles1 = TestOutputFiles x AllPlatforms -->
+    <CreateItem Include="@(TestOutputFiles)"
+                AdditionalMetadata="Platform=%(AllPlatforms.Identity);
+                                    Use32Bit=%(AllPlatforms.Use32Bit);">
+      <Output ItemName="_testOutputFiles1" TaskParameter="Include"/>
+    </CreateItem>
+
+    <!-- Step 2: Build the cross product _testOutputFiles2 = _testOutputFiles1 x AllDatabaseSystems
+           Warning: Contains also entries for %(_testOutputFiles1.IsDatabaseTest) == False as well! -->
+    <CreateItem Include="@(_testOutputFiles1)"
+                AdditionalMetadata="DatabaseSystem=%(AllDatabaseSystems.Identity);
+                                    DataSource=%(AllDatabaseSystems.DataSource);
+                                    DatabaseDirectory=%(AllDatabaseSystems.DatabaseDirectory)">
+      <!-- Condition="'%(IsDatabaseTest)' == 'True'" not possible (double batching) => filter afterwards -->
+      <Output ItemName="_testOutputFiles2" TaskParameter="Include"/>
+    </CreateItem>
+
+    <!-- Step 3: Filter entries, _testOutputFiles3 = _testOutputFiles2 where %(IsDatabaseTest) -->
+    <ItemGroup>
+      <_testOutputFiles3 Remove="@(_testOutputFiles3)"/>
+      <_testOutputFiles3 Include="@(_testOutputFiles2)" Condition="'%(IsDatabaseTest)' == 'True'"/>
+    </ItemGroup>
+
+    <!-- Step 4: Add additional $(NoDatabaseRequired)-metadata to _testOutputFiles1 where !%(IsDatabaseText) -> _testOutputFiles4 -->
+    <CreateItem Include="@(_testOutputFiles1)"
+                AdditionalMetadata="DatabaseSystem=$(NoDatabaseRequired);
+                                    DataSource=;
+                                    DatabaseDirectory="
+                Condition="'%(IsDatabaseTest)' == 'False'">
+      <Output ItemName="_testOutputFiles4" TaskParameter="Include"/>
+    </CreateItem>
+
+    <!-- Step 5: _testOutputFiles5 = _testOutputFiles3 + _testOutputFiles4 -->
+    <ItemGroup>
+      <_testOutputFiles5 Remove="@(_testOutputFiles5)"/>
+      <_testOutputFiles5 Include="@(_testOutputFiles3)"/>
+      <_testOutputFiles5 Include="@(_testOutputFiles4)"/>
+    </ItemGroup>
+    
+    <!-- Step 6: Build the cross product _testOutputFiles6 = _testOutputFiles5 x AllBrowsers
+           Warning: Contains also entries for %(_testOutputFiles5.IsWebTest) == False as well! -->
+    <CreateItem Include="@(_testOutputFiles5)"
+                AdditionalMetadata="Browser=%(AllBrowsers.Identity)">
+      <!-- Condition="'%(IsWebTest)' == 'True'" not possible (double batching) => filter afterwards -->
+      <Output ItemName="_testOutputFiles6" TaskParameter="Include"/>
+    </CreateItem>
+
+    <!-- Step 7: Filter entries, _testOutputFiles7 = _testOutputFiles6 where %(IsWebTest) And %(Browser) != '' (%(Browser) is empty if AllBrowsers is empty) -->
+    <ItemGroup>
+      <_testOutputFiles7 Remove="@(_testOutputFiles7)"/>
+      <_testOutputFiles7 Include="@(_testOutputFiles6)" Condition="'%(IsWebTest)' == 'True' And '%(Browser)' != ''"/>
+    </ItemGroup>
+    
+    <!-- Step 8: Add additional $(NoBrowserRequired)-metadata to _testOutputFiles5 where !%(IsWebTest) -> _testOutputFiles8 -->
+    <CreateItem Include="@(_testOutputFiles5)"
+                AdditionalMetadata="Browser=$(NoBrowserRequired)"
+                Condition="'%(IsWebTest)' == 'False'">
+      <Output ItemName="_testOutputFiles8" TaskParameter="Include"/>
+    </CreateItem>
+    
+    <!-- Step 9: _testOutputFiles = _testOutputFiles8 + _testOutputFiles7 (so that web tests are executed in the end) -->
+    <ItemGroup>
+      <_testOutputFiles Remove="@(_testOutputFiles)"/>
+      <_testOutputFiles Include="@(_testOutputFiles8)"/>
+      <_testOutputFiles Include="@(_testOutputFiles7)"/>
+    </ItemGroup>
+
+    <!-- Print all created configurations -->
+    <Message Text="Created test configuration: $(ConfigurationID) %(_testOutputFiles.FullPath) %(_testOutputFiles.Platform) %(_testOutputFiles.DatabaseSystem) %(_testOutputFiles.Browser)" Importance="high"/>
+  </Target>
+
+</Project>

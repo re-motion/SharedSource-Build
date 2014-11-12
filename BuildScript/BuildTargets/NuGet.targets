@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
+ !
+ ! See the NOTICE file distributed with this work for additional information
+ ! regarding copyright ownership.  rubicon licenses this file to you under 
+ ! the Apache License, Version 2.0 (the "License"); you may not use this 
+ ! file except in compliance with the License.  You may obtain a copy of the 
+ ! License at
+ !
+ !   http://www.apache.org/licenses/LICENSE-2.0
+ !
+ ! Unless required by applicable law or agreed to in writing, software 
+ ! distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ ! WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the 
+ ! License for the specific language governing permissions and limitations
+ ! under the License.
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\$(ConfigurationID)\</NuGetWithDebugSymbolsOutputDirectory>
+    <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
+  </PropertyGroup>
+
+  <Target Name="CreateNuGetPackagesWithDebugSymbols" 
+          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties">
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <Error Text="The property 'DocumentationBaseDirectory' is not set." Condition="'$(DocumentationBaseDirectory)' == ''" />
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''" />
+      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_documentationOutputDirectory>$(DocumentationCompilationOutputDirectory.TrimEnd('\'))</_documentationOutputDirectory>
+    </PropertyGroup>
+
+    <!-- The _documentationOutputDirectory must exist as NuGet requires an existing directory for the include-rule. -->
+    <MakeDir Directories="$(_documentationOutputDirectory)"/>
+    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory)" />
+
+    <NuGet.MSBuild.Tools.Pack
+        ToolPath="$(NuGetToolPath)"
+        Project="%(_nugetProjectFiles.Identity)"
+        OutputDirectory="$(NuGetWithDebugSymbolsOutputDirectory)"
+        IncludeReferencedProjects="True"
+        Symbols="False"
+        Version="$(Version)"
+        Configuration="$(ConfigurationID)"
+        Properties="ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
+        Condition="@(_nugetProjectFiles) != ''" />
+
+    <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles">
+    <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- The _nuGetTempDirectory is also used as a blank directory for the documentation source as NuGet requires an existing directory for the include-rule. -->
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_nuGetTempDirectory)"/>
+    <MakeDir Directories="$(NuGetWithSymbolServerSupportDirectory)" />
+
+    <NuGet.MSBuild.Tools.Pack
+          ToolPath="$(NuGetToolPath)"
+          Project="%(_nugetProjectFiles.Identity)"
+          OutputDirectory="$(_nuGetTempDirectory)"
+          IncludeReferencedProjects="True"
+          Symbols="True"
+          Version="$(Version)"
+          Configuration="$(ConfigurationID)"
+          Properties="ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
+          Condition="@(_nugetProjectFiles) != ''" />
+
+    <!-- Extract the NUPKG-files, remove the PDB-files, re-zip the NUPKG-files -->
+
+    <ItemGroup>
+      <_nuGetFiles Remove="@(_nuGetFiles)" />
+      <_nuGetFiles Include="$(_nuGetTempDirectory)*.nupkg" Exclude="$(_nuGetTempDirectory)*.Symbols.nupkg">
+        <ExtractionPath>$(TempDirectory)nuget\%(Filename)</ExtractionPath>
+      </_nuGetFiles>
+      <_nuGetSymbolsFiles Include="$(_nuGetTempDirectory)*.Symbols.nupkg" />
+    </ItemGroup>
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Extract"
+        ExtractPath="$(TempDirectory)nuget\%(_nuGetFiles.Filename)" 
+        ZipFileName="%(_nuGetFiles.Identity)" 
+        Condition="@(_nuGetFiles) != ''" />
+
+    <ItemGroup>
+      <_pdbFiles Remove="@(_pdbFiles)" />
+      <_pdbFiles Include="$(TempDirectory)nuget\%(_nuGetFiles.Filename)\lib\**\*.pdb" />
+    </ItemGroup>
+
+    <Delete Files="@(_pdbFiles)" />
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Create"
+        CompressPath="$(TempDirectory)nuget\%(_nuGetFiles.Filename)" 
+        RemoveRoot="$(TempDirectory)nuget\%(_nuGetFiles.Filename)"
+        ZipFileName="$(NuGetWithSymbolServerSupportDirectory)%(_nuGetFiles.Filename).nupkg" 
+        Condition="@(_nuGetFiles) != ''" />
+
+    <Copy SourceFiles="@(_nuGetSymbolsFiles)" DestinationFolder="$(NuGetWithSymbolServerSupportDirectory)" />
+
+    <Message Text="Done creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="ResolveNuGetPath" Condition=" '$(NuGetToolPath)' == '' OR !Exists('$(NuGetToolPath)') ">
+    <NuGet.MSBuild.Tools.ResolveNuGetToolPath Solution="$(SolutionPath)" ContinueOnError="true">
+      <Output TaskParameter="ToolPath" PropertyName="NuGetToolPath"/>
+    </NuGet.MSBuild.Tools.ResolveNuGetToolPath>
+
+    <Error Text="The NuGet.exe path could not be resolved, or does not exist." Condition=" '$(NuGetToolPath)' == '' OR !Exists('$(NuGetToolPath)') "/>
+    <Message Text="NuGetToolPath=$(NuGetToolPath)" Importance="Low" />
+  </Target>
+
+</Project>

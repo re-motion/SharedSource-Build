@@ -1,4 +1,5 @@
-﻿extensions: .xml .build .targets .shfbproj
+<?xml version="1.0" encoding="UTF-8" ?>
+
 <!-- Copyright (c) rubicon IT GmbH, www.rubicon.eu
  !
  ! See the NOTICE file distributed with this work for additional information
@@ -15,3 +16,7 @@
  ! License for the specific language governing permissions and limitations
  ! under the License.
 -->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+</Project>
