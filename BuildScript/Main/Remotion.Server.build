@@ -43,7 +43,7 @@
   <!-- re-motion build -->
   <Target Name="CreateAdditionalBuildMetadata">
     <PropertyGroup>
-      <AdditionalBuildMetadata>Commit=$(CommitID)</AdditionalBuildMetadata>
+      <AdditionalBuildMetadata>Commit-$(CommitID)</AdditionalBuildMetadata>
     </PropertyGroup>
   </Target>
   
