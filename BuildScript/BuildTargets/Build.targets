@@ -135,6 +135,8 @@
     <Copy SourceFiles="%(ModifiedFiles.Backup)"
           DestinationFiles="%(ModifiedFiles.Identity)" />
 
+    <Delete Files="%(ModifiedFiles.Backup)" />
+
     <Message Text="Restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
