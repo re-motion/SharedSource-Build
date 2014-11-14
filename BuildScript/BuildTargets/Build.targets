@@ -60,7 +60,7 @@
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(FileName)</AssemblyName>
-        <NuSpecFile>$([System.IO.Path]::GetDirectoryName (%(MSBuildSourceProjectFile)))\$([System.IO.Path]::GetFileNameWithoutExtension (%(MSBuildSourceProjectFile))).nuspec</NuSpecFile>
+        <NuSpecFile>$([System.IO.Path]::ChangeExtension(%(MSBuildSourceProjectFile), "nuspec"))</NuSpecFile>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' == ''">False</IsDatabaseTest>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' == ''">False</IsWebTest>
