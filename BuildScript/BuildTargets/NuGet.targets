@@ -23,8 +23,40 @@
     <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
   </PropertyGroup>
 
+  <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
+    <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''">
+        <NuSpecFile>%(NuSpecFile)</NuSpecFile>
+        <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
+      </_nugetProjectFiles>
+      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFile) != ''">
+        <NuSpecFile>%(NuSpecFile)</NuSpecFile>
+        <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
+      </_nugetProjectFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ModifiedFiles Include="%(_nugetProjectFiles.NuSpecFile)">
+        <Backup>%(Backup)</Backup>
+      </ModifiedFiles>
+    </ItemGroup>
+
+    <Copy SourceFiles="%(_nugetProjectFiles.NuSpecFile)"
+          DestinationFiles="%(_nugetProjectFiles.Backup)" />
+
+    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
+                                       File="%(_nugetProjectFiles.NuSpecFile)"
+                                       XPath="package/metadata/version"
+                                       InnerText="$(AssemblyNuGetVersion)"/>
+
+    <Message Text="Done updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
   <Target Name="CreateNuGetPackagesWithDebugSymbols" 
-          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties;PrepareAssemblyNuGetVersion">
+          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
@@ -50,7 +82,6 @@
         OutputDirectory="$(NuGetWithDebugSymbolsOutputDirectory)"
         IncludeReferencedProjects="True"
         Symbols="False"
-        Version="$(AssemblyNuGetVersion)"
         Configuration="$(ConfigurationID)"
         Properties="ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
         Condition="@(_nugetProjectFiles) != ''" />
@@ -58,7 +89,7 @@
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
     <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -82,7 +113,6 @@
           OutputDirectory="$(_nuGetTempDirectory)"
           IncludeReferencedProjects="True"
           Symbols="True"
-          Version="$(AssemblyNuGetVersion)"
           Configuration="$(ConfigurationID)"
           Properties="ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
           Condition="@(_nugetProjectFiles) != ''" />
