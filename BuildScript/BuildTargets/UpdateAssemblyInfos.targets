@@ -93,12 +93,15 @@
       <_revisionSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseCounter}" ) )</_revisionSuffix>
       <_revisionSuffix Condition="'$(_revisionSuffix)' == ''">000</_revisionSuffix>
     </PropertyGroup>
+    
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_revisionPrefix)" String1="0" Count="2"> 
       <Output PropertyName="_revisionPrefix" TaskParameter="NewString"/> 
-    </MSBuild.ExtensionPack.Framework.TextString> 
+    </MSBuild.ExtensionPack.Framework.TextString>
+
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_revisionSuffix)" String1="0" Count="3"> 
       <Output PropertyName="_revisionSuffix" TaskParameter="NewString"/> 
     </MSBuild.ExtensionPack.Framework.TextString> 
+
     <PropertyGroup>
       <_assemblyFileVersionReplacementPattern>${major}.${minor}.${patch}.$(_revisionPrefix)$(_revisionSuffix)</_assemblyFileVersionReplacementPattern>
       <AssemblyFileVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyFileVersionReplacementPattern) ) )</AssemblyFileVersion>
