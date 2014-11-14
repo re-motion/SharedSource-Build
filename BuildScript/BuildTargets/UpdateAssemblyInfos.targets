@@ -20,7 +20,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <VersionPattern>^(\d+)\.(\d+)\.(\d+)(\-([a-zA-Z])[a-zA-Z]*([0-9]{1,3})[a-zA-Z0-9-]*)?$</VersionPattern>
+    <!-- http://semver.org/spec/v2.0.0.html -->
+    <_versionNumberPattern><![CDATA[(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)]]></_versionNumberPattern>
+    <_versionPreReleaseSuffixPattern><![CDATA[(?:\-(?<prereleaseSuffix>(?<prereleaseName>[a-zA-Z]+)\.(?<prereleaseCounter>[1-9][0-9]{0,2})(?<prereleaseRemainder>(?:\.[a-zA-Z0-9-]+)*)))?]]></_versionPreReleaseSuffixPattern>
+    <VersionPattern>^$(_versionNumberPattern)$(_versionPreReleaseSuffixPattern)$</VersionPattern>
   </PropertyGroup>
 
   <Target Name="CheckVersion" DependsOnTargets="CheckVersionIsSemVer">
@@ -71,7 +74,7 @@
 
     <!-- Support binding-redirect-free patching of a production deployment -->
     <PropertyGroup>
-      <_assemblyVersionReplacementPattern>$1.$2.0.0</_assemblyVersionReplacementPattern>
+      <_assemblyVersionReplacementPattern>${major}.${minor}.0.0</_assemblyVersionReplacementPattern>
       <AssemblyVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyVersionReplacementPattern) ) )</AssemblyVersion>
     </PropertyGroup>
     
@@ -82,10 +85,10 @@
     <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
 
     <PropertyGroup>
-      <_revisionType>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "$5" ) )</_revisionType>
+      <_revisionType>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseName}" ) )</_revisionType>
       <_revisionPrefix Condition="'$(_revisionType)' != ''">$( [MSBuild]::Subtract( $( [System.Convert]::ToByte( $(_revisionType.ToLower()[0]) ) ), 96 ) )</_revisionPrefix>
       <_revisionPrefix Condition="'$(_revisionType)' == ''">30</_revisionPrefix>
-      <_revisionSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "$6" ) )</_revisionSuffix>
+      <_revisionSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseCounter}" ) )</_revisionSuffix>
       <_revisionSuffix Condition="'$(_revisionSuffix)' == ''">000</_revisionSuffix>
     </PropertyGroup>
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_revisionPrefix)" String1="0" Count="2"> 
@@ -95,7 +98,7 @@
       <Output PropertyName="_revisionSuffix" TaskParameter="NewString"/> 
     </MSBuild.ExtensionPack.Framework.TextString> 
     <PropertyGroup>
-      <_assemblyFileVersionReplacementPattern>$1.$2.$3.$(_revisionPrefix)$(_revisionSuffix)</_assemblyFileVersionReplacementPattern>
+      <_assemblyFileVersionReplacementPattern>${major}.${minor}.${patch}.$(_revisionPrefix)$(_revisionSuffix)</_assemblyFileVersionReplacementPattern>
       <AssemblyFileVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyFileVersionReplacementPattern) ) )</AssemblyFileVersion>
     </PropertyGroup>
 
