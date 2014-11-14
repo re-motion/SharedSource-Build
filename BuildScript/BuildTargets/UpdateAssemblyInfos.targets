@@ -35,6 +35,22 @@
       <_assemblyInfos Include="$(SolutionDirectory)$(AssemblyInfoFile)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_assemblyInfosWithBackup Remove="@(_assemblyInfosWithBackup)"/>
+      <_assemblyInfosWithBackup Include="@(_assemblyInfos)">
+        <Backup>%(Identity).$(BackupExtension)</Backup>
+      </_assemblyInfosWithBackup>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ModifiedFiles Include="@(_assemblyInfosWithBackup)">
+        <Backup>%(Backup)</Backup>
+      </ModifiedFiles>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_assemblyInfosWithBackup)"
+          DestinationFiles="%(_assemblyInfosWithBackup.Backup)" />
+
     <PropertyGroup>
       <!-- Target framework is already expressed via the TargetFrameworkAttribute injected via csc.exe -->
       <_configuration>Build type: $(ConfigurationID)</_configuration>
