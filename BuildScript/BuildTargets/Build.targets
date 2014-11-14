@@ -46,6 +46,7 @@
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
+        <NuSpecFile Condition="!Exists(%(NuSpecFile))"></NuSpecFile>
         <CreateNuGetPackageWithSymbolServerSupport>%(CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile>%(CreateDocumentationFile)</CreateDocumentationFile>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
@@ -76,6 +77,7 @@
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
+        <NuSpecFile Condition="!Exists(%(NuSpecFile))"></NuSpecFile>
         <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest>%(IsWebTest)</IsWebTest>
         <ExecutionRuntime>%(ExecutionRuntime)</ExecutionRuntime>
