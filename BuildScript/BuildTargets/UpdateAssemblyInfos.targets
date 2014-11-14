@@ -31,7 +31,9 @@
   </Target>
 
   <Target Name="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
-    <Error Text="Only versions following the SemVer implementation of NuGet 2.0 are supported. Version='$(Version)'" 
+    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
+
+    <Error Text="Only versions according to SemVer 2.0 without build metadata are allowed. In case of a pre-release version, the release-counter may only contain up to 3 digits (e.g. '-alpha.123'). Version='$(Version)'" 
            Condition="'$( [System.Text.RegularExpressions.Regex]::IsMatch ( $(Version), $(VersionPattern) ) )' == 'False'" />
   </Target>
 
