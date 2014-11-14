@@ -41,6 +41,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="BuildTargets\ContentLayout.content" />
+    <None Include="BuildTargets\VersionNumbers.targets">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Customizations\Projects.targets.install.xdt">
       <SubType>Designer</SubType>
     </None>
