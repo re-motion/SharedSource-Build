@@ -33,7 +33,7 @@
     <ItemGroup>
       <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
       <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''" />
-      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''" />
+      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFile) != ''" />
     </ItemGroup>
 
     <PropertyGroup>
