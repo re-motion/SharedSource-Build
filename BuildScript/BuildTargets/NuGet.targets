@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <Target Name="CreateNuGetPackagesWithDebugSymbols" 
-          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties">
+          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties;PrepareAssemblyNuGetVersion">
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
@@ -50,7 +50,7 @@
         OutputDirectory="$(NuGetWithDebugSymbolsOutputDirectory)"
         IncludeReferencedProjects="True"
         Symbols="False"
-        Version="$(Version)"
+        Version="$(AssemblyNuGetVersion)"
         Configuration="$(ConfigurationID)"
         Properties="ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
         Condition="@(_nugetProjectFiles) != ''" />
@@ -58,7 +58,7 @@
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles">
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
     <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -82,7 +82,7 @@
           OutputDirectory="$(_nuGetTempDirectory)"
           IncludeReferencedProjects="True"
           Symbols="True"
-          Version="$(Version)"
+          Version="$(AssemblyNuGetVersion)"
           Configuration="$(ConfigurationID)"
           Properties="ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
           Condition="@(_nugetProjectFiles) != ''" />

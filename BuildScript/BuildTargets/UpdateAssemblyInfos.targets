@@ -118,4 +118,32 @@
 
     <Message Text="Done preparing AssemblyInformationalVersion '$(AssemblyInformationalVersion)'" Importance="High"/>
   </Target>
+
+  <Target Name="PrepareAssemblyNuGetVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+    <!-- The NuGet version is updated to match the requirements of NuGet 2.8. Full support for SemVer 2.0 will be introduced with NuGet 3.0. -->
+    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
+
+    <PropertyGroup>
+      <_prereleaseSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseSuffix}" ) )</_prereleaseSuffix>
+      <_prereleaseName>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseName}" ) )</_prereleaseName>
+      <_prereleaseCounter>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseCounter}" ) )</_prereleaseCounter>
+      <_prereleaseRemainder>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseRemainder}" ) )</_prereleaseRemainder>
+    </PropertyGroup>
+
+    <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_prereleaseCounter)" String1="0" Count="3" Condition="'$(_prereleaseCounter)' != ''"> 
+      <Output PropertyName="_prereleaseCounter" TaskParameter="NewString"/> 
+    </MSBuild.ExtensionPack.Framework.TextString>
+
+    <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_prereleaseRemainder)" OldValue="." NewValue="-" Condition="'$(_prereleaseRemainder)' != ''">
+      <Output PropertyName="_prereleaseRemainder" TaskParameter="NewString"/>
+    </MSBuild.ExtensionPack.Framework.TextString>
+
+    <PropertyGroup>
+      <_prereleaseSuffix Condition="'$(_prereleaseSuffix)' != ''">-$(_prereleaseName)-$(_prereleaseCounter)$(_prereleaseRemainder)</_prereleaseSuffix>
+      <_nuGetVersionReplacementPattern>${major}.${minor}.${patch}</_nuGetVersionReplacementPattern>
+      <AssemblyNuGetVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_nuGetVersionReplacementPattern) ) )$(_prereleaseSuffix)</AssemblyNuGetVersion>
+    </PropertyGroup>
+
+    <Message Text="Done preparing AssemblyNuGetVersion '$(AssemblyNuGetVersion)'" Importance="High"/>
+  </Target>
 </Project>
