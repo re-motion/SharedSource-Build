@@ -140,7 +140,7 @@
 
     <Delete Files="%(ModifiedFiles.Backup)" />
 
-    <Message Text="Restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+    <Message Text="Done restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
   <Target Name="BuildReleaseProjects" DependsOnTargets="UpdateAssemblyInfos">
