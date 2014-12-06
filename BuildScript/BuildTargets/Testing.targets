@@ -102,50 +102,24 @@
       <_databaseDirectory>%(_testOutputFiles.DatabaseDirectory)</_databaseDirectory>
       <_browser>%(_testOutputFiles.Browser)</_browser>
       <_appConfigFile>%(_testOutputFiles.FullPath).config</_appConfigFile>
+      <_testingSetupBuildFile>%(_testOutputFiles.TestingSetupBuildFile)</_testingSetupBuildFile>
     </PropertyGroup>
 
-    <!-- Adapt App.Config to use correct database -->
-    <ItemGroup>
-      <_appConfigAttributes Remove="@(_appConfigAttributes)"/>
-      <_appConfigAttributes Include="/configuration/appSettings/add[@key='DataSource']">
-        <Key>value</Key>
-        <Value>$(_dataSource)</Value>
-      </_appConfigAttributes>
-      <_appConfigAttributes Include="/configuration/appSettings/add[@key='DatabaseDirectory']">
-        <Key>value</Key>
-        <Value>$(_databaseDirectory)</Value>
-      </_appConfigAttributes>
-    </ItemGroup>
+    <!-- Update configuration for tests -->
 
-    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateAttribute"
-                                       File="$(_appConfigFile)"
-                                       XPath="%(_appConfigAttributes.Identity)"
-                                       Key="%(_appConfigAttributes.Key)"
-                                       Value="%(_appConfigAttributes.Value)"
-                                       Condition="'$(_databaseSystem)' != '$(NoDatabaseRequired)'"/>
+    <MSBuild Projects="$(_testingSetupBuildFile)"
+             BuildInParallel="false"
+             Properties="
+                MSBuildExtensionPackPath=$(MSBuildExtensionPackPath);
+                LogDirectory=$(LogDirectory);
+                Platform=$(_platform);
+                AppConfigFile=$(_appConfigFile);
+                DatabaseSystem=$(_databaseSystem);
+                Browser=$(_browser);"
+             Condition="'$(_testingSetupBuildFile)' != ''"/>
 
-    <!-- Adapt App.Config to use correct browser -->
-    <ItemGroup>
-      <_appConfigAttributes Remove="@(_appConfigAttributes)"/>
-      <_appConfigAttributes Include="/configuration/webTestConfiguration">
-        <Key>browser</Key>
-        <Value>$(_browser)</Value>
-      </_appConfigAttributes>
-      <_appConfigAttributes Include="/configuration/webTestConfiguration">
-        <Key>screenshotDirectory</Key>
-        <Value>.\screenshots\$(_browser)_$(_platform)</Value>
-      </_appConfigAttributes>
-    </ItemGroup>
-    
-    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateAttribute"
-                                       File="$(_appConfigFile)"
-                                       XPath="%(_appConfigAttributes.Identity)"
-                                       Key="%(_appConfigAttributes.Key)"
-                                       Value="%(_appConfigAttributes.Value)"
-                                       Condition="'$(_browser)' != '$(NoBrowserRequired)'"/>
-                                       
     <!-- Run tests -->
-    
+
     <PropertyGroup>
       <_testName>$(_testAssemblyFileName).$(ConfigurationID).$(_platform)</_testName>
       <_testName Condition="'$(_databaseSystem)' != '$(NoDatabaseRequired)'">$(_testName).$(_databaseSystem)</_testName>
@@ -214,9 +188,7 @@
     <!-- Step 2: Build the cross product _testOutputFiles2 = _testOutputFiles1 x AllDatabaseSystems
            Warning: Contains also entries for %(_testOutputFiles1.IsDatabaseTest) == False as well! -->
     <CreateItem Include="@(_testOutputFiles1)"
-                AdditionalMetadata="DatabaseSystem=%(AllDatabaseSystems.Identity);
-                                    DataSource=%(AllDatabaseSystems.DataSource);
-                                    DatabaseDirectory=%(AllDatabaseSystems.DatabaseDirectory)">
+                AdditionalMetadata="DatabaseSystem=%(AllDatabaseSystems.Identity);">
       <!-- Condition="'%(IsDatabaseTest)' == 'True'" not possible (double batching) => filter afterwards -->
       <Output ItemName="_testOutputFiles2" TaskParameter="Include"/>
     </CreateItem>
@@ -229,9 +201,7 @@
 
     <!-- Step 4: Add additional $(NoDatabaseRequired)-metadata to _testOutputFiles1 where !%(IsDatabaseText) -> _testOutputFiles4 -->
     <CreateItem Include="@(_testOutputFiles1)"
-                AdditionalMetadata="DatabaseSystem=$(NoDatabaseRequired);
-                                    DataSource=;
-                                    DatabaseDirectory="
+                AdditionalMetadata="DatabaseSystem=$(NoDatabaseRequired);"
                 Condition="'%(IsDatabaseTest)' == 'False'">
       <Output ItemName="_testOutputFiles4" TaskParameter="Include"/>
     </CreateItem>
