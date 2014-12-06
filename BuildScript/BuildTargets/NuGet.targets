@@ -27,16 +27,25 @@
     <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <ItemGroup>
-      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''">
+      <_projectFiles Remove="@(_projectFiles)" />
+      <_projectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)">
         <NuSpecFile>%(NuSpecFile)</NuSpecFile>
-        <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
-      </_nugetProjectFiles>
-      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFile) != ''">
+      </_projectFiles>
+      <_projectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)">
+        <NuSpecFile>%(NuSpecFile)</NuSpecFile>
+      </_projectFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+
+      <_nugetProjectFiles Include="%(_projectFiles.NuSpecFile)" Condition="%(_projectFiles.NuSpecFile) != ''">
         <NuSpecFile>%(NuSpecFile)</NuSpecFile>
         <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
       </_nugetProjectFiles>
     </ItemGroup>
+
+    <Message Text="Found nuspec-file to update: '%(_nugetProjectFiles.NuSpecFile)'"/>
 
     <ItemGroup>
       <ModifiedFiles Include="%(_nugetProjectFiles.NuSpecFile)">
