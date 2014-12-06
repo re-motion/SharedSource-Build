@@ -36,8 +36,45 @@
       </_projectFiles>
     </ItemGroup>
 
+    <!-- Extract references to NuSpec-files from project files -->
+
+    <ItemGroup>
+      <_allNuspeCandidates Remove="@(_allNuspeCandidates)" />
+    </ItemGroup>
+    <XmlPeek Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
+             XmlInputPath="%(_projectFiles.Identity)"
+             Query="/msb:Project/msb:ItemGroup/*[local-name()!='Compile' and local-name()!='Content' and local-name()!='EmbeddedResource' and local-name()!='Reference' and local-name()!='ProjectReference']/@Include"
+             Condition="%(_projectFiles.NuSpecFile) == ''">
+      <Output TaskParameter="Result" ItemName="_allNuspeCandidates" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <_allNuSpecFiles Remove="@(_allNuSpecFiles)" />
+      <_allNuSpecFiles Include="@(_allNuspeCandidates)" Condition="$([System.String]::new('%(_allNuspeCandidates.Identity)').EndsWith('.nuspec'))" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_allNuSpecFilePathCombinations Remove="@(_allNuSpecFilePathCombinations)" />
+    </ItemGroup>
+    <CreateItem Include="@(_projectFiles)"
+                AdditionalMetadata="NuspecFile=%(_allNuSpecFiles.Identity);">
+      <Output ItemName="_allNuSpecFilePathCombinations" TaskParameter="Include"/>
+    </CreateItem>
+
+    <ItemGroup>
+      <_allNuSpecFilePathCandidates Include="$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( %(_allNuSpecFilePathCombinations.Identity) )), %(_allNuSpecFilePathCombinations.NuspecFile) )) ))"/>
+      <_referencedNugetProjectFiles Include="@(_allNuSpecFilePathCandidates)" Condition="Exists(%(_allNuSpecFilePathCandidates.Identity))"/>
+    </ItemGroup>
+
+    <!-- Build combined list of all relevant NuSpec-files -->
+
     <ItemGroup>
       <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      
+      <_nugetProjectFiles Include="@(_referencedNugetProjectFiles)">
+        <NuSpecFile>%(Identity)</NuSpecFile>
+        <Backup>%(Identity).$(BackupExtension)</Backup>
+      </_nugetProjectFiles>
 
       <_nugetProjectFiles Include="%(_projectFiles.NuSpecFile)" Condition="%(_projectFiles.NuSpecFile) != ''">
         <NuSpecFile>%(NuSpecFile)</NuSpecFile>
