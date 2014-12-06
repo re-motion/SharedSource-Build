@@ -33,6 +33,7 @@
       <!-- Optional Metadata to override the defaults: -->
       <IsDatabaseTest>True</IsDatabaseTest>
       <IsWebTest>True</IsWebTest>
+      <TestingSetupBuildFile>$(SolutionDirectory)Build\TestingSetup.build</TestingSetupBuildFile>
       <ExecutionRuntime>net-4.5</ExecutionRuntime>
     </UnitTestProjectFiles>
 
@@ -42,6 +43,7 @@
       <!-- Optional Metadata to override the defaults: -->
       <IsDatabaseTest>True</IsDatabaseTest>
       <IsWebTest>True</IsWebTest>
+      <TestingSetupBuildFile>$(SolutionDirectory)Build\TestingSetup.build</TestingSetupBuildFile>
       <ExecutionRuntime>net-4.5</ExecutionRuntime>
     </IntegrationTestProjectFiles>
 
