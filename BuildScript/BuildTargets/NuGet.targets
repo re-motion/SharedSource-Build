@@ -21,15 +21,27 @@
   <PropertyGroup>
     <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\$(ConfigurationID)\</NuGetWithDebugSymbolsOutputDirectory>
     <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
+    <NuGetLocalDependencyTemplateNuSpecFile>$(TempDirectory)DependencyTemplate.nuspec</NuGetLocalDependencyTemplateNuSpecFile>
   </PropertyGroup>
 
   <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddNuGetMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
     <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
+    <!-- Create local copy to prevent modifications to original file in packages-folder. Since the packages-folder is not managed by source control, 
+        the normal backup-mechanism is not sufficient to revert the state in case of a build error. -->
+    <ItemGroup>
+      <_nuGetOriginalDependencyTemplateNuSpecFile Remove="@(_nuGetOriginalDependencyTemplateNuSpecFile)" />
+      <_nuGetOriginalDependencyTemplateNuSpecFile Include="$(RemotionBuildScriptPath)DependencyTemplate.nuspec.template" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_nuGetOriginalDependencyTemplateNuSpecFile)"
+          DestinationFiles="$(NuGetLocalDependencyTemplateNuSpecFile)" />
+
     <ItemGroup>
       <_nuSpecFiles Remove="@(_nuSpecFiles)" />
       <_nuSpecFiles Include="%(ReleaseOutputFiles.NuSpecFiles)" />
       <_nuSpecFiles Include="%(TestOutputFiles.NuSpecFiles)" />
+      <_nuSpecFiles Include="$(NuGetLocalDependencyTemplateNuSpecFile)" />
       <_nuSpecFiles>
         <Backup>%(Identity).$(BackupExtension)</Backup>
       </_nuSpecFiles>
@@ -54,8 +66,38 @@
     <Message Text="Done updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
+  <Target Name="CreateLocalNuSpecFiles" DependsOnTargets="UpdateNuSpecFiles">
+    <Message Text="Creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <ItemGroup>
+      <_outputFiles Remove="@(_outputFiles)" />
+
+      <_outputFiles Include="@(ReleaseOutputFiles)"
+                    Condition="'%(ReleaseOutputFiles.NuSpecFiles)' != '' AND !Exists (%(ReleaseOutputFiles.ConventionBasedNuSpecFile))" />
+
+      <_outputFiles Include="@(TestOutputFiles)"
+                    Condition="'%(TestOutputFiles.NuSpecFiles)' != '' AND !Exists (%(TestOutputFiles.ConventionBasedNuSpecFile))" />
+    </ItemGroup>
+
+    <Message Text="Found project without local nuspec-file: '%(_outputFiles.Identity)'"/>
+
+    <ItemGroup>
+      <_localNuSpecFilesToCreate Remove="@(_localNuSpecFilesToCreate)" />
+      <_localNuSpecFilesToCreate Include="%(_outputFiles.ConventionBasedNuSpecFile)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <CreatedFiles Include="%(_localNuSpecFilesToCreate.Identity)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="$(NuGetLocalDependencyTemplateNuSpecFile)"
+          DestinationFiles="%(_localNuSpecFilesToCreate.Identity)" />
+
+    <Message Text="Done creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
   <Target Name="CreateNuGetPackagesWithDebugSymbols" 
-          DependsOnTargets="ResolveNuGetPath;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
+          DependsOnTargets="ResolveNuGetPath;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles;CreateLocalNuSpecFiles">
     <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -184,6 +226,7 @@
     <ItemGroup>
       <ReleaseOutputFiles>
         <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
+        <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
       </ReleaseOutputFiles>
     </ItemGroup>
 
@@ -218,8 +261,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <_primaryNuSpecFile Remove="@(_primaryNuSpecFile)"/>
+    </ItemGroup>
+
+    <ItemGroup>
       <TestOutputFiles>
         <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
+        <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
       </TestOutputFiles>
     </ItemGroup>
 
