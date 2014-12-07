@@ -56,9 +56,9 @@
 
   <Target Name="CreateNuGetPackagesWithDebugSymbols" 
           DependsOnTargets="ResolveNuGetPath;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Error Text="The property 'DocumentationBaseDirectory' is not set." Condition="'$(DocumentationBaseDirectory)' == ''" />
 
     <ItemGroup>
