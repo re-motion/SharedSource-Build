@@ -105,7 +105,10 @@
 
     <ItemGroup>
       <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != ''" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != ''">
+        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+        <Tags>%(NuGetTags)</Tags>
+      </_nugetProjectFiles>
       <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFiles) != ''" />
     </ItemGroup>
 
@@ -124,7 +127,7 @@
         IncludeReferencedProjects="True"
         Symbols="False"
         Configuration="$(ConfigurationID)"
-        Properties="ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
+        Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
         Condition="@(_nugetProjectFiles) != ''" />
 
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
@@ -137,7 +140,10 @@
 
     <ItemGroup>
       <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'">
+        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+        <Tags>%(NuGetTags)</Tags>
+      </_nugetProjectFiles>
     </ItemGroup>
 
     <PropertyGroup>
@@ -155,7 +161,7 @@
           IncludeReferencedProjects="True"
           Symbols="True"
           Configuration="$(ConfigurationID)"
-          Properties="ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
+          Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
           Condition="@(_nugetProjectFiles) != ''" />
 
     <!-- Extract the NUPKG-files, remove the PDB-files, re-zip the NUPKG-files -->
@@ -223,10 +229,20 @@
       <_existingNuSpecFiles Include="@(_allNuSpecFiles)" Condition="Exists (%(Identity))" />
     </ItemGroup>
 
+    <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+    <PropertyGroup>
+      <_cSharpAssemblyInfoFile>$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( $(_msBuildSourceProjectFile) )), "Properties\AssemblyInfo.cs" )) ))</_cSharpAssemblyInfoFile>
+      <_tagsAssemblyMetadataRegex>\[assembly:\s*AssemblyMetadata\s*\("tags",\s*"(?&lt;tags&gt;[^"]+)"\)\]</_tagsAssemblyMetadataRegex>
+      <_assemblyInfoText Condition="Exists ($(_cSharpAssemblyInfoFile))">$([System.IO.File]::ReadAllText( $(_cSharpAssemblyInfoFile) ))</_assemblyInfoText>
+      <_assemblyInfoText Condition="!Exists ($(_cSharpAssemblyInfoFile))"></_assemblyInfoText>
+      <_tagsMetadata>$( [System.Text.RegularExpressions.Regex]::Match( $(_assemblyInfoText), $(_tagsAssemblyMetadataRegex)).Groups["tags"].Value )</_tagsMetadata>
+    </PropertyGroup>
+
     <ItemGroup>
       <ReleaseOutputFiles>
         <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
         <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
+        <NuGetTags>$(_tagsMetadata)</NuGetTags>
       </ReleaseOutputFiles>
     </ItemGroup>
 
