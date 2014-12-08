@@ -103,18 +103,22 @@
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Error Text="The property 'DocumentationBaseDirectory' is not set." Condition="'$(DocumentationBaseDirectory)' == ''" />
 
-    <ItemGroup>
-      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != ''">
-        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
-        <Tags>%(NuGetTags)</Tags>
-      </_nugetProjectFiles>
-      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFiles) != ''" />
-    </ItemGroup>
-
     <PropertyGroup>
       <_documentationOutputDirectory>$(DocumentationCompilationOutputDirectory.TrimEnd('\'))</_documentationOutputDirectory>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != ''">
+        <DocumentationFile>$(_documentationOutputDirectory)\%(AssemblyName).chm</DocumentationFile>
+        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+        <Tags>%(NuGetTags)</Tags>
+      </_nugetProjectFiles>
+      <_nugetProjectFiles>
+        <DocumentationTag Condition="Exists (%(DocumentationFile))">Documentation</DocumentationTag>
+      </_nugetProjectFiles>
+      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFiles) != ''" />
+    </ItemGroup>
 
     <!-- The _documentationOutputDirectory must exist as NuGet requires an existing directory for the include-rule. -->
     <MakeDir Directories="$(_documentationOutputDirectory)"/>
@@ -127,7 +131,7 @@
         IncludeReferencedProjects="True"
         Symbols="False"
         Configuration="$(ConfigurationID)"
-        Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
+        Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=$(ConfigurationID)Build %(_nugetProjectFiles.DocumentationTag);DocumentationFolder=$(_documentationOutputDirectory)"
         Condition="@(_nugetProjectFiles) != ''" />
 
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
@@ -138,6 +142,11 @@
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
 
+    <PropertyGroup>
+      <!-- The _nuGetTempDirectory is also used as a blank directory for the documentation source as NuGet requires an existing directory for the include-rule. -->
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
     <ItemGroup>
       <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
       <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'">
@@ -145,11 +154,6 @@
         <Tags>%(NuGetTags)</Tags>
       </_nugetProjectFiles>
     </ItemGroup>
-
-    <PropertyGroup>
-      <!-- The _nuGetTempDirectory is also used as a blank directory for the documentation source as NuGet requires an existing directory for the include-rule. -->
-      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
-    </PropertyGroup>
 
     <MakeDir Directories="$(_nuGetTempDirectory)"/>
     <MakeDir Directories="$(NuGetWithSymbolServerSupportDirectory)" />
