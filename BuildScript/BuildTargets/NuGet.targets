@@ -21,56 +21,104 @@
   <PropertyGroup>
     <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\$(ConfigurationID)\</NuGetWithDebugSymbolsOutputDirectory>
     <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
+    <NuGetLocalDependencyTemplateNuSpecFile>$(TempDirectory)DependencyTemplate.nuspec</NuGetLocalDependencyTemplateNuSpecFile>
   </PropertyGroup>
 
-  <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
+  <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddNuGetMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
     <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
+    <!-- Create local copy to prevent modifications to original file in packages-folder. Since the packages-folder is not managed by source control, 
+        the normal backup-mechanism is not sufficient to revert the state in case of a build error. -->
     <ItemGroup>
-      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''">
-        <NuSpecFile>%(NuSpecFile)</NuSpecFile>
-        <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
-      </_nugetProjectFiles>
-      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFile) != ''">
-        <NuSpecFile>%(NuSpecFile)</NuSpecFile>
-        <Backup>%(NuSpecFile).$(BackupExtension)</Backup>
-      </_nugetProjectFiles>
+      <_nuGetOriginalDependencyTemplateNuSpecFile Remove="@(_nuGetOriginalDependencyTemplateNuSpecFile)" />
+      <_nuGetOriginalDependencyTemplateNuSpecFile Include="$(RemotionBuildScriptPath)DependencyTemplate.nuspec.template" />
     </ItemGroup>
 
+    <Copy SourceFiles="@(_nuGetOriginalDependencyTemplateNuSpecFile)"
+          DestinationFiles="$(NuGetLocalDependencyTemplateNuSpecFile)" />
+
     <ItemGroup>
-      <ModifiedFiles Include="%(_nugetProjectFiles.NuSpecFile)">
+      <_nuSpecFiles Remove="@(_nuSpecFiles)" />
+      <_nuSpecFiles Include="%(ReleaseOutputFiles.NuSpecFiles)" />
+      <_nuSpecFiles Include="%(TestOutputFiles.NuSpecFiles)" />
+      <_nuSpecFiles Include="$(NuGetLocalDependencyTemplateNuSpecFile)" />
+      <_nuSpecFiles>
+        <Backup>%(Identity).$(BackupExtension)</Backup>
+      </_nuSpecFiles>
+    </ItemGroup>
+
+    <Message Text="Found nuspec-file to update: '%(_nuSpecFiles.Identity)'"/>
+
+    <ItemGroup>
+      <ModifiedFiles Include="%(_nuSpecFiles.Identity)">
         <Backup>%(Backup)</Backup>
       </ModifiedFiles>
     </ItemGroup>
 
-    <Copy SourceFiles="%(_nugetProjectFiles.NuSpecFile)"
-          DestinationFiles="%(_nugetProjectFiles.Backup)" />
+    <Copy SourceFiles="%(_nuSpecFiles.Identity)"
+          DestinationFiles="%(_nuSpecFiles.Backup)" />
 
     <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
-                                       File="%(_nugetProjectFiles.NuSpecFile)"
+                                       File="%(_nuSpecFiles.Identity)"
                                        XPath="package/metadata/version"
                                        InnerText="$(AssemblyNuGetVersion)"/>
 
     <Message Text="Done updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="CreateNuGetPackagesWithDebugSymbols" 
-          DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
-    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-
-    <Error Text="The property 'DocumentationBaseDirectory' is not set." Condition="'$(DocumentationBaseDirectory)' == ''" />
+  <Target Name="CreateLocalNuSpecFiles" DependsOnTargets="UpdateNuSpecFiles">
+    <Message Text="Creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <ItemGroup>
-      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != ''" />
-      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFile) != ''" />
+      <_outputFiles Remove="@(_outputFiles)" />
+
+      <_outputFiles Include="@(ReleaseOutputFiles)"
+                    Condition="'%(ReleaseOutputFiles.NuSpecFiles)' != '' AND !Exists (%(ReleaseOutputFiles.ConventionBasedNuSpecFile))" />
+
+      <_outputFiles Include="@(TestOutputFiles)"
+                    Condition="'%(TestOutputFiles.NuSpecFiles)' != '' AND !Exists (%(TestOutputFiles.ConventionBasedNuSpecFile))" />
     </ItemGroup>
+
+    <Message Text="Found project without local nuspec-file: '%(_outputFiles.Identity)'"/>
+
+    <ItemGroup>
+      <_localNuSpecFilesToCreate Remove="@(_localNuSpecFilesToCreate)" />
+      <_localNuSpecFilesToCreate Include="%(_outputFiles.ConventionBasedNuSpecFile)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <CreatedFiles Include="%(_localNuSpecFilesToCreate.Identity)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="$(NuGetLocalDependencyTemplateNuSpecFile)"
+          DestinationFiles="%(_localNuSpecFilesToCreate.Identity)" />
+
+    <Message Text="Done creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="CreateNuGetPackagesWithDebugSymbols" 
+          DependsOnTargets="ResolveNuGetPath;CreateDocumentationProperties;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles;CreateLocalNuSpecFiles">
+    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+    <Error Text="The property 'DocumentationBaseDirectory' is not set." Condition="'$(DocumentationBaseDirectory)' == ''" />
 
     <PropertyGroup>
       <_documentationOutputDirectory>$(DocumentationCompilationOutputDirectory.TrimEnd('\'))</_documentationOutputDirectory>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != ''">
+        <DocumentationFile>$(_documentationOutputDirectory)\%(AssemblyName).chm</DocumentationFile>
+        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+        <Tags>%(NuGetTags)</Tags>
+      </_nugetProjectFiles>
+      <_nugetProjectFiles>
+        <DocumentationTag Condition="Exists (%(DocumentationFile))">Documentation</DocumentationTag>
+      </_nugetProjectFiles>
+      <_nugetProjectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)" Condition="%(TestOutputFiles.NuSpecFiles) != ''" />
+    </ItemGroup>
 
     <!-- The _documentationOutputDirectory must exist as NuGet requires an existing directory for the include-rule. -->
     <MakeDir Directories="$(_documentationOutputDirectory)"/>
@@ -83,26 +131,29 @@
         IncludeReferencedProjects="True"
         Symbols="False"
         Configuration="$(ConfigurationID)"
-        Properties="ExtraTags=$(ConfigurationID)Build Documentation;DocumentationFolder=$(_documentationOutputDirectory)"
+        Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=$(ConfigurationID)Build %(_nugetProjectFiles.DocumentationTag);DocumentationFolder=$(_documentationOutputDirectory)"
         Condition="@(_nugetProjectFiles) != ''" />
 
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;AddAdditionalMetadataToOutputFiles;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
     <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
-
-    <ItemGroup>
-      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
-      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFile) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'" />
-    </ItemGroup>
 
     <PropertyGroup>
       <!-- The _nuGetTempDirectory is also used as a blank directory for the documentation source as NuGet requires an existing directory for the include-rule. -->
       <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_nugetProjectFiles Remove="@(_nugetProjectFiles)" />
+      <_nugetProjectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)" Condition="%(ReleaseOutputFiles.NuSpecFiles) != '' AND %(CreateNuGetPackageWithSymbolServerSupport) == 'True'">
+        <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+        <Tags>%(NuGetTags)</Tags>
+      </_nugetProjectFiles>
+    </ItemGroup>
 
     <MakeDir Directories="$(_nuGetTempDirectory)"/>
     <MakeDir Directories="$(NuGetWithSymbolServerSupportDirectory)" />
@@ -114,7 +165,7 @@
           IncludeReferencedProjects="True"
           Symbols="True"
           Configuration="$(ConfigurationID)"
-          Properties="ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
+          Properties="Tags=%(_nugetProjectFiles.Tags);ExtraTags=;DocumentationFolder=$(_nuGetTempDirectory)"
           Condition="@(_nugetProjectFiles) != ''" />
 
     <!-- Extract the NUPKG-files, remove the PDB-files, re-zip the NUPKG-files -->
@@ -150,6 +201,96 @@
     <Copy SourceFiles="@(_nuGetSymbolsFiles)" DestinationFolder="$(NuGetWithSymbolServerSupportDirectory)" />
 
     <Message Text="Done creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="AddNuGetMetadataToOutputFiles" DependsOnTargets="AddNuGetMetadataToReleaseOutputFiles;AddNuGetMetadataToTestOutputFiles" />
+
+  <Target Name="AddNuGetMetadataToReleaseOutputFiles" DependsOnTargets="AddAdditionalMetadataToOutputFiles" Outputs="%(ReleaseOutputFiles.MSBuildSourceProjectFile)">
+
+    <PropertyGroup>
+      <_msBuildSourceProjectFile>%(ReleaseOutputFiles.MSBuildSourceProjectFile)</_msBuildSourceProjectFile>
+      <_conventionBasedNuSpecFile>$([System.IO.Path]::ChangeExtension( $(_msBuildSourceProjectFile), "nuspec" ))</_conventionBasedNuSpecFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_allNuspeCandidates Remove="@(_allNuspeCandidates)" />
+    </ItemGroup>
+    <XmlPeek Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
+             XmlInputPath="$(_msBuildSourceProjectFile)"
+             Query="/msb:Project/msb:ItemGroup/*[local-name()!='Compile' and local-name()!='Content' and local-name()!='EmbeddedResource' and local-name()!='Reference' and local-name()!='ProjectReference']/@Include">
+      <Output TaskParameter="Result" ItemName="_allNuspeCandidates" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <_allNuSpecFiles Remove="@(_allNuSpecFiles)" />
+      <_allNuSpecFiles Include="$(_conventionBasedNuSpecFile)" />
+      <_allNuSpecFiles Include="$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( $(_msBuildSourceProjectFile) )), %(_allNuspeCandidates.Identity) )) ))"
+                       Condition="$([System.String]::new('%(_allNuspeCandidates.Identity)').EndsWith('.nuspec'))" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_existingNuSpecFiles Remove="@(_existingNuSpecFiles)" />
+      <_existingNuSpecFiles Include="@(_allNuSpecFiles)" Condition="Exists (%(Identity))" />
+    </ItemGroup>
+
+    <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
+    <PropertyGroup>
+      <_cSharpAssemblyInfoFile>$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( $(_msBuildSourceProjectFile) )), "Properties\AssemblyInfo.cs" )) ))</_cSharpAssemblyInfoFile>
+      <_tagsAssemblyMetadataRegex>\[assembly:\s*AssemblyMetadata\s*\("tags",\s*"(?&lt;tags&gt;[^"]+)"\)\]</_tagsAssemblyMetadataRegex>
+      <_assemblyInfoText Condition="Exists ($(_cSharpAssemblyInfoFile))">$([System.IO.File]::ReadAllText( $(_cSharpAssemblyInfoFile) ))</_assemblyInfoText>
+      <_assemblyInfoText Condition="!Exists ($(_cSharpAssemblyInfoFile))"></_assemblyInfoText>
+      <_tagsMetadata>$( [System.Text.RegularExpressions.Regex]::Match( $(_assemblyInfoText), $(_tagsAssemblyMetadataRegex)).Groups["tags"].Value )</_tagsMetadata>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ReleaseOutputFiles>
+        <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
+        <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
+        <NuGetTags>$(_tagsMetadata)</NuGetTags>
+      </ReleaseOutputFiles>
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="AddNuGetMetadataToTestOutputFiles" DependsOnTargets="AddAdditionalMetadataToOutputFiles" Outputs="%(TestOutputFiles.MSBuildSourceProjectFile)">
+
+    <PropertyGroup>
+      <_msBuildSourceProjectFile>%(TestOutputFiles.MSBuildSourceProjectFile)</_msBuildSourceProjectFile>
+      <_conventionBasedNuSpecFile>$([System.IO.Path]::ChangeExtension( $(_msBuildSourceProjectFile), "nuspec" ))</_conventionBasedNuSpecFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_allNuspeCandidates Remove="@(_allNuspeCandidates)" />
+    </ItemGroup>
+    <XmlPeek Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
+             XmlInputPath="$(_msBuildSourceProjectFile)"
+             Query="/msb:Project/msb:ItemGroup/*[local-name()!='Compile' and local-name()!='Content' and local-name()!='EmbeddedResource' and local-name()!='Reference' and local-name()!='ProjectReference']/@Include">
+      <Output TaskParameter="Result" ItemName="_allNuspeCandidates" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <_allNuSpecFiles Remove="@(_allNuSpecFiles)" />
+      <_allNuSpecFiles Include="$(_conventionBasedNuSpecFile)" />
+      <_allNuSpecFiles Include="$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( $(_msBuildSourceProjectFile) )), %(_allNuspeCandidates.Identity) )) ))"
+                       Condition="$([System.String]::new('%(_allNuspeCandidates.Identity)').EndsWith('.nuspec'))" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_existingNuSpecFiles Remove="@(_existingNuSpecFiles)" />
+      <_existingNuSpecFiles Include="@(_allNuSpecFiles)" Condition="Exists (%(Identity))" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_primaryNuSpecFile Remove="@(_primaryNuSpecFile)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <TestOutputFiles>
+        <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
+        <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
+      </TestOutputFiles>
+    </ItemGroup>
+
   </Target>
 
   <Target Name="ResolveNuGetPath" Condition=" '$(NuGetToolPath)' == '' OR !Exists('$(NuGetToolPath)') ">

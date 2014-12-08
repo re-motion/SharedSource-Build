@@ -31,7 +31,6 @@
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(FileName)</AssemblyName>
-        <NuSpecFile>$([System.IO.Path]::ChangeExtension(%(MSBuildSourceProjectFile), "nuspec"))</NuSpecFile>
         <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' == ''">False</CreateNuGetPackageWithSymbolServerSupport>
         <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' != ''">%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == ''">False</CreateDocumentationFile>
@@ -45,8 +44,6 @@
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(AssemblyName)</AssemblyName>
-        <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
-        <NuSpecFile Condition="!Exists(%(NuSpecFile))"></NuSpecFile>
         <CreateNuGetPackageWithSymbolServerSupport>%(CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile>%(CreateDocumentationFile)</CreateDocumentationFile>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
@@ -60,7 +57,6 @@
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(FileName)</AssemblyName>
-        <NuSpecFile>$([System.IO.Path]::ChangeExtension(%(MSBuildSourceProjectFile), "nuspec"))</NuSpecFile>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' == ''">False</IsDatabaseTest>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' == ''">False</IsWebTest>
@@ -78,8 +74,6 @@
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
         <AssemblyName>%(AssemblyName)</AssemblyName>
-        <NuSpecFile Condition="Exists(%(NuSpecFile))">%(NuSpecFile)</NuSpecFile>
-        <NuSpecFile Condition="!Exists(%(NuSpecFile))"></NuSpecFile>
         <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest>%(IsWebTest)</IsWebTest>
         <TestingSetupBuildFile>%(TestingSetupBuildFile)</TestingSetupBuildFile>
@@ -139,6 +133,7 @@
           DestinationFiles="%(ModifiedFiles.Identity)" />
 
     <Delete Files="%(ModifiedFiles.Backup)" />
+    <Delete Files="%(CreatedFiles.Identity)" />
 
     <Message Text="Done restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
