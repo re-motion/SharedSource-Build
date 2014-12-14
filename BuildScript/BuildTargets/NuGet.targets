@@ -21,30 +21,29 @@
   <PropertyGroup>
     <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\$(ConfigurationID)\</NuGetWithDebugSymbolsOutputDirectory>
     <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
-    <NuGetLocalDependencyTemplateNuSpecFile>$(TempDirectory)DependencyTemplate.nuspec</NuGetLocalDependencyTemplateNuSpecFile>
   </PropertyGroup>
 
   <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddNuGetMetadataToOutputFiles;PrepareAssemblyNuGetVersion">
     <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
-    <!-- Create local copy to prevent modifications to original file in packages-folder. Since the packages-folder is not managed by source control, 
-        the normal backup-mechanism is not sufficient to revert the state in case of a build error. -->
-    <ItemGroup>
-      <_nuGetOriginalDependencyTemplateNuSpecFile Remove="@(_nuGetOriginalDependencyTemplateNuSpecFile)" />
-      <_nuGetOriginalDependencyTemplateNuSpecFile Include="$(RemotionBuildScriptPath)DependencyTemplate.nuspec.template" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_nuGetOriginalDependencyTemplateNuSpecFile)"
-          DestinationFiles="$(NuGetLocalDependencyTemplateNuSpecFile)" />
-
     <ItemGroup>
       <_nuSpecFiles Remove="@(_nuSpecFiles)" />
       <_nuSpecFiles Include="%(ReleaseOutputFiles.NuSpecFiles)" />
       <_nuSpecFiles Include="%(TestOutputFiles.NuSpecFiles)" />
-      <_nuSpecFiles Include="$(NuGetLocalDependencyTemplateNuSpecFile)" />
       <_nuSpecFiles>
         <Backup>%(Identity).$(BackupExtension)</Backup>
       </_nuSpecFiles>
+    </ItemGroup>
+
+    <!-- Remove empty nuspec files from list -->
+    <ItemGroup>
+      <_placeHolderNuSpecFiles Remove="@(_placeHolderNuSpecFiles)" />
+    </ItemGroup>
+    <MSBuild.ExtensionPack.FileSystem.File TaskAction="FilterByContent" RegexPattern="^$" Files="@(_nuSpecFiles)">
+      <Output TaskParameter="IncludedFiles" ItemName="_placeHolderNuSpecFiles"/>
+    </MSBuild.ExtensionPack.FileSystem.File>
+    <ItemGroup>
+      <_nuSpecFiles Remove="@(_placeHolderNuSpecFiles)" />
     </ItemGroup>
 
     <Message Text="Found nuspec-file to update: '%(_nuSpecFiles.Identity)'"/>
@@ -79,7 +78,7 @@
                     Condition="'%(TestOutputFiles.NuSpecFiles)' != '' AND !Exists (%(TestOutputFiles.ConventionBasedNuSpecFile))" />
     </ItemGroup>
 
-    <Message Text="Found project without local nuspec-file: '%(_outputFiles.Identity)'"/>
+    <Message Text="Found project without local nuspec-file: '%(_outputFiles.Identity)'" Condition="'@(_outputFiles)' != ''"/>
 
     <ItemGroup>
       <_localNuSpecFilesToCreate Remove="@(_localNuSpecFilesToCreate)" />
@@ -87,11 +86,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <CreatedFiles Include="%(_localNuSpecFilesToCreate.Identity)" />
+      <CreatedFiles Include="@(_localNuSpecFilesToCreate)" />
     </ItemGroup>
 
-    <Copy SourceFiles="$(NuGetLocalDependencyTemplateNuSpecFile)"
-          DestinationFiles="%(_localNuSpecFilesToCreate.Identity)" />
+    <Touch Files="@(_localNuSpecFilesToCreate)" AlwaysCreate="true" />
 
     <Message Text="Done creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
@@ -294,7 +292,7 @@
   </Target>
 
   <Target Name="ResolveNuGetPath" Condition=" '$(NuGetToolPath)' == '' OR !Exists('$(NuGetToolPath)') ">
-    <NuGet.MSBuild.Tools.ResolveNuGetToolPath Solution="$(SolutionPath)" ContinueOnError="true">
+    <NuGet.MSBuild.Tools.ResolveNuGetToolPath Solution="$(SolutionDirectory)" ContinueOnError="true">
       <Output TaskParameter="ToolPath" PropertyName="NuGetToolPath"/>
     </NuGet.MSBuild.Tools.ResolveNuGetToolPath>
 
