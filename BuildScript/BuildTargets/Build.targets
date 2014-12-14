@@ -129,11 +129,9 @@
   <Target Name="RestoreBackupFiles">
     <Message Text="Restoring backup copies of files changed during the build process, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
-    <Copy SourceFiles="%(ModifiedFiles.Backup)"
-          DestinationFiles="%(ModifiedFiles.Identity)" />
+    <Move SourceFiles="%(ModifiedFiles.Backup)" DestinationFiles="%(ModifiedFiles.Identity)" />
 
-    <Delete Files="%(ModifiedFiles.Backup)" />
-    <Delete Files="%(CreatedFiles.Identity)" />
+    <Delete Files="@(CreatedFiles)" />
 
     <Message Text="Done restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
