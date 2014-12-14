@@ -65,7 +65,7 @@
     <MSBuild.ExtensionPack.Framework.Assembly TaskAction="GetInfo" NetAssembly="%(_documentationRootAssemblies.Identity)"> 
       <Output TaskParameter="OutputItems" ItemName="_assemblyInfo"/> 
     </MSBuild.ExtensionPack.Framework.Assembly>
-<Message Text="Version $(Version)"/>
+
     <PropertyGroup>
       <DocumentationAssemblyVersion>%(_assemblyInfo.AssemblyVersion)</DocumentationAssemblyVersion>
       <DocumentationVersion Condition="'$(Version)' != ''">$(Version)</DocumentationVersion>
