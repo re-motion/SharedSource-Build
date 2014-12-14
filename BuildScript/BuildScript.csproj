@@ -37,7 +37,6 @@
     <None Include="BuildScript.nuspec">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BuildTargets\DependencyTemplate.nuspec.template" />
     <None Include="BuildTargets\TestingConfigurations.targets">
       <SubType>Designer</SubType>
     </None>
