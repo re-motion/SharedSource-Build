@@ -79,6 +79,8 @@
           Browsers=$(Browsers)
       </BuildProperties>
     </PropertyGroup>
+
+    <Message Text="Configured build properties: $(BuildProperties)" />
   </Target>
 
   <Target Name="PrepareBuildTargets">
