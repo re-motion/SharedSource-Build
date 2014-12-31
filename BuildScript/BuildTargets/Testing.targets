@@ -130,6 +130,7 @@
     <MSBuild.ExtensionPack.CodeQuality.NUnit
         ToolPath="$(NUnitToolPath)"
         Assemblies="$(_testAssemblyFullPath)"
+        ExcludeCategory="$(TestCategoriesToExclude)"
         ContinueOnError="True"
         Framework="$(_executionRuntime)"
         Use32Bit="$(_use32Bit)"
