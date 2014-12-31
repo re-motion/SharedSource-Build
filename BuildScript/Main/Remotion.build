@@ -76,7 +76,8 @@
           AdditionalBuildMetadata=$(AdditionalBuildMetadata);
           Platforms=$(Platforms);
           DatabaseSystems=$(DatabaseSystems);
-          Browsers=$(Browsers)
+          Browsers=$(Browsers);
+          TestCategoriesToExclude=$(TestCategoriesToExclude);
       </BuildProperties>
     </PropertyGroup>
 
