@@ -24,7 +24,6 @@
           Condition="$(Version) != ''">
     <Message Text="Updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
-    <Error Text="The property 'SolutionDirectory' is not set." Condition="'$(SolutionDirectory)' == ''" />
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
     <Error Text="The property 'AssemblyFileVersion' is not set." Condition="'$(AssemblyFileVersion)' == ''" />
@@ -32,7 +31,7 @@
 
     <ItemGroup>
       <_assemblyInfos Remove="@(_assemblyInfoFiles)"/>
-      <_assemblyInfos Include="$(SolutionDirectory)$(AssemblyInfoFile)" />
+      <_assemblyInfos Include="$(AssemblyInfoFile)" />
     </ItemGroup>
 
     <ItemGroup>
