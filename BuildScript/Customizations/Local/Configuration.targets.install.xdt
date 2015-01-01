@@ -19,22 +19,22 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
 
-  <Target Name="After_TestBuild_Configuration" AfterTargets="TestBuild_Configuration">
+  <Target Name="After_TestBuild_Configuration" AfterTargets="TestBuild_Configuration" xdt:Transform="InsertIfMissing">
     <PropertyGroup>
     </PropertyGroup>
   </Target>
 
-  <Target Name="After_FullBuild_Configuration" AfterTargets="FullBuild_Configuration">
+  <Target Name="After_FullBuild_Configuration" AfterTargets="FullBuild_Configuration" xdt:Transform="InsertIfMissing">
     <PropertyGroup>
     </PropertyGroup>
   </Target>
 
-  <Target Name="After_DocumentationBuild_Configuration" AfterTargets="DocumentationBuild_Configuration">
+  <Target Name="After_DocumentationBuild_Configuration" AfterTargets="DocumentationBuild_Configuration" xdt:Transform="InsertIfMissing">
     <PropertyGroup>
     </PropertyGroup>
   </Target>
 
-  <Target Name="After_PackageBuild_Configuration" AfterTargets="PackageBuild_Configuration">
+  <Target Name="After_PackageBuild_Configuration" AfterTargets="PackageBuild_Configuration" xdt:Transform="InsertIfMissing">
     <PropertyGroup>
     </PropertyGroup>
   </Target>
