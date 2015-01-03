@@ -47,12 +47,8 @@
       <_documentationRootAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
     </ItemGroup>
 
-    <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(_documentationRootAssemblies)">
-      <Output TaskParameter="ItemCount" PropertyName="_documentationRootAssemblyCount"/>
-    </MSBuild.ExtensionPack.Framework.MsBuildHelper>
-
-    <Error Text="No item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'$(_documentationRootAssemblyCount)' == '0'" />
-    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'$(_documentationRootAssemblyCount)' != '1'" />
+    <Error Text="No item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' == 0" />
+    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' &gt; 1" />
 
     <PropertyGroup>
       <DocumentationIdentifier>%(_documentationRootAssemblies.AssemblyName)</DocumentationIdentifier>
