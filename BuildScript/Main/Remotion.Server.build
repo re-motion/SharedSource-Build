@@ -35,8 +35,6 @@
     <OutputDirectory>$(BuildRootDirectory)output\</OutputDirectory>
     <TempDirectory>$(BuildRootDirectory)temp\</TempDirectory>
 
-    <SolutionBuildFile>$(SolutionDirectory)build\Remotion.build</SolutionBuildFile>
-
     <SolutionKeyFile>$(SecureNetworkShare)\remotion.snk</SolutionKeyFile>
 
     <VcsUrlTemplate></VcsUrlTemplate>

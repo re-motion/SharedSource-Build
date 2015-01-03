@@ -20,13 +20,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Target Name="CheckBuildConfigurationProperties" >
-    <Error Text="The property 'SolutionBuildFile' is not set." Condition="'$(SolutionBuildFile)' == ''" />
     <Error Text="The property 'SolutionKeyFile' is not set." Condition="'$(SolutionKeyFile)' == ''" />
     <Error Text="The property 'Version' is not set." Condition="'$(Version)' == ''" />
     <Error Text="The property 'VcsUrlTemplate' is not set." Condition="'$(VcsUrlTemplate)' == ''" />
 
     <Message Text="The property 'SolutionKeyFile' is set to '$(SolutionKeyFile)'." />
-    <Message Text="The property 'SolutionBuildFile' is set to '$(SolutionBuildFile)'." />
     <Message Text="The property 'Version' is set to '$(Version)'." />
     <Message Text="The property 'VcsUrlTemplate' is set to '$(VcsUrlTemplate)'." />
   </Target>
