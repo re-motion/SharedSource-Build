@@ -120,4 +120,15 @@
 
     <Message Text="Done preparing AssemblyNuGetVersion '$(AssemblyNuGetVersion)'" Importance="High"/>
   </Target>
+
+  <Target Name="PrepareDependDBProjectVersion" DependsOnTargets="PrepareAssemblyVersion" Condition="'$(Version)' != ''">
+    <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
+
+    <Message Text="The property 'DependDBProjectVersion' is not set. Falling back to 'AssemblyVersion'" />
+    <PropertyGroup>
+      <DependDBProjectVersion Condition="'$(DependDBProjectVersion)' == ''">$(AssemblyVersion)</DependDBProjectVersion>
+    </PropertyGroup>
+
+    <Message Text="Done preparing DependDBProjectVersion '$(DependDBProjectVersion)'" Importance="High"/>
+  </Target>
 </Project>

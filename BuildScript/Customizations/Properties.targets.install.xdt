@@ -18,7 +18,6 @@
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-
   <PropertyGroup xdt:Transform="InsertIfMissing">
     <AssemblyInfoFile>AssemblyInfoShared.*</AssemblyInfoFile>
     <CompanyName>rubicon IT GmbH</CompanyName>
@@ -26,7 +25,15 @@
     <Copyright>Copyright (c) rubicon IT GmbH, www.rubicon.eu - Licensed under GNU LGPL 2.1 (or later)</Copyright>
     <ProductName>re-motion ###PRODUCT### (www.re-motion.org)</ProductName>
     <DocumentationRootPage>$(SolutionDirectory)Core\Doc\include\GettingStarted.aml</DocumentationRootPage>
-    <DocumentationNamespaceSummaryFiles>$(SolutionDirectory)**\Doc\include\NamespaceDoc.xml</DocumentationNamespaceSummaryFiles> 
+    <DocumentationNamespaceSummaryFiles>$(SolutionDirectory)**\Doc\include\NamespaceDoc.xml</DocumentationNamespaceSummaryFiles>
+    <DependDBProjectName>###PRODUCT###</DependDBProjectName>
+    <DependDBRetentionTime>10</DependDBRetentionTime>
+    <DependDBProjectBranch>Main</DependDBProjectBranch>
+    <!-- Required, but can be supplied via commandline parameter in server build and uses a fallback in local build -->
+    <DependDBProjectImportNotificationMailAddress></DependDBProjectImportNotificationMailAddress>
+    <!-- Optional -->
+    <DependDBProjectImportNotificationMailAddressCc></DependDBProjectImportNotificationMailAddressCc>
+    <DependDBTrackedReferences>Remotion;Remotion.*</DependDBTrackedReferences>
+    <DependDBNuGetSources>$(SolutionDirectory)packages</DependDBNuGetSources>
   </PropertyGroup>
-
 </Project>
