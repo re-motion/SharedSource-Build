@@ -46,6 +46,7 @@
     <SkipNuGetOrg>False</SkipNuGetOrg>
     <SkipSourceLinks>False</SkipSourceLinks>
     <SkipNuGet>False</SkipNuGet>
+    <SkipDependDB>False</SkipDependDB>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -76,6 +77,7 @@
           LogDirectory=$(LogDirectory);
           Version=$(Version);
           AdditionalBuildMetadata=$(AdditionalBuildMetadata);
+          VcsUrlTemplate=$(VcsUrlTemplate);
           Platforms=$(Platforms);
           DatabaseSystems=$(DatabaseSystems);
           Browsers=$(Browsers);
@@ -99,6 +101,8 @@
 
       <PackageNuGetTarget Condition="'$(SkipNuGet)' != 'True'">CreateNuGetPackagesWithDebugSymbols</PackageNuGetTarget>
 
+      <DependDBTarget Condition="'$(SkipDependDB)' != 'True'">ProcessForDependDB</DependDBTarget>
+
       <TestBuildTargets>
           BuildReleaseProjects;
           BuildTestProjects;
@@ -118,6 +122,7 @@
           $(PackageNuGetOrgTarget);
           $(SourceLinkTarget);
           $(PackageNuGetTarget);
+          $(DependDBTarget);
           RestoreBackupFiles;
       </FullBuildTargets>
 
