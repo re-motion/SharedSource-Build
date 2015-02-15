@@ -19,9 +19,9 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Target Name="GenerateDocumentation" DependsOnTargets="GenerateDocumentationInternal;" />
+  <Target Name="GenerateDocumentation" DependsOnTargets="CreateDocumentationProperties;GenerateDocumentationInternal;" />
 
-  <Target Name="GenerateDocumentationInternal" DependsOnTargets="CreateDocumentationProperties;CreateSandcastleProjectFile">
+  <Target Name="GenerateDocumentationInternal" DependsOnTargets="CreateSandcastleProjectFile" Condition="'$(HasDocumentation)' == 'True'">
 
     <Message Text="Generating public documentation, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
@@ -47,8 +47,16 @@
       <_documentationRootAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
     </ItemGroup>
 
-    <Error Text="No item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' == 0" />
     <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' &gt; 1" />
+
+    <PropertyGroup>
+      <HasDocumentation>False</HasDocumentation>
+      <HasDocumentation Condition="'@(_documentationRootAssemblies->Count())' == 1">True</HasDocumentation>
+    </PropertyGroup>
+
+    <Message Text="No documentation will be generated because no item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'."
+             Importance="High" 
+             Condition="'$(HasDocumentation)' == 'False'" />
 
     <PropertyGroup>
       <DocumentationIdentifier>%(_documentationRootAssemblies.AssemblyName)</DocumentationIdentifier>
@@ -58,14 +66,14 @@
       <DocumentationOutputFile>$(DocumentationCompilationOutputDirectory)$(DocumentationIdentifier).chm</DocumentationOutputFile>
     </PropertyGroup>
 
-    <MSBuild.ExtensionPack.Framework.Assembly TaskAction="GetInfo" NetAssembly="%(_documentationRootAssemblies.Identity)"> 
+    <MSBuild.ExtensionPack.Framework.Assembly TaskAction="GetInfo" NetAssembly="%(_documentationRootAssemblies.Identity)" Condition="'$(HasDocumentation)' == 'True'"> 
       <Output TaskParameter="OutputItems" ItemName="_assemblyInfo"/> 
     </MSBuild.ExtensionPack.Framework.Assembly>
 
     <PropertyGroup>
       <DocumentationAssemblyVersion>%(_assemblyInfo.AssemblyVersion)</DocumentationAssemblyVersion>
       <DocumentationVersion Condition="'$(Version)' != ''">$(Version)</DocumentationVersion>
-      <DocumentationVersion Condition="'$(Version)' == ''">%(_assemblyInfo.AssemblyInformationalVersion)</DocumentationVersion>
+      <DocumentationVersion Condition="'$(Version)' == '' AND '$(HasDocumentation)' == 'True'">%(_assemblyInfo.AssemblyInformationalVersion)</DocumentationVersion>
     </PropertyGroup>
   </Target>
 

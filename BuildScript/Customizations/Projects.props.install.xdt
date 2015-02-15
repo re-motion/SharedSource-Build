@@ -24,6 +24,7 @@
     <ReleaseProjectFiles Include="$(SolutionDirectory)Core\Core.csproj">
       <!-- Optional Metadata to override the defaults: -->
       <CreateNuGetPackageWithSymbolServerSupport>True</CreateNuGetPackageWithSymbolServerSupport>
+      <!-- May occur only once. If no ReleaseProjectFiles-item specifies the documentation file, no documentation will be created. -->
       <CreateDocumentationFile>True</CreateDocumentationFile>
     </ReleaseProjectFiles>
 
