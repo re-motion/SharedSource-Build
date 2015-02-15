@@ -35,6 +35,8 @@
         <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' != ''">%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == ''">False</CreateDocumentationFile>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' != ''">%(ReleaseOutputFiles.CreateDocumentationFile)</CreateDocumentationFile>
+        <ExcludeFromDocumentation Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' == ''">False</ExcludeFromDocumentation>
+        <ExcludeFromDocumentation Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != ''">%(ReleaseOutputFiles.ExcludeFromDocumentation)</ExcludeFromDocumentation>
       </_projectFiles>
     </ItemGroup>
 
@@ -46,6 +48,7 @@
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <CreateNuGetPackageWithSymbolServerSupport>%(CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile>%(CreateDocumentationFile)</CreateDocumentationFile>
+        <ExcludeFromDocumentation>%(ExcludeFromDocumentation)</ExcludeFromDocumentation>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
       </ReleaseOutputFiles>
     </ItemGroup>
