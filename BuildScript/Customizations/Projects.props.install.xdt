@@ -28,7 +28,10 @@
       <CreateDocumentationFile>True</CreateDocumentationFile>
     </ReleaseProjectFiles>
 
-    <ReleaseProjectFiles Include="$(SolutionDirectory)Development\Development.csproj" />
+    <ReleaseProjectFiles Include="$(SolutionDirectory)Development\Development.csproj">
+      <!-- Optional Metadata to override the defaults: -->
+      <ExcludeFromDocumentation>True</ExcludeFromDocumentation>
+    </ReleaseProjectFiles>
 
     <UnitTestProjectFiles Include="$(SolutionDirectory)UnitTests\UnitTests.csproj">
       <!-- Optional Metadata to override the defaults: -->
