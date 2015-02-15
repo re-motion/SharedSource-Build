@@ -53,16 +53,16 @@
     <None Include="Customizations\Local\Configuration.targets.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Projects.targets.install.xdt">
+    <None Include="Customizations\Projects.props.install.xdt">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Projects.targets.transform">
+    <None Include="Customizations\Projects.props.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Properties.targets.install.xdt">
+    <None Include="Customizations\Properties.props.install.xdt">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Properties.targets.transform">
+    <None Include="Customizations\Properties.props.transform">
       <SubType>Designer</SubType>
     </None>
     <None Include="Customizations\Server\Configuration.targets.install.xdt">
@@ -71,10 +71,10 @@
     <None Include="Customizations\Server\Configuration.targets.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Version.targets.transform">
+    <None Include="Customizations\Version.props.transform">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Version.targets.install.xdt">
+    <None Include="Customizations\Version.props.install.xdt">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />

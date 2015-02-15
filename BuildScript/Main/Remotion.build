@@ -53,7 +53,7 @@
     <CustomizationsDirectory Condition="'$(CustomizationsDirectory)' == ''">$(MSBuildProjectDirectory)\Customizations\</CustomizationsDirectory>
   </PropertyGroup>
 
-  <Import Project="$(CustomizationsDirectory)*.targets" />
+  <Import Project="$(CustomizationsDirectory)*.props" />
 
   <PropertyGroup>
     <!-- Define settings that use previously defined properties. -->
@@ -160,5 +160,9 @@
              Targets="UpdateAssemblyInfos"
              Properties="ConfigurationID=Debug;"/>
   </Target>
+
+  <!-- Customization Targets -->
+
+  <Import Project="$(CustomizationsDirectory)*.targets" />
 
 </Project>

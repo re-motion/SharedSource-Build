@@ -21,7 +21,7 @@
   
   <Import Project="Remotion.build" />
 
-  <Import Project="$(CustomizationsDirectory)Local\*.targets" />
+  <Import Project="$(CustomizationsDirectory)Local\*.props" />
 
   <PropertyGroup>
     <DependDBProjectImportNotificationMailAddress Condition="'$(DependDBProjectImportNotificationMailAddress)' == ''">noreply@localhost.net</DependDBProjectImportNotificationMailAddress>
@@ -104,5 +104,9 @@
   <Target Name="DocumentationBuild" DependsOnTargets="DocumentationBuild_Configuration;SetVersion;BuildAll;" />
   <Target Name="PackageBuild" DependsOnTargets="PackageBuild_Configuration;SetVersion;BuildAll;" />
   <Target Name="DependDBBuild" DependsOnTargets="DependDBBuild_Configuration;SetVersion;BuildAll;" />
+
+  <!-- Customization Targets -->
+
+  <Import Project="$(CustomizationsDirectory)Local\*.targets" />
 
 </Project>
