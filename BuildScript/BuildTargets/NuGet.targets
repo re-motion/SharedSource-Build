@@ -95,12 +95,17 @@
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
 
-    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory)" />
+    <PropertyGroup>
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"/>
+    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory.TrimEnd('\'))%(NuGetOutputFiles.FolderSuffix)" />
 
     <NuGet.MSBuild.Tools.Pack
         ToolPath="$(NuGetToolPath)"
         Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
-        OutputDirectory="$(NuGetWithDebugSymbolsOutputDirectory)%(NuGetOutputFiles.FolderSuffix)"
+        OutputDirectory="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"
         IncludeReferencedProjects="True"
         Symbols="False"
         Configuration="$(ConfigurationID)"
@@ -110,6 +115,37 @@
             DocumentationFile=%(NuGetOutputFiles.DocumentationFile);
             NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
         Condition="'%(NuGetOutputFiles.NuSpecFiles)' != ''" />
+
+    <!-- Extract the NUPKG-files, remove the SRC-files, re-zip the NUPKG-files -->
+
+    <ItemGroup>
+      <_nuGetFiles Remove="@(_nuGetFiles)" />
+      <_nuGetFiles Include="$(_nuGetTempDirectory)**\*.nupkg" />
+      <_nuGetFiles>
+        <ExtractionPath>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</ExtractionPath>
+        <ArchivePath>$(NuGetWithDebugSymbolsOutputDirectory.Trim('\'))%(RecursiveDir)\%(Filename)%(Extension)</ArchivePath>
+      </_nuGetFiles>
+    </ItemGroup>
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Extract"
+        ExtractPath="%(_nuGetFiles.ExtractionPath)" 
+        ZipFileName="%(_nuGetFiles.Identity)" 
+        Condition="@(_nuGetFiles) != ''" />
+
+    <ItemGroup>
+      <_srcFiles Remove="@(_srcFiles)" />
+      <_srcFiles Include="%(_nuGetFiles.ExtractionPath)src\**\*" />
+    </ItemGroup>
+
+    <Delete Files="@(_srcFiles)" />
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Create"
+        CompressPath="%(_nuGetFiles.ExtractionPath)"
+        RemoveRoot="%(_nuGetFiles.ExtractionPath)"
+        ZipFileName="%(_nuGetFiles.ArchivePath)"
+        Condition="@(_nuGetFiles) != ''" />
 
     <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
