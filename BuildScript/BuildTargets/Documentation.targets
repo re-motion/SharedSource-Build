@@ -181,9 +181,7 @@
       <_documentationAssemblies Remove="@(_documentationAssemblies)"/>
       <_documentationAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != 'True'" />
     </ItemGroup>
-    
-    <Message Text="X %(_documentationAssemblies.Identity)" />
-    
+
     <Remotion.BuildTools.MSBuildTasks.SandcastleProjectBuilder File="$(DocumentationSandcastleProjectFile)"
                                                                Assemblies="@(_documentationAssemblies)"
                                                                NamespaceSummaryFiles="@(_namespaceSummaryFiles)" />
