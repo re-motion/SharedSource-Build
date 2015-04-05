@@ -133,12 +133,7 @@
         ZipFileName="%(_nuGetFiles.Identity)" 
         Condition="@(_nuGetFiles) != ''" />
 
-    <ItemGroup>
-      <_srcFiles Remove="@(_srcFiles)" />
-      <_srcFiles Include="%(_nuGetFiles.ExtractionPath)src\**\*" />
-    </ItemGroup>
-
-    <Delete Files="@(_srcFiles)" />
+    <RemoveDir Directories="%(_nuGetFiles.ExtractionPath)src" />
 
     <MSBuild.ExtensionPack.Compression.Zip
         TaskAction="Create"
@@ -202,12 +197,7 @@
 
     <Delete Files="@(_pdbFiles)" />
 
-    <ItemGroup>
-      <_srcFiles Remove="@(_srcFiles)" />
-      <_srcFiles Include="%(_nuGetFiles.ExtractionPath)src\**\*" />
-    </ItemGroup>
-
-    <Delete Files="@(_srcFiles)" />
+    <RemoveDir Directories="%(_nuGetFiles.ExtractionPath)src" />
 
     <MSBuild.ExtensionPack.Compression.Zip
         TaskAction="Create"
