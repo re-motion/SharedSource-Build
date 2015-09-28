@@ -65,6 +65,7 @@
     <SolutionKeyFile>$(SolutionDirectory)remotion.snk</SolutionKeyFile>
 
     <VcsUrlTemplate></VcsUrlTemplate>
+    <VcsUrlRequiresWindowsCredentials Condition="'$(VcsUrlRequiresWindowsCredentials)' == ''">False</VcsUrlRequiresWindowsCredentials>
   </PropertyGroup>
 
   <Target Name="PrepareBuildProperties">
@@ -78,6 +79,7 @@
           Version=$(Version);
           AdditionalBuildMetadata=$(AdditionalBuildMetadata);
           VcsUrlTemplate=$(VcsUrlTemplate);
+          VcsUrlRequiresWindowsCredentials=$(VcsUrlRequiresWindowsCredentials);
           Platforms=$(Platforms);
           DatabaseSystems=$(DatabaseSystems);
           Browsers=$(Browsers);

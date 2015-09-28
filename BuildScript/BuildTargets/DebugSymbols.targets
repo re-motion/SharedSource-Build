@@ -21,8 +21,10 @@
 
   <Target Name="CheckDebugSymbolsProperties" >
     <Error Text="The property 'VcsUrlTemplate' is not set." Condition="'$(VcsUrlTemplate)' == ''" />
+    <Error Text="The property 'VcsUrlRequiresWindowsCredentials' is not set." Condition="'$(VcsUrlRequiresWindowsCredentials)' == ''" />
 
     <Message Text="The property 'VcsUrlTemplate' is set to '$(VcsUrlTemplate)'." />
+    <Message Text="The property 'VcsUrlRequiresWindowsCredentials' is set to '$(VcsUrlRequiresWindowsCredentials)'." />
   </Target>
 
   <Target Name="InsertSourceLinks" DependsOnTargets="InsertSourceLinksInternal">
@@ -37,7 +39,8 @@
     <Remotion.BuildTools.MSBuildTasks.InsertSourceLinks
         BuildOutputFile="%(ReleaseOutputFiles.Identity)"
         ProjectBaseDirectory="$(SolutionDirectory)"
-        VcsUrlTemplate="$(VcsUrlTemplate)" />
+        VcsUrlTemplate="$(VcsUrlTemplate)"
+        UseWindowsCredentials ="$(VcsUrlRequiresWindowsCredentials)"/>
 
     <Message Text="Done inserting source links into debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
