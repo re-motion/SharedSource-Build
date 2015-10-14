@@ -36,8 +36,16 @@
 
     <Error Text="The property 'SolutionDirectory' is not set." Condition="'$(SolutionDirectory)' == ''" />
 
+    <ItemGroup>
+      <_filesWithPdbs Remove="@(_filesWithPdbs)" />
+      <_filesWithPdbs Include="%(ReleaseOutputFiles.Identity)">
+        <Pdb>%(RootDir)%(Directory)%(Filename).pdb</Pdb>
+      </_filesWithPdbs>
+      <_filesWithPdbs Remove="@(_filesWithPdbs)" Condition="!Exists (%(Pdb))" />
+    </ItemGroup>
+
     <Remotion.BuildTools.MSBuildTasks.InsertSourceLinks
-        BuildOutputFile="%(ReleaseOutputFiles.Identity)"
+        BuildOutputFile="%(_filesWithPdbs.Identity)"
         ProjectBaseDirectory="$(SolutionDirectory)"
         VcsUrlTemplate="$(VcsUrlTemplate)"
         UseWindowsCredentials ="$(VcsUrlRequiresWindowsCredentials)"/>
