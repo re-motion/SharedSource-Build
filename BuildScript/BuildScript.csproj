@@ -111,7 +111,7 @@
     <None Include="BuildTargets\SandcastleProjectTemplate.shfbproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Build\AssemblyInfoShared.cs">
+    <Compile Include="..\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
