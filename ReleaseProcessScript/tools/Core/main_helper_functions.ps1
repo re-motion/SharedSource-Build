@@ -52,15 +52,15 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     #Get last Tag from develop
     $DevelopVersion = Get-Last-Version-Of-Branch-From-Tag
 
-    if (-not Is-Semver $DevelopVersion)
-    {
-      return Read-Current-Version
-    }
-
     if (Get-Last-Version-Of-Branch-From-Tag-Exists "master")
     {
       #Get last Tag from master (because Get-Last-Version-Of-Branch-From-Tag does not reach master, so the master commit could be the most recent)
       $MasterVersion = Get-Last-Version-Of-Branch-From-Tag "master"
+
+       if (-not (Is-Semver $DevelopVersion))
+      {
+        $MostRecentVersion = $MasterVersion.Substring(1)
+      }
 
       #Take most recent
       $MostRecentVersion = Get-Most-Recent-Version $DevelopVersion.Substring(1) $MasterVersion.Substring(1)
@@ -73,7 +73,6 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     $PossibleVersions = Get-Possible-Next-Versions-Develop $MostRecentVersion $WithoutPrerelease
 
     $CurrentVersion = Read-Version-Choice $PossibleVersions
-    
 
     return $CurrentVersion
 }
