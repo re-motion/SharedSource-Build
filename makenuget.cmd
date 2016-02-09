@@ -1,2 +1,0 @@
-packages\NuGet.CommandLine.2.8.6\tools\NuGet.exe pack BuildScript\BuildScript.csproj -verbosity detailed -version 2.0.0-alpha00952 -OutputDirectory C:\nuget
-packages\NuGet.CommandLine.2.8.6\tools\NuGet.exe pack ReleaseProcessScript\ReleaseProcessScript.csproj -verbosity detailed -version 2.0.0-alpha00952 -OutputDirectory C:\nuget
