@@ -145,13 +145,23 @@ function Jira-Check-Credentials ($Username, $Password)
 
     $ConfigFile = Get-Config-File
     Check-For-Empty-Config $ConfigFile
+    $JiraUrl = Add-JiraUrlPostfix-To-Config-Url $ConfigFile.settings.jira.jiraUrl
 
-    $JiraCheckAuthentication.JiraUrl = Add-JiraUrlPostfix-To-Config-Url $ConfigFile.settings.jira.jiraUrl
+    $JiraCheckAuthentication.JiraUrl = $JiraUrl
     $JiraCheckAuthentication.JiraUsername = $Username
     $JiraCheckAuthentication.JiraPassword = $Password
     $JiraCheckAuthentication.JiraProject = $ConfigFile.settings.jira.jiraProjectKey
     
-    $JiraCheckAuthentication.Execute()
+    try
+    {
+      $JiraCheckAuthentication.Execute()    
+    }
+    catch
+    {
+        $ErrorMessage = $_.Exception.Message
+        throw "Jira Check Authentication has failed. Maybe wrong credentials? \nJira Url: $($JiraUrl). \nException Message: $($_.Exception.Message)"
+    }
+
 }
 
 function Confirm-Class-Loaded ()

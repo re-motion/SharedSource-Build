@@ -61,11 +61,29 @@ function Read-Version-Choice ($VersionChoiceArray)
     return $VersionChoiceArray[$NextVersionIndex - 1]
 }
 
-function Read-Continue ()
+function Read-Continue ($DefaultSwitched)
 {
-    $ContinueChoice = Read-Host "Your Working Directory is not clean. Continue? (Y/N)"
+    if ($DefaultSwitched)
+    {
+      $Default = "Y"
+      $NotDefault = "N"
+      $DefaultReturnValue = $TRUE
+    }
+    else
+    {
+      #N is the normal Default because not to continue is most of the time the more harmless option
+      $Default = "N"
+      $NotDefault = "Y"
+      $DefaultReturnValue = $FALSE
+    }
+
+    $ContinueChoice = Read-Host "Your Working Directory is not clean. Continue? ($($Default)/$($NotDefault))"
     
-    if ($ContinueChoice.ToUpper() -eq "Y")
+    if([string]::IsNullOrEmpty($ContinueChoice))
+    {
+      return $DefaultReturnValue
+    }
+    elseif ($ContinueChoice.ToUpper() -eq "Y")
     {
       return $TRUE
     }
@@ -82,6 +100,11 @@ function Read-Current-Version ($VersionFromTag)
     if ([string]::IsNullOrEmpty($VersionFromTag))
     {
       $CurrentVersion = Read-Host "No version found. Please enter version you want to release (as example: '1.0.0-alpha.1')"
+      
+      if (-not (Is-Semver $CurrentVersion))
+      {
+        throw "Version '$($CurrentVersion)' is no valid SemVer."
+      }
     } 
     else
     {
