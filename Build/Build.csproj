@@ -48,20 +48,6 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Remotion.BuildScript">
-      <HintPath>..\packages\Remotion.BuildScript.2.0.0-alpha00952\lib\net45\Remotion.BuildScript.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Remotion.BuildTools.MSBuildTasks">
-      <HintPath>..\packages\Remotion.BuildTools.MSBuildTasks.1.0.5827.25795\lib\net45\Remotion.BuildTools.MSBuildTasks.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Remotion.ReleaseProcessScript">
-      <HintPath>..\packages\Remotion.ReleaseProcessScript.2.0.0-alpha00952\lib\net45\Remotion.ReleaseProcessScript.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets" Condition="Exists('..\..\packages\NuGet.for.MSBuild.1.4.3\build\NuGet.for.MSBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

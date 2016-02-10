@@ -1,4 +1,4 @@
-TOPIC
+﻿TOPIC
 About ReleaseProcessScript
 
 SHORT DESCRIPTION
