@@ -45,9 +45,13 @@
     <ItemGroup>
       <_documentationRootAssemblies Remove="@(_documentationRootAssemblies)"/>
       <_documentationRootAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
+      <_assembliesWithDocumentationFileNameMetadata Remove="@(_assembliesWithDocumentationFileNameMetadata)"/>
+      <_assembliesWithDocumentationFileNameMetadata Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.DocumentationFileName)' != ''" />
     </ItemGroup>
 
     <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' &gt; 1" />
+    <Error Text="The 'DocumentationFileName' metadata has been applied to an item in the 'ReleaseOutputFiles' group that does not have the 'CreateDocumentationFile' metadata set to 'True'." 
+           Condition="'@(_documentationRootAssemblies)' != '@(_assembliesWithDocumentationFileNameMetadata)'" />
 
     <PropertyGroup>
       <HasDocumentation>False</HasDocumentation>
@@ -59,7 +63,7 @@
              Condition="'$(HasDocumentation)' == 'False'" />
 
     <PropertyGroup>
-      <DocumentationIdentifier>%(_documentationRootAssemblies.AssemblyName)</DocumentationIdentifier>
+      <DocumentationIdentifier>%(_documentationRootAssemblies.DocumentationFileName)</DocumentationIdentifier>
       <DocumentationBaseDirectory>$(TempDirectory)doc\</DocumentationBaseDirectory>
       <DocumentationCompilationOutputDirectory>$(DocumentationBaseDirectory)Output\</DocumentationCompilationOutputDirectory>
       <DocumentationSandcastleProjectFile>$(DocumentationBaseDirectory)documentation.shfbproj</DocumentationSandcastleProjectFile>
