@@ -23,27 +23,24 @@
     <jiraProjectKey></jiraProjectKey>
     <useNTLM>no</useNTLM>
   </jira>
-  <remoteRepositories>
-    <remoteName></remoteName>
+  <remoteRepositories xdt:Transform="InsertIfMissing">
+    <remoteName>origin</remoteName>
   </remoteRepositories>
-  <prereleaseMergeIgnoreList>
+  <prereleaseMergeIgnoreList xdt:Transform="InsertIfMissing">
     <fileName>AssemblyInfoShared.cs</fileName>
     <fileName>Build/Customizations/Version.props</fileName>
   </prereleaseMergeIgnoreList>
-  <tagStableMergeIgnoreList>
-    <fileName>
-    </fileName>
-    <fileName>
-    </fileName>
+  <tagStableMergeIgnoreList xdt:Transform="InsertIfMissing">
+    <fileName></fileName>
   </tagStableMergeIgnoreList>
-  <developStableMergeIgnoreList>
+  <developStableMergeIgnoreList xdt:Transform="InsertIfMissing">
     <fileName>AssemblyInfoShared.cs</fileName>
     <fileName>Build/Customizations/Version.props</fileName>
   </developStableMergeIgnoreList>
-  <msBuildSettings>
+  <msBuildSettings xdt:Transform="InsertIfMissing">
     <msBuildPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe</msBuildPath>
   </msBuildSettings>
-  <prepareNextVersionMsBuildSteps>
+  <prepareNextVersionMsBuildSteps xdt:Transform="InsertIfMissing">
     <step>
       <msBuildCallArguments>
         <argument>Build\Remotion.Local.build</argument>
@@ -53,7 +50,7 @@
       <commitMessage>Update Assemblyinfo to version '{version}'</commitMessage>
     </step>
   </prepareNextVersionMsBuildSteps>
-  <developmentForNextReleaseMsBuildSteps>
+  <developmentForNextReleaseMsBuildSteps xdt:Transform="InsertIfMissing">
     <step>
       <msBuildCallArguments>
         <argument>Build\Remotion.Local.build</argument>

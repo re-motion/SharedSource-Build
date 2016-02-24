@@ -6,13 +6,28 @@ function Load-Dependency-Dll ()
     $BuildToolsVersion = $MarkerFile.configFile.buildToolsVersion
 
     $SolutionDirectory = git rev-parse --show-toplevel
-    #$package = Get-Package -Filter -"Remotion.BuildTools.MSBuildTasks"
-    #Todo: Remove Hardcoded path
-    $BuildToolsPackagePath = "$($SolutionDirectory)/packages/Remotion.BuildTools.MSBuildTasks.$($BuildToolsVersion)/lib/net45/"
-    $RestPackagePath = "$($SolutionDirectory)/packages/Remotion.BuildTools.MSBuildTasks.$($BuildToolsVersion)/tools/"
 
-    Load-Dll (Join-Path $BuildToolsPackagePath "Remotion.BuildTools.MSBuildTasks.dll") > $NULL
-    Load-Dll (Join-Path $RestPackagePath "RestSharp.dll") > $NULL
+    #Todo: Remove Hardcoded path
+    $MSBuildTasksPackagePath = "$($SolutionDirectory)/packages/Remotion.BuildTools.MSBuildTasks.$($BuildToolsVersion)/tools/"
+    
+    $BuildTools = "Remotion.BuildTools.MSBuildTasks.dll"
+    $RestSharp = "RestSharp.dll"
+
+    $BuildToolsDllPath = Join-Path $MSBuildTasksPackagePath $BuildTools
+    $RestSharpDllPath = Join-Path $MSBuildTasksPackagePath $RestSharp
+
+    if (-not (Test-Path $BuildToolsDllPath))
+    {
+      throw [System.IO.FileNotFoundException] "Could not find '$($BuildToolsDllPath)'."
+    }
+
+    if (-not (Test-Path $RestSharpDllPath))
+    {
+      throw [System.IO.FileNotFoundException] "Could not find '$($RestSharpDllPath)'."
+    }
+
+    Load-Dll ($BuildToolsDllPath) > $NULL
+    Load-Dll ($RestSharpDllPath) > $NULL
 }
 
 function Load-Dll ($Path)
