@@ -47,7 +47,7 @@
         <argument>/t:UpdateAssemblyInfosLocalBuild</argument>
         <argument>/property:Version={version}</argument>
       </msBuildCallArguments>
-      <commitMessage>Update Assemblyinfo to version '{version}'</commitMessage>
+      <commitMessage>Update metadata to version '{version}'.</commitMessage>
     </step>
   </prepareNextVersionMsBuildSteps>
   <developmentForNextReleaseMsBuildSteps xdt:Transform="InsertIfMissing">
@@ -57,7 +57,7 @@
         <argument>/t:UpdateAssemblyInfosLocalBuild</argument>
         <argument>/property:Version={version}</argument>
       </msBuildCallArguments>
-      <commitMessage>Update Assemblyinfo to version '{version}'</commitMessage>
+      <commitMessage>Update metadata to version '{version}'.</commitMessage>
     </step>
   </developmentForNextReleaseMsBuildSteps>
 </settings>
