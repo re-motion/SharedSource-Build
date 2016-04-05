@@ -65,9 +65,9 @@ function Get-Marker-File ()
 function Config-Use-NTLM
 {
     $ConfigFile = Get-Config-File
-    $UseNTLM = $ConfigFile.jira.useNTLM
+    $UseNTLM = $ConfigFile.settings.jira.useNTLM
 
-    if ( ($UseNTLM.ToUpper -eq "YES") -or ($UseNTLM.ToUpper -eq "Y") -or ($UseNTLM.ToUpper -eq "T") -or ($UseNTLM.ToUpper -eq "TRUE") )
+    if ( ($UseNTLM.ToUpper() -eq "YES") -or ($UseNTLM.ToUpper() -eq "Y") -or ($UseNTLM.ToUpper() -eq "T") -or ($UseNTLM.ToUpper() -eq "TRUE") )
     {
       return $TRUE
     }
