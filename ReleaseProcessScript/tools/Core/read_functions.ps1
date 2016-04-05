@@ -44,7 +44,7 @@ function Read-Version-Choice ($VersionChoiceArray)
     }
     catch
     {
-      throw "$($NextVersionIndex)You have to enter a number between 1-" + $NumberOfVersions
+      throw "You have to enter a number between 1-$($NumberOfVersions)"
     }
 
     #If nothing gets entered, $NextVersionIndex = 0
@@ -55,7 +55,7 @@ function Read-Version-Choice ($VersionChoiceArray)
 
     if ( ($NextVersionIndex -lt 1) -or ($NextVersionIndex -gt $NumberOfVersions) )
     {
-      throw "You have to enter a number between 1-" + $NumberOfVersions
+      throw "You have to enter a number between 1-$($NumberOfVersions)"
     }
 
     return $VersionChoiceArray[$NextVersionIndex - 1]

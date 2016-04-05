@@ -317,6 +317,5 @@ function Get-Most-Recent-Version ($Version1, $Version2)
         return $Version2
     }
 
-
     return $NULL
 }

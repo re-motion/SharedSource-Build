@@ -6,7 +6,6 @@
       [string]$MsBuildMode
     )
 
-
     $Config = Get-Config-File
 
     $MsBuildPath = $Config.settings.msBuildSettings.msBuildPath

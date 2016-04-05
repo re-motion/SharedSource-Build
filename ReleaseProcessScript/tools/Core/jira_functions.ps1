@@ -9,11 +9,11 @@ function Add-JiraUrlPostfix-To-Config-Url ($ConfigUrl)
 {
     if ($ConfigUrl.EndsWith("/") )
     {
-      $ReturnUrl = $ConfigUrl + $JiraUrlPostFix
+      $ReturnUrl = "$($ConfigUrl)$($JiraUrlPostFix)"
     }
     else
     {
-      $ReturnUrl = $ConfigUrl + "/" + $JiraUrlPostFix    
+      $ReturnUrl = "$($ConfigUrl)/$($JiraUrlPostFix)"    
     }
 
     return $ReturnUrl
