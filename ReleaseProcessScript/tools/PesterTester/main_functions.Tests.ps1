@@ -6,26 +6,31 @@
 . $PSScriptRoot"\..\Core\main_helper_functions.ps1"
 . $PSScriptRoot"\..\Core\read_functions.ps1"
 
+#There was an Issue that $PSScriptRoot was null in BeforeEach/AfterEach, so we have to cache it here
+$ScriptRoot = $PSScriptRoot
 
+$TestBaseDir = "C:\temp"
 $TestDirName = "GitUnitTestDir"
 $PseudoRemoteTestDir = "RemoteTestDir"
 
 Describe "main_functions" {
 
     BeforeEach {
+      #Run once to save Config file in global Memory
       Get-Config-File
       $ConfigFilePath = Get-Config-File-Path
       Mock Get-Config-File-Path { return $ConfigFilePath }
 
-      Test-Create-Repository $TestDirName
-      cd $PSScriptRoot"\"$TestDirName
+      Test-Create-Repository "$($TestBaseDir)\\$($TestDirName)"
+      cd "$($TestBaseDir)\\$($TestDirName)"
       Test-Mock-All-Jira-Functions
     }
 
     AfterEach {
-      cd $PSScriptRoot
+      cd $TestBaseDir
       Remove-Item -Recurse -Force $TestDirName
       Remove-Item -Recurse -Force $PseudoRemoteTestDir 2>&1 | Out-Null
+      cd $ScriptRoot
     }
 
     Context "Create-Tag-And-Merge" {
@@ -39,14 +44,7 @@ Describe "main_functions" {
             git checkout -b "release/v1.0.0" --quiet
             Test-Add-Commit
 
-            $RemoteUrl = "$($PSScriptRoot)\$($TestDirName)"
-            $ConfigFile = Get-Config-File
-            $RemoteUrlNodes = $ConfigFile.SelectNodes("//remoteName")
-            
-            foreach ($Node in $RemoteUrlNodes)
-            {
-              $ConfigFile.settings.remoteRepositories.RemoveChild($Node)
-            }
+
 
             { Create-Tag-And-Merge } | Should Not Throw
 

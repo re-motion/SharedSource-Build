@@ -1,22 +1,47 @@
 ﻿. $PSScriptRoot"\..\Core\git_base_functions.ps1"
 . $PSScriptRoot"\Test_Functions.ps1"
 
+#There was an Issue that $PSScriptRoot was null in BeforeEach/AfterEach, so we have to cache it here
+$ScriptRoot = $PSScriptRoot
+
+$TestBaseDir = "C:\temp"
 $TestDirName = "GitUnitTestDir"
 $PseudoRemoteTestDir = "RemoteTestDir"
+$TestRemoteName = "testRemote"
 
 Describe "git_base_functions" {
     
     BeforeEach {
-      Get-Config-File
+      cd $ScriptRoot
+      [xml]$ConfigFile = Get-Content "releasePRocessScript.config"
 
-      Test-Create-Repository $TestDirName
-      cd "$($PSScriptRoot)\\$($TestDirName)"
+      $OldRemoteNameNodes = $ConfigFile.SelectNodes("//remoteName")
+      foreach ($Node in $OldRemoteNameNodes)
+      {
+          $ConfigFile.settings.remoteRepositories.RemoveChild($Node)
+      }
+
+      $RemoteNameNode = $ConfigFile.CreateElement("remoteName")
+      $ConfigFile.SelectSingleNode("//remoteRepositories").AppendChild($RemoteNameNode)
+      $ConfigFile.settings.remoteRepositories.remoteName = $TestRemoteName
+
+      Mock Get-Config-File { return $ConfigFile }
+
+      Test-Create-Repository "$($TestBaseDir)\\$($TestDirName)"
+      cd "$($TestBaseDir)\\$($TestDirName)"
+
+      if(-not $?)
+      {
+        #cd failed, we dont want the test to run
+        throw "cd command failed, abort test"
+      }
     }
 
     AfterEach {
-      cd $PSScriptRoot
-      Remove-Item -Recurse -Force $TestDirName
+      cd $TestBaseDir
+      Remove-Item -Recurse -Force $TestDirName 2>&1 | Out-Null
       Remove-Item -Recurse -Force $PseudoRemoteTestDir 2>&1 | Out-Null
+      cd $ScriptRoot
     }
 
     Context "Get-Branch-Exists" {
@@ -35,19 +60,19 @@ Describe "git_base_functions" {
         It "Get-Branch-Exists-Remote_BranchExists_ReturnTrue" {
             git checkout -b "newBranch" --quiet
             Test-Add-Commit
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
 
-            Get-Branch-Exists-Remote "$($PSScriptRoot)\$($TestDirName)" "newBranch" | Should Be $TRUE
+            Get-Branch-Exists-Remote "$($TestBaseDir)\$($TestDirName)" "newBranch" | Should Be $TRUE
         }
 
         It "Get-Branch-Exists-Remote_BranchDoesNotExists_ReturnFalse" {
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
             git checkout -b "notExistingOnRemote" --quiet
 
 
-            Get-Branch-Exists-Remote "$($PSScriptRoot)\\$($TestDirName)" "notExistingOnRemote" | Should Be $FALSE
+            Get-Branch-Exists-Remote "$($TestBaseDir)\\$($TestDirName)" "notExistingOnRemote" | Should Be $FALSE
         }
     }
 
@@ -89,68 +114,64 @@ Describe "git_base_functions" {
         It "Check-Branch-Up-To-Date_BrancheBehind_ShouldThrowException" {
             git checkout master --quiet
             Test-Add-Commit
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
 
             git checkout master --quiet
             Test-Add-Commit
 
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
             git checkout master --quiet
             
-            $RemoteUrl = "$($PSScriptRoot)\$($TestDirName)"
-            $RemoteName = "testRemote"
-            Test-Replace-Config-With-New-Remote $RemoteUrl $RemoteName
+            $RemoteUrl = "$($TestBaseDir)\$($TestDirName)"
+            git remote add $TestRemoteName $RemoteUrl
 
-            { Check-Branch-Up-To-Date "master" } | Should Throw "Need to pull, local 'master' branch is behind on repository '$($RemoteName)'."
+            { Check-Branch-Up-To-Date "master" } | Should Throw "Need to pull, local 'master' branch is behind on repository '$($TestRemoteName)'."
         }
 
         It "Check-Branch-Up-To-Date_BranchesDiverged_ShouldThrowException" {
             git checkout master --quiet
             Test-Add-Commit
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
 
             git checkout master --quiet
             Test-Add-Commit "--amend"
 
 
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
             git checkout master --quiet
             
-            $RemoteUrl = "$($PSScriptRoot)\$($TestDirName)"
-            $RemoteName = "testRemote"
-            Test-Replace-Config-With-New-Remote $RemoteUrl $RemoteName
+            $RemoteUrl = "$($TestBaseDir)\$($TestDirName)"
+            git remote add $TestRemoteName $RemoteUrl
 
-
-
-            { Check-Branch-Up-To-Date "master" } | Should Throw "'master' diverged, need to rebase at repository '$($RemoteName)'."
+            { Check-Branch-Up-To-Date "master" } | Should Throw "'master' diverged, need to rebase at repository '$($TestRemoteName)'."
         }
 
         It "Check-Branch-Up-To-Date_RemoteBranchBehind_ShouldNotThrow" {
             git checkout master --quiet
             Test-Add-Commit
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
 
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
             git checkout master --quiet
             Test-Add-Commit
-
-            $RemoteUrl = "$($PSScriptRoot)\$($TestDirName)"
-            Test-Replace-Config-With-New-Remote $RemoteUrl "testRemote"
-
-
+          
+            $RemoteUrl = "$($TestBaseDir)\$($TestDirName)"
+            git remote add $TestRemoteName $RemoteUrl
+          
             { Check-Branch-Up-To-Date "master" } | Should Not Throw 
         }
 
         It "Check-Branch-Up-To-Date_BranchesEqual_ShouldNotThrow" {
             git checkout master --quiet
             Test-Add-Commit
-            Test-Create-And-Add-Remote $TestDirName $PseudoRemoteTestDir
+            Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
 
-            cd "$($PSScriptRoot)\$($PseudoRemoteTestDir)"
+            cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
             git checkout master --quiet
 
-            $RemoteUrl = "$($PSScriptRoot)\$($TestDirName)"
-            Test-Replace-Config-With-New-Remote $RemoteUrl "testRemote"
+            $RemoteUrl = "$($TestBaseDir)\$($TestDirName)"
+
+            git remote add $TestRemoteName $RemoteUrl
 
             { Check-Branch-Up-To-Date "master" } | Should Not Throw 
         }

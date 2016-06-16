@@ -5,7 +5,10 @@
 . $PSScriptRoot"\..\Core\main_helper_functions.ps1"
 . $PSScriptRoot"\..\Core\read_functions.ps1"
 
+#There was an Issue that $PSScriptRoot was null in BeforeEach/AfterEach, so we have to cache it here
+$ScriptRoot = $PSScriptRoot
 
+$TestBaseDir = "C:\temp"
 $TestDirName = "GitUnitTestDir"
 $PseudoRemoteTestDir = "RemoteTestDir"
 
@@ -18,15 +21,16 @@ Describe "release_process_script_flow" {
       Mock Invoke-MsBuild-And-Commit { return }
       Mock Push-To-Repos { return }
 
-      Test-Create-Repository $TestDirName
-      cd $PSScriptRoot"\"$TestDirName
+      Test-Create-Repository "$($TestBaseDir)\\$($TestDirName)"
+      cd "$($TestBaseDir)\\$($TestDirName)"
       Test-Mock-All-Jira-Functions
     }
 
     AfterEach {
-      cd $PSScriptRoot
+      cd $TestBaseDir
       Remove-Item -Recurse -Force $TestDirName
       Remove-Item -Recurse -Force $PseudoRemoteTestDir 2>&1 | Out-Null
+      cd $ScriptRoot
     }
 
     Context "Release-Version Initial Choice" {

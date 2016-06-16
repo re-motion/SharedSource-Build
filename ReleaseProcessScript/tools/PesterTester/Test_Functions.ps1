@@ -1,10 +1,10 @@
 function Test-Create-Repository ($DirName)
 {
     New-Item $DirName -ItemType directory
-    cd $PSScriptRoot"\"$DirName
+    cd $DirName
     git init
     Test-Add-Commit
-    cd $PSScriptRoot
+    cd ".."
 }
 
 function Test-Add-Commit ($Amend)
@@ -24,16 +24,16 @@ function Test-Get-First-Parent-CommitHash-Short ($Branchname)
     return $FirstParentShortHash[0]
 }
 
-function Test-Create-And-Add-Remote ($TestDirName, $PseudoRemoteTestDir)
+function Test-Create-And-Add-Remote ($TestBaseDir, $TestDirName, $PseudoRemoteTestDir)
 {
-    cd $PSScriptRoot
+    cd $TestBaseDir
 
     New-Item $PseudoRemoteTestDir -ItemType directory
-    cd "$($PSScriptRoot)\\$($PseudoRemoteTestDir)"
-    $FileName = "file:///$($PSScriptRoot)/$($TestDirName)"
+    cd "$($TestBaseDir)\\$($PseudoRemoteTestDir)"
+    $FileName = "file:///$($TestBaseDir)/$($TestDirName)"
     git clone $FileName "." 2>&1 > $NULL
 
-    cd $PSScriptRoot"\"$TestDirName
+    cd $TestBaseDir"\"$TestDirName
 }
 
 function Test-Mock-All-Jira-Functions()
@@ -43,20 +43,4 @@ function Test-Mock-All-Jira-Functions()
     Mock Jira-Release-Version { return $TRUE }
     Mock Jira-Release-Version-And-Squash-Unreleased { return $TRUE }
     Mock Jira-Check-Credentials { return $TRUE }
-}
-
-function Test-Replace-Config-With-New-Remote ($RemoteUrl, $RemoteName)
-{
-    git remote add $RemoteName $RemoteUrl
-    $ConfigFile = Get-Config-File
-          
-    $OldRemoteNameNodes = $ConfigFile.SelectNodes("//remoteName")
-    foreach ($Node in $OldRemoteNameNodes)
-    {
-        $ConfigFile.settings.remoteRepositories.RemoveChild($Node)
-    }
-
-    $RemoteNameNode = $ConfigFile.CreateElement("remoteName")
-    $ConfigFile.SelectSingleNode("//remoteRepositories").AppendChild($RemoteUrlNode)
-    $ConfigFile.settings.remoteRepositories.remoteName = $RemoteName
 }
