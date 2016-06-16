@@ -1,64 +1,74 @@
 function Read-Choice-Of-Two ()
 {
-    try
-    {
-      [int]$ReleaseChoice = Read-Host "Please enter 1 or 2"
-    }
-    catch
-    {
-      [ArgumentException]
-      throw "You have to enter 1 or 2."
-    }
-
-    #If nothing gets entered, $ReleaseChoice = 0
-    if ($ReleaseChoice -eq 0)
+  while (!$ReleaseChoice)
+  {
+    $ReleaseChoice = Read-Host "Please enter 1 or 2 (0 for exit)"
+  
+    if ([string]::IsNullOrEmpty($ReleaseChoice))
     {
       return 1
     }
-
-    if ( ($ReleaseChoice -eq 1) -or ($ReleaseChoice -eq 2) )
+    elseif (($ReleaseChoice -eq "1") -or ($ReleaseChoice -eq "2") ) 
     {
       return $ReleaseChoice
     }
+    elseif (($ReleaseChoice -eq "0"))
+    {
+      Exit
+    }
     else
     {
-      throw "You have to enter either 1 or 2."  
+      Write-Error "Wrong input '$($ReleaseChoice)'."
+      $ReleaseChoice = $NULL
     }
-
-    throw "You have to enter either 1 or 2."
+  }
 }
 
 function Read-Version-Choice ($VersionChoiceArray)
 {
+  while (!$NextVersionIndexInput)
+  {
     $NumberOfVersions = $VersionChoiceArray.Count
 
     for ($i = 1; $i -le $NumberOfVersions; $i++)
     {
-      $OutputString = "[" + $i + "] " + $VersionChoiceArray[$i-1] + ""
+      $OutputString = "[$($i)] $($VersionChoiceArray[$i-1])"
       Write-Host $OutputString
     }
 
-    try
-    {
-      [int]$NextVersionIndex = Read-Host "Please enter your choice"
-    }
-    catch
-    {
-      throw "You have to enter a number between 1-$($NumberOfVersions)"
-    }
+    Write-Host "[0] Exit"
 
-    #If nothing gets entered, $NextVersionIndex = 0
-    if ($NextVersionIndex -eq 0)
+    $NextVersionIndexInput = Read-Host "Please enter your choice"
+    
+    #Default Value if nothing gets entered
+    if ([string]::IsNullOrEmpty($NextVersionIndexInput))
     {
       return $VersionChoiceArray[0]
     }
-
-    if ( ($NextVersionIndex -lt 1) -or ($NextVersionIndex -gt $NumberOfVersions) )
+    
+    #User wants to exit
+    if ($NextVersionIndexInput -eq "0")
     {
-      throw "You have to enter a number between 1-$($NumberOfVersions)"
+      Exit
     }
 
-    return $VersionChoiceArray[$NextVersionIndex - 1]
+    $NextVersionIndexInputParsed = $NextVersionIndexInput -as [int]
+
+    if ($NextVersionIndexInputParsed -eq $NULL)
+    {
+      Write-Error "You have to enter a number between 1-$($NumberOfVersions + 1)"
+      $NextVersionIndexInput = $NULL
+    }
+    elseif (($NextVersionIndexInput -lt 1) -or ($NextVersionIndexInput -gt $NumberOfVersions) )
+    {
+      Write-Error "You have to enter a number between 1-$($NumberOfVersions + 1)"
+      $NextVersionIndexInput = $NULL
+    }
+    else
+    {
+      return $VersionChoiceArray[$NextVersionIndexInput - 1]
+    }
+  }
 }
 
 function Read-Continue ($DefaultSwitched)
@@ -95,26 +105,15 @@ function Read-Continue ($DefaultSwitched)
     return $FALSE
 }
 
-function Read-Current-Version ($VersionFromTag)
+function Read-Current-Version ()
 {
-    if ([string]::IsNullOrEmpty($VersionFromTag))
-    {
-      $CurrentVersion = Read-Host "No version found. Please enter version you want to release (as example: '1.0.0-alpha.1')"
+  $CurrentVersion = Read-Host "No version found. Please enter version you want to release (as example: '1.0.0-alpha.1')"
       
-      if (-not (Is-Semver $CurrentVersion))
-      {
-        throw "Version '$($CurrentVersion)' is no valid SemVer."
-      }
-    } 
-    else
-    {
-      $LastVersion = $VersionFromTag.substring(1)
-      $CurrentPossibleVersions = Get-Possible-Next-Versions $LastVersion
+  if (-not (Is-Semver $CurrentVersion))
+  {
+    Write-Error "Version '$($CurrentVersion)' is no valid SemVer."
+    return Read-Current-Version
+  }
 
-      Write-Host "Please choose release-version: "
-     
-      $CurrentVersion = Read-Version-Choice $CurrentPossibleVersions
-    }
-
-    return $CurrentVersion
+  return $CurrentVersion
 }
