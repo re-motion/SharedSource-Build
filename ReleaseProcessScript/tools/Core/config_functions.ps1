@@ -1,41 +1,26 @@
 [xml]$global:ConfigFile = $NULL
 
+function Load-Config-File ()
+{
+  $ConfigFilePath = Get-Config-File-Path
+
+  if (-not (Test-Path $ConfigFilePath))
+  {
+    throw "Config file not found at '$($ConfigFilePath)'."
+  }
+    
+  $global:ConfigFile = Get-Content $ConfigFilePath
+}
+
 function Get-Config-File ()
 {
-    $ConfigFilePath = Get-Config-File-Path
-
-    if ([string]::IsNullOrEmpty($ConfigFilePath))
-    {
-      if ($global:ConfigFile -eq $NULL)
-      {
-        throw "Config file not found."
-      } 
-      else
-      {
-        #We cant find the Config file but it got set before, so we return our Cached variable (in case we are on a branch which does not have ReleaseProcessScript installed)
-        return $global:ConfigFile
-      }
-    }
-
-    if (-not (Test-Path $ConfigFilePath))
-    {
-      throw "Config file not found."
-    }
-    
-    $global:ConfigFile = Get-Content $ConfigFilePath
-
-    return $global:ConfigFile 
+  return $global:ConfigFile
 }
 
 function Get-Config-File-Path ()
 {
     $TopLevelPath = git rev-parse --show-toplevel 2>&1
     $MarkerFile = Get-Marker-File
-
-    if ($MarkerFile -eq $NULL)
-    {
-      return $global:ConfigFile
-    }
 
     return (Join-path $TopLevelPath $MarkerFile.configFile.path)
 }
@@ -49,14 +34,7 @@ function Get-Marker-File ()
 
     if (-not (Test-Path $MarkerPath) )
     {
-      if (-not $global:ConfigFile)
-      {
-        throw ".BuildProject not found. Please reinstall package or add .BuildProject again."
-      }
-      else
-      {
-        return $NULL
-      }
+      throw ".BuildProject not found. Please reinstall package or add .BuildProject again."
     }
 
     return [xml]$MarkerFile = Get-Content $MarkerPath

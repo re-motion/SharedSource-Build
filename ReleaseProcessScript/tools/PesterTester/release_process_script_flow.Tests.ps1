@@ -15,7 +15,7 @@ $PseudoRemoteTestDir = "RemoteTestDir"
 Describe "release_process_script_flow" {
 
     BeforeEach {
-      Get-Config-File
+      Load-Config-File
       $ConfigFilePath = Get-Config-File-Path
       Mock Get-Config-File-Path { return $ConfigFilePath }
       Mock Invoke-MsBuild-And-Commit { return }

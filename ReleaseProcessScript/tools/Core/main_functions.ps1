@@ -19,7 +19,10 @@ function Release-Version ()
       [switch] $PauseForCommit,
       [switch] $DoNotPush
     )
-
+    
+    #Pre Load Config File
+    Load-Config-File
+  
     Check-Commit-Hash $CommitHash
 
     $CurrentBranchname = Get-Current-Branchname
@@ -76,7 +79,6 @@ function Release-Version ()
       $LastVersion = Get-Last-Version-Of-Branch-From-Tag "master"
       $CurrentVersion = Find-Next-Patch $LastVersion.Substring(1)
       Release-Patch -StartReleasePhase:$StartReleasePhase -CurrentVersion $CurrentVersion -PauseForCommit:$PauseForCommit -DoNotPush:$DoNotPush -CommitHash $CommitHash -OnMaster:$TRUE
-      
     }
     else
     {
@@ -92,6 +94,12 @@ function Continue-Release()
        [switch] $DoNotPush,
        [string] $Ancestor   
     )
+
+    #Config file should probably be loaded if Release-Version was called before. If not we try if there is a correct config File in the current Branch
+    if (Get-Config-File -eq $NULL)
+    {
+      Load-Config-File
+    }
 
     $CurrentBranchname = Get-Current-Branchname
     $CurrentVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
