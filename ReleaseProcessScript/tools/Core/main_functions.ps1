@@ -327,6 +327,10 @@ function Release-RC ()
     {
       $NextPossibleVersions = Get-Possible-Next-Versions-Support $CurrentVersion
     }
+    else
+    {
+      throw "Ancestor has to be either 'develop' or a 'support/v*.*' branch"
+    }
 
     Write-Host "Please choose next version (open JIRA issues get moved there): "
     $NextVersion = Read-Version-Choice $NextPossibleVersions
@@ -345,7 +349,7 @@ function Release-RC ()
       return
     }
 
-    Continue-Pre-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush -Ancestor $Ancestor
+    Continue-Pre-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush -Ancestor $CurrentBranchname
 }
 
 function Release-With-RC ()
