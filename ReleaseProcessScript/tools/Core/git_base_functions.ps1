@@ -1,5 +1,6 @@
 . $PSScriptRoot"\config_functions.ps1"
 . $PSScriptRoot"\semver_functions.ps1"
+. $PSScriptRoot"\list_functions.ps1"
 
 function Get-Branch-Exists ($Branchname)
 {
@@ -265,24 +266,58 @@ function Get-Ancestor ($Branchname, $WithoutAsking)
   
   $Ancestor = git show-branch | where-object { $_.Contains('*') -eq $TRUE } | Where-object { $_.Contains($Branchname) -ne $TRUE } | select -first 1 | % {$_ -replace('.*\[(.*)\].*','$1')} | % { $_ -replace('[\^~].*','') }
 
-  if ($Ancestor -eq $NULL)
-  {
-    return $NULL
-  }
-
   if ( ($Ancestor -eq "develop") -or ($Ancestor.StartsWith("support/")) -or ($Ancestor -eq "master") )
   {
     return $Ancestor
   }
-  elseif (-not $WithoutAsking)
+  #There is no Ancestor in the History. 
+  #It is possible that develop or master or one support/v is on the current Head (Exclusive Or, in case we find more than one answer - the user has to decide).
+  else
   {
-    Write-Host "Cannot determine ancestor of current release branch. Please enter the ancestor (develop, support/v*.*)."
-    Write-Host "Ancestor: $($Ancestor)" 
-    [string]$Ancestor = Read-Host "Pleace enter ancestor branchname"
+    $BranchesOnHead = Get-BranchHeads-On-Head
+    
+    #There is develop on the current Head and no master or support/v
+    if (List-Contains-Only-Develop $BranchesOnHead)
+    {
+      return "develop"
+    }
+    elseif (List-Contains-Only-Master $BranchesOnHead)
+    {
+      return "master"
+    }
+    elseif (List-Contains-Only-One-Support $BranchesOnHead)
+    {
+      return $BranchesOnHead | Where-Object { $_ -ne $NULL } | Where-Object { $_.StartsWith("support/") }
+    }
+  }
+
+  #As last resort ask the User
+  if (-not $WithoutAsking)
+  {
+    Write-Host "Cannot determine ancestor of current release branch. Please enter the ancestor (develop, master, support/v*.*)."
+    
+    if ($Ancestor -eq $NULL)
+    {
+      Write-Host "No Ancestor found." 
+    }
+    else
+    {
+      Write-Host "Ancestor: '$($Ancestor)'." 
+    }
+
+    [string]$Ancestor = Read-Host "Please enter ancestor branchname"
     return $Ancestor
   }
   else
   {
     return $NULL
   }
+}
+
+function Get-BranchHeads-On-Head ()
+{
+  #Get all Branches which point to Head
+  return git for-each-ref --format="%(refname:short)" 'refs/heads' --points-at HEAD
+}
+
 }
