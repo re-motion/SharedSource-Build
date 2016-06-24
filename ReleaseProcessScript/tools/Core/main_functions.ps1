@@ -149,7 +149,7 @@ function Release-Patch ()
     }
     else
     {
-      Check-Is-On-Branch "master"
+      Check-Is-On-Branch "support/"
     }
 
     $CurrentBranchname = Get-Current-Branchname
