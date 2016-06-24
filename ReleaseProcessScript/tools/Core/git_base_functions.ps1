@@ -320,4 +320,22 @@ function Get-BranchHeads-On-Head ()
   return git for-each-ref --format="%(refname:short)" 'refs/heads' --points-at HEAD
 }
 
+function Check-Min-Git-Version () 
+{
+  $MinimalGitVersion = "2.7.0"
+  $CurrentGitVersion = git version
+
+  $VersionRegex = [regex]"\d+(\.\d+)+"
+  
+  $Matches = $VersionRegex.Match($CurrentGitVersion)
+
+  #Min Version is 2.7.0 as "git for-each-ref --points-at" got introduced in this version
+  if ($Matches.Success -and [Version]$Matches.Captures[0].value -ge [Version]$MinimalGitVersion)
+  {
+    return
+  }
+  else
+  {
+    throw "Git Version '$($MinimalGitVersion)' or higher is required. Current Git Version: '$($CurrentGitVersion)'."
+  }
 }

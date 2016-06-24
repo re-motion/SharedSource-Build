@@ -20,6 +20,8 @@ function Release-Version ()
       [switch] $DoNotPush
     )
     
+    Check-Min-Git-Version
+
     #Pre Load Config File
     Load-Config-File
   
@@ -94,6 +96,7 @@ function Continue-Release()
        [switch] $DoNotPush,
        [string] $Ancestor   
     )
+    Check-Min-Git-Version
 
     #Config file should probably be loaded if Release-Version was called before. If not we try if there is a correct config File in the current Branch
     if (Get-Config-File -eq $NULL)
