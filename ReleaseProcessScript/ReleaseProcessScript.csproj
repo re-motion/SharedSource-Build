@@ -56,6 +56,7 @@
     <None Include="tools\Core\credential_functions.ps1" />
     <None Include="tools\Core\git_base_functions.ps1" />
     <None Include="tools\Core\jira_functions.ps1" />
+    <None Include="tools\Core\list_functions.ps1" />
     <None Include="tools\Core\load_dll.ps1" />
     <None Include="tools\Core\main_functions.ps1" />
     <None Include="tools\Core\main_helper_functions.ps1" />
@@ -66,6 +67,7 @@
     <None Include="tools\install.ps1" />
     <None Include="tools\PesterTester\git_base_functions.Tests.ps1" />
     <None Include="tools\PesterTester\jira_functions.Tests.ps1" />
+    <None Include="tools\PesterTester\list_functions.Tests.ps1" />
     <None Include="tools\PesterTester\main_functions.Tests.ps1" />
     <None Include="tools\PesterTester\releaseProcessScript.config" />
     <None Include="tools\PesterTester\release_process_script_flow.Tests.ps1" />

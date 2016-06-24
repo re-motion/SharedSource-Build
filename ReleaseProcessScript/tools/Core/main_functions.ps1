@@ -20,6 +20,8 @@ function Release-Version ()
       [switch] $DoNotPush
     )
     
+    Check-Min-Git-Version
+
     #Pre Load Config File
     Load-Config-File
   
@@ -94,6 +96,7 @@ function Continue-Release()
        [switch] $DoNotPush,
        [string] $Ancestor   
     )
+    Check-Min-Git-Version
 
     #Config file should probably be loaded if Release-Version was called before. If not we try if there is a correct config File in the current Branch
     if (Get-Config-File -eq $NULL)
@@ -327,6 +330,10 @@ function Release-RC ()
     {
       $NextPossibleVersions = Get-Possible-Next-Versions-Support $CurrentVersion
     }
+    else
+    {
+      throw "Ancestor has to be either 'develop' or a 'support/v*.*' branch"
+    }
 
     Write-Host "Please choose next version (open JIRA issues get moved there): "
     $NextVersion = Read-Version-Choice $NextPossibleVersions
@@ -345,7 +352,7 @@ function Release-RC ()
       return
     }
 
-    Continue-Pre-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush -Ancestor $Ancestor
+    Continue-Pre-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush -Ancestor $CurrentBranchname
 }
 
 function Release-With-RC ()
