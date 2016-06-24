@@ -1,4 +1,3 @@
-
 . $PSScriptRoot"\..\Core\main_functions.ps1"
 . $PSScriptRoot"\Test_Functions.ps1"
 . $PSScriptRoot"\..\Core\config_functions.ps1"
@@ -17,9 +16,7 @@ Describe "main_functions" {
 
     BeforeEach {
       #Run once to save Config file in global Memory
-      Get-Config-File
-      $ConfigFilePath = Get-Config-File-Path
-      Mock Get-Config-File-Path { return $ConfigFilePath }
+      Load-Config-File
 
       Test-Create-Repository "$($TestBaseDir)\\$($TestDirName)"
       cd "$($TestBaseDir)\\$($TestDirName)"
