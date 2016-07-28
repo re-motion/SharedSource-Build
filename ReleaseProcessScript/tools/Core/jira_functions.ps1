@@ -159,7 +159,8 @@ function Jira-Check-Credentials ($Username, $Password)
     catch
     {
         $ErrorMessage = $_.Exception.Message
-        throw "Jira Check Authentication has failed. Maybe wrong credentials? \nJira Url: $($JiraUrl). \nException Message: $($_.Exception.Message)"
+    	throw "Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '$($ConfigFile.settings.jira.jiraProjectKey)' " +
+	      "\nJira Url: '$($JiraUrl)'. \nException Message: $($_.Exception.Message)"
     }
 
 }
