@@ -213,15 +213,3 @@ function Push-Master-Release ($Version)
     Push-To-Repos "master" $TRUE
     Push-To-Repos "develop"
 }
-
-function Restore-Packages ()
-{
-    try
-    {
-      & nuget.exe restore
-    }
-    catch
-    {
-      Write-Error "Could not restore nuget packages."
-    }
-}

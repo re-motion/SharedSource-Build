@@ -28,8 +28,6 @@
       return
     }
 
-    Restore-Packages
-
     foreach ($Step in $MsBuildSteps)
     {
       $CommitMessage = $Step.commitMessage
