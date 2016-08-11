@@ -2,7 +2,7 @@
 {
     param 
     (
-      [string]$CurrentVersion, 
+      [string]$Version, 
       [string]$MsBuildMode
     )
 
@@ -43,7 +43,7 @@
       
       foreach ($Argument in $Step.msBuildCallArguments.argument)
       {
-        $Argument = $Argument -replace "{[vV]ersion}", $CurrentVersion
+        $Argument = $Argument -replace "{[vV]ersion}", $Version
         
         $MsBuildCallArray += $Argument
       }
@@ -71,7 +71,7 @@
       } 
       else
       {
-        $CommitMessage = $CommitMessage -replace "{[vV]ersion}", $CurrentVersion
+        $CommitMessage = $CommitMessage -replace "{[vV]ersion}", $Version
         
         git add -A 2>&1 | Write-Host
         git commit -m $CommitMessage 2>&1 | Write-Host

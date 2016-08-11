@@ -188,7 +188,7 @@ function Release-Patch ()
 
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion 
     
-    Invoke-MsBuild-And-Commit -CurrentVersion $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
@@ -229,7 +229,7 @@ function Release-On-Master ()
 
 
 	#develop should be prepared with the NextVersion, as the develop code should now be filled with the next Version number
-    Invoke-MsBuild-And-Commit -CurrentVersion $NextVersion -MsBuildMode "developmentForNextRelease"
+    Invoke-MsBuild-And-Commit -Version $NextVersion -MsBuildMode "developmentForNextRelease"
      
     git checkout $ReleaseBranchname --quiet
     
@@ -240,7 +240,7 @@ function Release-On-Master ()
 
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion
     
-    Invoke-MsBuild-And-Commit -CurrentVersion $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
@@ -290,7 +290,7 @@ function Release-Alpha-Beta ()
    
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion $TRUE
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
         
     if ($PauseForCommit)
     {
@@ -348,7 +348,7 @@ function Release-RC ()
     
     git checkout $CommitHash -b $PreReleaseBranchname 2>&1 | Write-Host
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
     
     if ($PauseForCommit)
     {
@@ -400,7 +400,7 @@ function Release-With-RC ()
     
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
