@@ -188,7 +188,7 @@ function Release-Patch ()
 
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion 
     
-    Invoke-MsBuild-And-Commit -CurrentVersion $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
@@ -219,10 +219,17 @@ function Release-On-Master ()
 
     $ReleaseBranchname = "release/v$($CurrentVersion)"
     Check-Branch-Does-Not-Exists $ReleaseBranchname
-    git checkout $CommitHash -b $ReleaseBranchname 2>&1 | Write-Host
+    
+	$NextPossibleVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
+    Write-Host "Please choose next version (open JIRA issues get moved there): "
+    $NextVersion = Read-Version-Choice $NextPossibleVersions
+	
+	git checkout $CommitHash -b $ReleaseBranchname 2>&1 | Write-Host
     git checkout "develop" 2>&1 | Write-Host
 
-    Invoke-MsBuild-And-Commit -CurrentVersion $CurrentVersion -MsBuildMode "developmentForNextRelease"
+
+	#develop should be prepared with the NextVersion, as the develop code should now be filled with the next Version number
+    Invoke-MsBuild-And-Commit -Version $NextVersion -MsBuildMode "developmentForNextRelease"
      
     git checkout $ReleaseBranchname --quiet
     
@@ -231,13 +238,9 @@ function Release-On-Master ()
       return
     }
 
-    $NextPossibleVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
-    Write-Host "Please choose next version (open JIRA issues get moved there): "
-    $NextVersion = Read-Version-Choice $NextPossibleVersions
-
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion
     
-    Invoke-MsBuild-And-Commit -CurrentVersion $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
@@ -287,7 +290,7 @@ function Release-Alpha-Beta ()
    
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion $TRUE
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
         
     if ($PauseForCommit)
     {
@@ -345,7 +348,7 @@ function Release-RC ()
     
     git checkout $CommitHash -b $PreReleaseBranchname 2>&1 | Write-Host
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
     
     if ($PauseForCommit)
     {
@@ -397,7 +400,7 @@ function Release-With-RC ()
     
     Create-And-Release-Jira-Versions $CurrentVersion $NextVersion
 
-    Invoke-MsBuild-And-Commit $CurrentVersion -MsBuildMode "prepareNextVersion" 
+    Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
     if ($PauseForCommit)
     {
