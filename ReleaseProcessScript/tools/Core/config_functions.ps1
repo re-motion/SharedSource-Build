@@ -34,7 +34,7 @@ function Get-Marker-File ()
 
     if (-not (Test-Path $MarkerPath) )
     {
-      throw ".BuildProject not found. Please reinstall package or add .BuildProject again."
+      throw ".BuildProject not found. We expect it to be at the .git Repository Top Level '$TopLevelPath'. If your Solution File is not in this Directory either, expect more issues to pop up (see Feature Request RMSRCBUILD-66)"
     }
 
     return [xml]$MarkerFile = Get-Content $MarkerPath

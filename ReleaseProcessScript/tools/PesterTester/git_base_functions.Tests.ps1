@@ -13,7 +13,7 @@ Describe "git_base_functions" {
     
     BeforeEach {
       cd $ScriptRoot
-      [xml]$ConfigFile = Get-Content "releasePRocessScript.config"
+      [xml]$ConfigFile = Get-Content "releaseProcessScript.config"
 
       $OldRemoteNameNodes = $ConfigFile.SelectNodes("//remoteName")
       foreach ($Node in $OldRemoteNameNodes)
