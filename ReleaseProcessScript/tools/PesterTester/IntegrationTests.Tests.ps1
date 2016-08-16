@@ -201,4 +201,96 @@ Describe "IntegrationTests" {
       Test-Compare-Branches $RemoteTestDir "release/v1.1.1"
     }
   }
+
+  Context "ReleaseFromReleasebranch" {
+    It "ReleaseRC" {
+      Copy-Item -Destination $TestDir -Path ".\TestDirectories\BaseDirectory" -Recurse
+      cd $TestDir
+      
+      git checkout -b develop --quiet
+      git checkout -b release/v1.1.0 --quiet
+      
+      git remote add -f origin $RemoteTestDir
+      git push --all origin
+
+      Mock Read-Choice-Of-Two { return 1 }
+      Mock Read-Version-Choice { return "1.2.0" }
+
+      { Release-Version } | Should Not Throw
+
+      git checkout master --quiet
+      git remote add -f MasterRepo "$($ScriptRoot)\TestDirectories\ReleaseRC"
+      git remote update
+      
+      
+      #Compare File Structure
+      git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
+      git diff develop remotes/MasterRepo/develop | Should BeNullOrEmpty 
+      git diff prerelease/v1.1.0-rc.1 remotes/MasterRepo/prerelease/v1.1.0-rc.1 | Should BeNullOrEmpty 
+      git diff release/v1.1.0 remotes/MasterRepo/release/v1.1.0 | Should BeNullOrEmpty 
+      
+      #Delete remote as we dont need the file information of the remote anymore and the reference information is in the way of a clean git log comparison
+      git remote rm MasterRepo
+      git remote rm origin
+
+      git checkout master --quiet
+      
+      #Compare commit Trees
+      $BaseCompareDirectory = "$($ScriptRoot)\TestDirectories\ReleaseRC"
+      Test-Compare-Branches $BaseCompareDirectory "master"
+      Test-Compare-Branches $BaseCompareDirectory "develop"
+      Test-Compare-Branches $BaseCompareDirectory "prerelease/v1.1.0-rc.1"
+      Test-Compare-Branches $BaseCompareDirectory "release/v1.1.0"
+
+      Test-Compare-Branches $RemoteTestDir "master"
+      Test-Compare-Branches $RemoteTestDir "develop"
+      Test-Compare-Branches $RemoteTestDir "prerelease/v1.1.0-rc.1"
+      Test-Compare-Branches $RemoteTestDir "release/v1.1.0"
+    }
+
+    It "ReleaseOnMaster" {
+      Copy-Item -Destination $TestDir -Path ".\TestDirectories\ReleaseRC" -Recurse
+      cd $TestDir
+      
+      git checkout release/v1.1.0 --quiet
+      
+      git remote add -f origin $RemoteTestDir
+      git push --all origin
+            
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.2.0" }
+
+      { Release-Version } | Should Not Throw
+
+      git checkout master --quiet
+      git remote add -f MasterRepo "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMaster"
+      git remote update
+      
+      
+      #Compare File Structure
+      git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
+      git diff develop remotes/MasterRepo/develop | Should BeNullOrEmpty 
+      git diff prerelease/v1.1.0-rc.1 remotes/MasterRepo/prerelease/v1.1.0-rc.1 | Should BeNullOrEmpty 
+      git diff release/v1.1.0 remotes/MasterRepo/release/v1.1.0 | Should BeNullOrEmpty 
+      
+      #Delete remote as we dont need the file information of the remote anymore and the reference information is in the way of a clean git log comparison
+      git remote rm MasterRepo
+      git remote rm origin
+
+      git checkout master --quiet
+      
+      #Compare commit Trees
+      $BaseCompareDirectory = "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMaster"
+      Test-Compare-Branches $BaseCompareDirectory "master"
+      Test-Compare-Branches $BaseCompareDirectory "develop"
+      Test-Compare-Branches $BaseCompareDirectory "prerelease/v1.1.0-rc.1"
+      Test-Compare-Branches $BaseCompareDirectory "release/v1.1.0"
+
+      Test-Compare-Branches $RemoteTestDir "master"
+      Test-Compare-Branches $RemoteTestDir "develop"
+      Test-Compare-Branches $RemoteTestDir "prerelease/v1.1.0-rc.1"
+      Test-Compare-Branches $RemoteTestDir "release/v1.1.0"
+    
+    }
+  }
 }

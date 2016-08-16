@@ -57,5 +57,5 @@ function Test-Compare-Branches ($RemoteDirectory, $Branchname)
     
   cd $CurrentDirectory
 
-  $LocalLog | Should Be $RemoteLog
+  $RemoteLog | Should Be $LocalLog
 }
