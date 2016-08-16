@@ -31,7 +31,7 @@ Describe "IntegrationTests" {
     Remove-Item $TestDir -Recurse -Force  
   }
 
-  Context "ReleasePatchOnMaster" {
+  Context "ReleaseFromMaster" {
     It "ReleasePatchOnMaster" {
         
       Copy-Item -Destination $TestDir -Path ".\TestDirectories\BaseDirectory" -Recurse
@@ -49,7 +49,7 @@ Describe "IntegrationTests" {
 
       #Compare File Structure
       git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
-      git diff release/v1.0.1 master remotes/MasterRepo/release/v1.0.1 | Should BeNullOrEmpty 
+      git diff release/v1.0.1 remotes/MasterRepo/release/v1.0.1 | Should BeNullOrEmpty 
         
       #Compare commit Trees
       $LocalMasterLog = git log master --graph --pretty=format:'%d %s'
@@ -65,7 +65,7 @@ Describe "IntegrationTests" {
     }
   }
   
-  Context "ReleaseVersionOnMaster" {
+  Context "ReleaseFromDevelop" {
     It "ReleaseVersionOnMaster" {
 
       Copy-Item -Destination $TestDir -Path ".\TestDirectories\BaseDirectory" -Recurse
@@ -86,7 +86,7 @@ Describe "IntegrationTests" {
       #Compare File Structure
       git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
       git diff develop remotes/MasterRepo/develop | Should BeNullOrEmpty 
-      git diff release/v1.1.0 master remotes/MasterRepo/release/v1.1.0 | Should BeNullOrEmpty 
+      git diff release/v1.1.0 remotes/MasterRepo/release/v1.1.0 | Should BeNullOrEmpty 
         
       #Compare commit Trees
       $LocalMasterLog = git log master --graph --pretty=format:'%d %s'
@@ -101,6 +101,88 @@ Describe "IntegrationTests" {
       
       $LocalMasterLog | Should Be $RemoteMasterLog
       $LocalDevelopLog | Should Be $RemoteDevelopLog
+      $LocalReleaseLog | Should Be $RemoteReleaseLog
+    }
+
+    It "ReleasePrereleaseVersion" {
+      Copy-Item -Destination $TestDir -Path ".\TestDirectories\BaseDirectory" -Recurse
+      cd $TestDir
+
+      git checkout master --quiet
+      git checkout -b develop --quiet
+      
+      Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
+      
+      { Release-Version } | Should Not Throw
+      git remote add -f MasterRepo "$($ScriptRoot)\TestDirectories\ReleasePrereleaseOnDevelop"
+      git remote update
+
+      git checkout master --quiet
+
+      #Compare File Structure
+      git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
+      git diff develop remotes/MasterRepo/develop | Should BeNullOrEmpty 
+      git diff prerelease/v1.1.0-alpha.1 remotes/MasterRepo/prerelease/v1.1.0-alpha.1 | Should BeNullOrEmpty 
+      
+      #Delete remote as we dont need the file information of the remote anymore and the reference information is in the way of a clean git log comparison
+      git remote rm MasterRepo
+      
+      #Compare commit Trees
+      $LocalMasterLog = git log master --graph --pretty=format:'%d %s'
+      $LocalDevelopLog = git log develop --graph --pretty=format:'%d %s'
+      $LocalReleaseLog = git log prerelease/v1.1.0-alpha.1 --graph --pretty=format:'%d %s'
+      
+      cd "$($ScriptRoot)\TestDirectories\ReleasePrereleaseOnDevelop"
+      git checkout master --quiet
+      $RemoteMasterLog = git log master --graph --pretty=format:'%d %s'
+      $RemoteDevelopLog = git log develop --graph --pretty=format:'%d %s'
+      $RemoteReleaseLog = git log prerelease/v1.1.0-alpha.1 --graph --pretty=format:'%d %s'
+      
+      $LocalMasterLog | Should Be $RemoteMasterLog
+      $LocalDevelopLog | Should Be $RemoteDevelopLog
+      $LocalReleaseLog | Should Be $RemoteReleaseLog
+    }
+  }
+  
+  Context "ReleaseFromSupport" {
+    It "ReleaseVersionOnSupport" {
+      Copy-Item -Destination $TestDir -Path ".\TestDirectories\BaseDirectory" -Recurse
+      cd $TestDir
+
+      git checkout master --quiet
+      git checkout -b support/v1.1
+
+      Mock Get-Support-Current-Version { return "1.1.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
+
+      { Release-Version } | Should Not Throw
+      git remote add -f MasterRepo "$($ScriptRoot)\TestDirectories\ReleaseVersionOnSupport"
+      git remote update
+      
+      git checkout master --quiet
+      
+      #Compare File Structure
+      git diff master remotes/MasterRepo/master | Should BeNullOrEmpty 
+      git diff support/v1.1 remotes/MasterRepo/support/v1.1 | Should BeNullOrEmpty 
+      git diff release/v1.1.1 remotes/MasterRepo/prerelease/v1.1.1 | Should BeNullOrEmpty 
+      
+      #Delete remote as we dont need the file information of the remote anymore and the reference information is in the way of a clean git log comparison
+      git remote rm MasterRepo
+      
+      #Compare commit Trees
+      $LocalMasterLog = git log master --graph --pretty=format:'%d %s'
+      $LocalSupportLog = git log support/v1.1 --graph --pretty=format:'%d %s'
+      $LocalReleaseLog = git log release/v1.1.1 --graph --pretty=format:'%d %s'
+      
+      cd "$($ScriptRoot)\TestDirectories\ReleaseVersionOnSupport"
+      git checkout master --quiet
+      $RemoteMasterLog = git log master --graph --pretty=format:'%d %s'
+      $RemoteSupportLog = git log support/v1.1 --graph --pretty=format:'%d %s'
+      $RemoteReleaseLog = git log release/v1.1.1 --graph --pretty=format:'%d %s'
+      
+      $LocalMasterLog | Should Be $RemoteMasterLog
+      $LocalSupportLog | Should Be $RemoteSupportLog
       $LocalReleaseLog | Should Be $RemoteReleaseLog
     }
   }  
