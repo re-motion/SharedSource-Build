@@ -79,11 +79,8 @@ function Get-Develop-Current-Version ($StartReleasebranch)
 
 function Get-Support-Current-Version ($SupportVersion, $StartReleasePhase)
 {
-    if (-not (Get-Tag-Exists "v$($SupportVersion).0") )
-    {
-      $CurrentVersion = "$($SupportVersion).0"
-    }
-    else
+	#Check if there exists a version already on Support 
+	if (Get-Last-Version-Of-Branch-From-Tag-Exists)
     {
       $LastVersion = Get-Last-Version-Of-Branch-From-Tag
      
@@ -104,6 +101,11 @@ function Get-Support-Current-Version ($SupportVersion, $StartReleasePhase)
         $CurrentVersion = Read-Version-Choice $PossibleVersions
       }
     }
+    else
+    {
+      #When no Tag already exists on the support branch, start with .0
+      $CurrentVersion = "$($SupportVersion).0"
+    }    
 
     return $CurrentVersion
 }
