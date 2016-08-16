@@ -48,7 +48,11 @@ function Get-Possible-Next-Versions-Develop ($Version, $WithoutPrerelease)
       $NextPreVersion = [string](1 + $PreVersion)
       $NextPossiblePreVersion = "$($Major).$($Minor).$($Patch)-$($Pre).$($NextPreVersion)" 
 
-      if ($Pre -eq "alpha")
+      if ($WithoutPrerelease)
+      {
+        return "$($Major).$($Minor).$($Patch)", $NextPossibleMajor
+      }
+      elseif ($Pre -eq "alpha")
       {
         $NextPossiblePre = "$($Major).$($Minor).$($Patch)-beta.1"
 

@@ -17,6 +17,15 @@ Describe "semver_functions" {
             Get-Possible-Next-Versions-Develop $Version | Should Be $NextVersions
         }
 
+        It "Get-Possible-Next-Versions-Develop_WithBetaAndWithoutPrerelease_ShouldReturnArray" {
+            $Version = "1.2.0-beta.2"
+            $StartReleasePhase = $TRUE
+
+            $NextVersions =  "1.2.0", "2.0.0"
+
+            Get-Possible-Next-Versions-Develop $Version $StartReleasePhase | Should Be $NextVersions
+        }
+
         It "Get-Possible-Next-Versions-Develop_WithRc_ShouldReturnArray" {
             $Version = "1.2.0-rc.4"
             $NextVersions = "1.2.0-rc.5", "1.2.0", "2.0.0-alpha.1", "2.0.0-beta.1", "2.0.0"
