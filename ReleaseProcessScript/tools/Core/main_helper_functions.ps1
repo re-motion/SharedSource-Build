@@ -71,7 +71,7 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     }
     
     $PossibleVersions = Get-Possible-Next-Versions-Develop $MostRecentVersion $WithoutPrerelease
-
+    Write-Host "Please choose Release Version:"
     $CurrentVersion = Read-Version-Choice $PossibleVersions
 
     return $CurrentVersion
