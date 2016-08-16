@@ -44,3 +44,18 @@ function Test-Mock-All-Jira-Functions()
     Mock Jira-Release-Version-And-Squash-Unreleased { return $TRUE }
     Mock Jira-Check-Credentials { return $TRUE }
 }
+
+
+function Test-Compare-Branches ($RemoteDirectory, $Branchname) 
+{
+  $CurrentDirectory = Get-Location
+
+  $LocalLog = git log $Branchname --graph --pretty=format:'%d %s'
+    
+  cd $RemoteDirectory
+  $RemoteLog = git log $Branchname --graph --pretty=format:'%d %s'
+    
+  cd $CurrentDirectory
+
+  $LocalLog | Should Be $RemoteLog
+}
