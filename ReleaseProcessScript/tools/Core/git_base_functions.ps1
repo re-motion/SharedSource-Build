@@ -51,8 +51,16 @@ function Is-On-Branch ($Branchname)
 
 function Push-To-Repos ($Branchname, $WithTags)
 {
-  $BeforeBranchname = Get-Current-Branchname
+  $ConfigFile = Get-Config-File
 
+  #Config file should probably be loaded if Release-Version was called before. If not we try if there is a correct config File in the current Branch
+  if ($ConfigFile -eq $NULL)
+  {
+    Load-Config-File
+  }
+  $ConfigFile = Get-Config-File
+
+  $BeforeBranchname = Get-Current-Branchname
   git checkout $Branchname 2>&1 --quiet
 
   if ($WithTags)
@@ -60,7 +68,6 @@ function Push-To-Repos ($Branchname, $WithTags)
     $PostFix = "--follow-tags"
   }
 
-  $ConfigFile = Get-Config-File
   $RemoteNames = $ConfigFile.settings.remoteRepositories.remoteName
   $GitConfigRemotes = Get-Config-Remotes-Array
 
