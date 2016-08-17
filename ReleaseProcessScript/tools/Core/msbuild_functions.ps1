@@ -1,81 +1,81 @@
 ﻿function Invoke-MsBuild-And-Commit ()
 {
-    param 
-    (
-      [string]$Version, 
-      [string]$MsBuildMode
-    )
+  param 
+  (
+    [string]$Version, 
+    [string]$MsBuildMode
+  )
 
-    $Config = Get-Config-File
+  $Config = Get-Config-File
 
-    $MsBuildPath = $Config.settings.msBuildSettings.msBuildPath
+  $MsBuildPath = $Config.settings.msBuildSettings.msBuildPath
     
-    if ($MsBuildMode -eq "prepareNextVersion")
+  if ($MsBuildMode -eq "prepareNextVersion")
+  {
+    $MsBuildSteps = $Config.settings.prepareNextVersionMsBuildSteps.step
+  }
+  elseif ($MsBuildMode -eq "developmentForNextRelease")
+  {
+    $MsBuildSteps = $Config.settings.developmentForNextReleaseMsBuildSteps.step  
+  }
+  else
+  {
+    Write-Error "Invalid Parameter in Invoke-Ms-Build-And-Commit. No MsBuildStepsCompleted. Please check if -MsBuildMode parameter is equivalent with the value in releaseProcessScript.config"
+  }
+
+  if ([string]::IsNullOrEmpty($MsBuildPath) )
+  {
+    return
+  }
+
+  foreach ($Step in $MsBuildSteps)
+  {
+    $CommitMessage = $Step.commitMessage
+    $MsBuildCallArray = @()
+
+    if (-not [string]::IsNullOrEmpty($CommitMessage) )
     {
-      $MsBuildSteps = $Config.settings.prepareNextVersionMsBuildSteps.step
+      if (-not (Is-Working-Directory-Clean) )
+      {
+        throw "Working directory has to be clean for a call to MsBuild.exe with commit message defined in config."
+      }
     }
-    elseif ($MsBuildMode -eq "developmentForNextRelease")
+      
+    foreach ($Argument in $Step.msBuildCallArguments.argument)
     {
-      $MsBuildSteps = $Config.settings.developmentForNextReleaseMsBuildSteps.step  
+      $Argument = $Argument -replace "{[vV]ersion}", $Version
+        
+      $MsBuildCallArray += $Argument
     }
+      
+    Write-Host "Starting $($MsBuildPath) $($MsBuildCallArray)"
+      
+
+    & $MsBuildPath $MsBuildCallArray
+      
+    if ($?)
+    {
+      Write-Host "Successfully called '$($MsBuildPath) $($MsBuildCallArray)'."
+    } 
     else
     {
-      Write-Error "Invalid Parameter in Invoke-Ms-Build-And-Commit. No MsBuildStepsCompleted. Please check if -MsBuildMode parameter is equivalent with the value in releaseProcessScript.config"
+      throw "$($MsBuildPath) $($MsBuildCallArray) failed with Error Code '$($LASTEXITCODE)'."
     }
 
-    if ([string]::IsNullOrEmpty($MsBuildPath) )
+    if ([string]::IsNullOrEmpty($CommitMessage) )
     {
-      return
-    }
-
-    foreach ($Step in $MsBuildSteps)
+      if (-not (Is-Working-Directory-Clean) )
+      {
+        throw "Working directory has to be clean after a call to MsBuild.exe without a commit message defined in config."
+      }
+    } 
+    else
     {
-      $CommitMessage = $Step.commitMessage
-      $MsBuildCallArray = @()
-
-      if (-not [string]::IsNullOrEmpty($CommitMessage) )
-      {
-        if (-not (Is-Working-Directory-Clean) )
-        {
-          throw "Working directory has to be clean for a call to MsBuild.exe with commit message defined in config."
-        }
-      }
-      
-      foreach ($Argument in $Step.msBuildCallArguments.argument)
-      {
-        $Argument = $Argument -replace "{[vV]ersion}", $Version
+      $CommitMessage = $CommitMessage -replace "{[vV]ersion}", $Version
         
-        $MsBuildCallArray += $Argument
-      }
-      
-      Write-Host "Starting $($MsBuildPath) $($MsBuildCallArray)"
-      
-
-      & $MsBuildPath $MsBuildCallArray
-      
-      if ($?)
-      {
-        Write-Host "Successfully called '$($MsBuildPath) $($MsBuildCallArray)'."
-      } 
-      else
-      {
-        throw "$($MsBuildPath) $($MsBuildCallArray) failed with Error Code '$($LASTEXITCODE)'."
-      }
-
-      if ([string]::IsNullOrEmpty($CommitMessage) )
-      {
-        if (-not (Is-Working-Directory-Clean) )
-        {
-          throw "Working directory has to be clean after a call to MsBuild.exe without a commit message defined in config."
-        }
-      } 
-      else
-      {
-        $CommitMessage = $CommitMessage -replace "{[vV]ersion}", $Version
-        
-        git add -A 2>&1 | Write-Host
-        git commit -m $CommitMessage 2>&1 | Write-Host
-        Resolve-Merge-Conflicts       
-      }      
-    }
+      git add -A 2>&1 | Write-Host
+      git commit -m $CommitMessage 2>&1 | Write-Host
+      Resolve-Merge-Conflicts       
+    }      
+  }
 }

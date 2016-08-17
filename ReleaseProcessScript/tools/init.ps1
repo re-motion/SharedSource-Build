@@ -1,6 +1,6 @@
 param($installPath, $toolsPath, $package)
 
-if(-not $global:AfterFirstInit)
+if (-not $global:AfterFirstInit)
 {
   Write-Host "Type 'get-help ReleaseProcessScript' to see all available ReleaseProcessScript commands."
   $global:AfterFirstInit = $TRUE

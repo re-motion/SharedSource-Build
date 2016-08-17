@@ -73,36 +73,36 @@ function Read-Version-Choice ($VersionChoiceArray)
 
 function Read-Continue ($DefaultSwitched)
 {
-    if ($DefaultSwitched)
-    {
-      $Default = "Y"
-      $NotDefault = "N"
-      $DefaultReturnValue = $TRUE
-    }
-    else
-    {
-      #N is the normal Default because not to continue is most of the time the more harmless option
-      $Default = "N"
-      $NotDefault = "Y"
-      $DefaultReturnValue = $FALSE
-    }
+  if ($DefaultSwitched)
+  {
+    $Default = "Y"
+    $NotDefault = "N"
+    $DefaultReturnValue = $TRUE
+  }
+  else
+  {
+    #N is the normal Default because not to continue is most of the time the more harmless option
+    $Default = "N"
+    $NotDefault = "Y"
+    $DefaultReturnValue = $FALSE
+  }
 
-    $ContinueChoice = Read-Host "Your Working Directory is not clean. Continue? ($($Default)/$($NotDefault))"
+  $ContinueChoice = Read-Host "Your Working Directory is not clean. Continue? ($($Default)/$($NotDefault))"
     
-    if([string]::IsNullOrEmpty($ContinueChoice))
-    {
-      return $DefaultReturnValue
-    }
-    elseif ($ContinueChoice.ToUpper() -eq "Y")
-    {
-      return $TRUE
-    }
-    else
-    {
-      return $FALSE
-    }
-
+  if([string]::IsNullOrEmpty($ContinueChoice))
+  {
+    return $DefaultReturnValue
+  }
+  elseif ($ContinueChoice.ToUpper() -eq "Y")
+  {
+    return $TRUE
+  }
+  else
+  {
     return $FALSE
+  }
+
+  return $FALSE
 }
 
 function Read-Current-Version ()

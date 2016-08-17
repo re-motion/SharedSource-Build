@@ -18,5 +18,4 @@
     <file src="tools\Core\*.*" target="tools\Core"/>
     <file src="Customizations\**\*.*" target="content\Customizations" />
   </files>
-  
 </package>
