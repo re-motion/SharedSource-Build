@@ -21,39 +21,39 @@
     <AssemblyNuGetVersion></AssemblyNuGetVersion>
     <Version></Version>
   </PropertyGroup>
-    
+
   <Target Name="After_UpdateAssemblyInfosForDevelopment" AfterTargets="UpdateAssemblyInfosLocalBuild" DependsOnTargets="PrepareAssemblyNuGetVersion">
     <Error Text="The property 'AssemblyNuGetVersion' is not set." Condition="'$(AssemblyNuGetVersion)' == ''" />
-    
+
     <ItemGroup>
       <MyNamespaces Include="msb">
         <Prefix>msb</Prefix>
         <Uri>http://schemas.microsoft.com/developer/msbuild/2003</Uri>
       </MyNamespaces>
     </ItemGroup>
-    
-    <MSBuild.ExtensionPack.Xml.XmlFile 
+
+    <MSBuild.ExtensionPack.Xml.XmlFile
             Namespaces="@(MyNamespaces)"
             TaskAction="ReadElementText"
             File="$(RemotionBuildFile)"
             XPath="/msb:Project/msb:PropertyGroup/msb:RemotionBuildScriptPath" >
-            <Output TaskParameter="Value" PropertyName="OldRemotionBuildScriptPathValue" />
+      <Output TaskParameter="Value" PropertyName="OldRemotionBuildScriptPathValue" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
     <PropertyGroup>
       <!-- Regex to match the Version number, which is between "Remotion.BuildScript and the first "\"
         (?<=Remotion\.BuildScript\.) === positive lookbehind for "Remotion.BuildScript"
         (.*?)                        === Match anything
-        (?=\\)                       === positive lookahead for "\"
+        (?=\\)                       === positive lookahead for first "\"
       -->
       <RegexForOldVersion>(?&lt;=Remotion\.BuildScript\.)(.*?)(?=\\)</RegexForOldVersion>
-      
+
       <!-- Regex to match the second "-" (as we have to transform the VersionNumber from "2.0.0-alpha-015" to "2.0.0-alpha015")
         (?<=\-.*)  === positive lookbehind for "-" followed by anything
-        (\-)       === Match "-"
+        (\-)       === Match second "-"
       -->
       <RegexForRemovingSecondNewline>(?&lt;=\-.*)\-</RegexForRemovingSecondNewline>
-      
+
       <OldVersion>$([System.Text.RegularExpressions.Regex]::Match($(OldRemotionBuildScriptPathValue), $(RegexForOldVersion)))</OldVersion>
       <AssemblyWithoutSecondNewline>$([System.Text.RegularExpressions.Regex]::Replace ($(AssemblyNuGetVersion), $(RegexForRemovingSecondNewline), ""))</AssemblyWithoutSecondNewline>
       <NewRemotionBuildScriptPathValue>$([System.Text.RegularExpressions.Regex]::Replace ($(OldRemotionBuildScriptPathValue), $(OldVersion), $(AssemblyWithoutSecondNewline)))</NewRemotionBuildScriptPathValue>
