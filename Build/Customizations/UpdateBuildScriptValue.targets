@@ -59,10 +59,33 @@
       <NewRemotionBuildScriptPathValue>$([System.Text.RegularExpressions.Regex]::Replace ($(OldRemotionBuildScriptPathValue), $(OldVersion), $(AssemblyWithoutSecondNewline)))</NewRemotionBuildScriptPathValue>
     </PropertyGroup>
 
-    <XmlPoke
-      Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
-      XmlInputPath="$(RemotionBuildFile)"
-      Query="/msb:Project/msb:PropertyGroup/msb:RemotionBuildScriptPath"
-      Value="$(NewRemotionBuildScriptPathValue)"/>
+    <ReplaceFileText
+        InputFilename="$(RemotionBuildFile)"
+        OutputFilename="$(RemotionBuildFile)"
+        MatchExpression="$(OldRemotionBuildScriptPathValue)"
+        ReplacementText="$(NewRemotionBuildScriptPathValue)" />
   </Target>
+
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <InputFilename ParameterType="System.String" Required="true" />
+      <OutputFilename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            File.WriteAllText(
+                OutputFilename,
+                File.ReadAllText(InputFilename).Replace(@MatchExpression, @ReplacementText)
+                );
+          ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 </Project>
