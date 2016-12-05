@@ -110,7 +110,6 @@
         Symbols="False"
         Configuration="$(ConfigurationID)"
         Properties="
-            Tags=%(NuGetOutputFiles.Tags);
             ExtraTags=$(ConfigurationID)Build %(NuGetOutputFiles.DocumentationTag);
             DocumentationFile=%(NuGetOutputFiles.DocumentationFile);
             NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
@@ -166,7 +165,6 @@
           Symbols="True"
           Configuration="$(ConfigurationID)"
           Properties="
-              Tags=%(NuGetOutputFiles.Tags);
               ExtraTags=;
               DocumentationFile=;
               NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
@@ -266,21 +264,11 @@
       <_existingNuSpecFolder>@(_existingNuSpecFolders)</_existingNuSpecFolder>
     </PropertyGroup>
 
-    <!-- Workaround for retrieving AssemblyMetadata implemented in Nuget 3.0 -->
-    <PropertyGroup>
-      <_cSharpAssemblyInfoFile>$([System.IO.Path]::GetFullPath( $([System.IO.Path]::Combine( $([System.IO.Path]::GetDirectoryName( $(_msBuildSourceProjectFile) )), "Properties\AssemblyInfo.cs" )) ))</_cSharpAssemblyInfoFile>
-      <_tagsAssemblyMetadataRegex>\[assembly:\s*AssemblyMetadata\s*\("tags",\s*"(?&lt;tags&gt;[^"]+)"\)\]</_tagsAssemblyMetadataRegex>
-      <_assemblyInfoText Condition="Exists ($(_cSharpAssemblyInfoFile))">$([System.IO.File]::ReadAllText( $(_cSharpAssemblyInfoFile) ))</_assemblyInfoText>
-      <_assemblyInfoText Condition="!Exists ($(_cSharpAssemblyInfoFile))"></_assemblyInfoText>
-      <_tagsMetadata>$( [System.Text.RegularExpressions.Regex]::Match( $(_assemblyInfoText), $(_tagsAssemblyMetadataRegex)).Groups["tags"].Value )</_tagsMetadata>
-    </PropertyGroup>
-
     <ItemGroup>
       <NuGetOutputFiles>
         <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
         <ConventionBasedNuSpecFile>$(_conventionBasedNuSpecFile)</ConventionBasedNuSpecFile>
         <NuSpecFolder>$(_existingNuSpecFolder)\</NuSpecFolder>
-        <Tags>$(_tagsMetadata)</Tags>
         <DocumentationFile Condition="Exists ($(_documentationFile))">$(_documentationFile)</DocumentationFile>
         <DocumentationTag Condition="Exists ($(_documentationFile))">Documentation</DocumentationTag>
       </NuGetOutputFiles>
