@@ -105,6 +105,7 @@
     <NuGet.MSBuild.Tools.Pack
         ToolPath="$(NuGetToolPath)"
         Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
+        BasePath="%(NuGetOutputFiles.ProjectDirectory)"
         OutputDirectory="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"
         IncludeReferencedProjects="True"
         Symbols="False"
@@ -160,6 +161,7 @@
     <NuGet.MSBuild.Tools.Pack
           ToolPath="$(NuGetToolPath)"
           Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
+          BasePath="%(NuGetOutputFiles.ProjectDirectory)"
           OutputDirectory="$(_nuGetTempDirectory)"
           IncludeReferencedProjects="True"
           Symbols="True"
