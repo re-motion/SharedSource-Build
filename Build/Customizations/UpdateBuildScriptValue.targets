@@ -52,11 +52,11 @@
         (?<=\-.*)  === positive lookbehind for "-" followed by anything
         (\-)       === Match second "-"
       -->
-      <RegexForRemovingSecondNewline>(?&lt;=\-.*)\-</RegexForRemovingSecondNewline>
+      <RegexForRemovingSecondDash>(?&lt;=\-.*)\-</RegexForRemovingSecondDash>
 
       <OldVersion>$([System.Text.RegularExpressions.Regex]::Match($(OldRemotionBuildScriptPathValue), $(RegexForOldVersion)))</OldVersion>
-      <AssemblyWithoutSecondNewline>$([System.Text.RegularExpressions.Regex]::Replace ($(AssemblyNuGetVersion), $(RegexForRemovingSecondNewline), ""))</AssemblyWithoutSecondNewline>
-      <NewRemotionBuildScriptPathValue>$([System.Text.RegularExpressions.Regex]::Replace ($(OldRemotionBuildScriptPathValue), $(OldVersion), $(AssemblyWithoutSecondNewline)))</NewRemotionBuildScriptPathValue>
+      <VersionWithOldStylePrereleaseTag>$([System.Text.RegularExpressions.Regex]::Replace ($(AssemblyNuGetVersion), $(RegexForRemovingSecondDash), ""))</VersionWithOldStylePrereleaseTag>
+      <NewRemotionBuildScriptPathValue>$( OldRemotionBuildScriptPathValue.Replace( $(OldVersion), $(VersionWithOldStylePrereleaseTag) ) )</NewRemotionBuildScriptPathValue>
     </PropertyGroup>
 
     <ReplaceFileText
