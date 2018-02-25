@@ -143,7 +143,7 @@
     <Message Text="Done restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="BuildReleaseProjects" DependsOnTargets="UpdateAssemblyInfos">
+  <Target Name="BuildReleaseProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateReleaseProjectFiles">
     <Message Text="Building release projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -153,9 +153,10 @@
       <_startTime>$([System.DateTime]::UtcNow)</_startTime>
     </PropertyGroup>
 
-    <MSBuild Projects ="@(ReleaseProjectFiles)"
+    <MSBuild Projects="@(ReleaseProjectFiles)"
              ContinueOnError="false"
-             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);">
+             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
+             ToolsVersion="%(ReleaseProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="ReleaseOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
 
@@ -169,7 +170,7 @@
     <Message Text="Done building release projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="BuildTestProjects" DependsOnTargets="UpdateAssemblyInfos">
+  <Target Name="BuildTestProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateUnitTestProjectFiles;UpdateIntegrationTestProjectFiles">
     <Message Text="Building test projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -178,9 +179,17 @@
       <_startTime>$([System.DateTime]::UtcNow)</_startTime>
     </PropertyGroup>
 
-    <MSBuild Projects ="@(UnitTestProjectFiles);@(IntegrationTestProjectFiles)"
+    <MSBuild Projects="@(UnitTestProjectFiles)"
              ContinueOnError="false"
-             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);">
+             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
+             ToolsVersion="%(UnitTestProjectFiles.MSBuildToolsVersion)">
+      <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>
+    </MSBuild>
+
+    <MSBuild Projects="@(IntegrationTestProjectFiles)"
+             ContinueOnError="false"
+             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
+             ToolsVersion="%(IntegrationTestProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
 
@@ -192,6 +201,120 @@
              Condition="'$(TEAMCITY_VERSION)' != ''" />
 
     <Message Text="Done building test projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="UpdateReleaseProjectFiles" Outputs="%(ReleaseProjectFiles.Identity)" Condition="'@(UnitTestProjectFiles)' != ''">
+    <ItemGroup>
+      <_namespaces Remove="@(_namespaces)"/>
+      <_namespaces Include="MSBuild">
+        <Prefix>msb</Prefix>
+        <Uri>http://schemas.microsoft.com/developer/msbuild/2003</Uri>
+      </_namespaces>
+    </ItemGroup>
+
+    <!-- Classic project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        Namespaces="@(_namespaces)"
+        File="%(ReleaseProjectFiles.Identity)"
+        XPath="/msb:Project/@ToolsVersion">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <!-- .NET Core style project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="%(ReleaseProjectFiles.Identity)"
+        XPath="/Project/@ToolsVersion"
+        Condition="'$(_msBuildToolsVersion)' == ''">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <ItemGroup>
+      <ReleaseProjectFiles Condition="'%(ReleaseProjectFiles.Identity)' == '%(Identity)'" >
+        <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+      </ReleaseProjectFiles>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_msBuildToolsVersion></_msBuildToolsVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="UpdateUnitTestProjectFiles" Outputs="%(UnitTestProjectFiles.Identity)" Condition="'@(UnitTestProjectFiles)' != ''">
+    <ItemGroup>
+      <_namespaces Remove="@(_namespaces)"/>
+      <_namespaces Include="MSBuild">
+        <Prefix>msb</Prefix>
+        <Uri>http://schemas.microsoft.com/developer/msbuild/2003</Uri>
+      </_namespaces>
+    </ItemGroup>
+
+    <!-- Classic project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        Namespaces="@(_namespaces)"
+        File="%(UnitTestProjectFiles.Identity)"
+        XPath="/msb:Project/@ToolsVersion">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <!-- .NET Core style project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="%(UnitTestProjectFiles.Identity)"
+        XPath="/Project/@ToolsVersion"
+        Condition="'$(_msBuildToolsVersion)' == ''">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <ItemGroup>
+      <UnitTestProjectFiles Condition="'%(UnitTestProjectFiles.Identity)' == '%(Identity)'" >
+        <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+      </UnitTestProjectFiles>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_msBuildToolsVersion></_msBuildToolsVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="UpdateIntegrationTestProjectFiles" Outputs="%(IntegrationTestProjectFiles.Identity)" Condition="'@(IntegrationTestProjectFiles)' != ''">
+    <ItemGroup>
+      <_namespaces Remove="@(_namespaces)"/>
+      <_namespaces Include="MSBuild">
+        <Prefix>msb</Prefix>
+        <Uri>http://schemas.microsoft.com/developer/msbuild/2003</Uri>
+      </_namespaces>
+    </ItemGroup>
+
+    <!-- Classic project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        Namespaces="@(_namespaces)"
+        File="%(IntegrationTestProjectFiles.Identity)"
+        XPath="/msb:Project/@ToolsVersion">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <!-- .NET Core style project files -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="%(IntegrationTestProjectFiles.Identity)"
+        XPath="/Project/@ToolsVersion"
+        Condition="'$(_msBuildToolsVersion)' == ''">
+      <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <ItemGroup>
+      <IntegrationTestProjectFiles Condition="'%(IntegrationTestProjectFiles.Identity)' == '%(Identity)'" >
+        <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+      </IntegrationTestProjectFiles>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_msBuildToolsVersion></_msBuildToolsVersion>
+    </PropertyGroup>
   </Target>
 
 </Project>
