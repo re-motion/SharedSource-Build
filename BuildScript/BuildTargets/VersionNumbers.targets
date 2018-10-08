@@ -131,4 +131,16 @@
 
     <Message Text="Done preparing DependDBProjectVersion '$(DependDBProjectVersion)'" Importance="High"/>
   </Target>
+
+  <Target Name="PrepareVersionWithoutPrerelease" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
+
+    <PropertyGroup>
+      <_versionWithoutPrereleaseReplacementPattern>${major}.${minor}.${patch}</_versionWithoutPrereleaseReplacementPattern>
+      <VersionWithoutPrerelease>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_versionWithoutPrereleaseReplacementPattern) ) )</VersionWithoutPrerelease>
+    </PropertyGroup>
+
+    <Message Text="Done preparing VersionWithoutPrerelease '$(VersionWithoutPrerelease)'" Importance="High"/>
+  </Target>
+
 </Project>
