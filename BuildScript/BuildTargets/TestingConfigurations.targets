@@ -47,35 +47,17 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AllDatabaseSystems Include="SqlServerDefault" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServerDefault'">
-        <DataSource>localhost</DataSource>
-        <DatabaseDirectory>C:\Databases</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServerDefault" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServerDefault'"></AllDatabaseSystems>
         
-      <AllDatabaseSystems Include="SqlServer2005" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2005'">
-        <DataSource>localhost\MSSQL2005</DataSource>
-        <DatabaseDirectory>C:\Databases\MsSql2005</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServer2005" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2005'"></AllDatabaseSystems>
 
-      <AllDatabaseSystems Include="SqlServer2008" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008'">
-        <DataSource>localhost\MSSQL2008</DataSource>
-        <DatabaseDirectory>C:\Databases\MsSql2008</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServer2008" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008'"></AllDatabaseSystems>
 
-      <AllDatabaseSystems Include="SqlServer2008R2" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008R2'">
-        <DataSource>localhost\MSSQL2008R2</DataSource>
-        <DatabaseDirectory>C:\Databases\MsSql2008R2</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServer2008R2" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2008R2'"></AllDatabaseSystems>
 
-      <AllDatabaseSystems Include="SqlServer2012" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2012'">
-        <DataSource>localhost\MSSQL2012</DataSource>
-        <DatabaseDirectory>C:\Databases\MsSql2012</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServer2012" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2012'"></AllDatabaseSystems>
 
-      <AllDatabaseSystems Include="SqlServer2014" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2014'">
-        <DataSource>localhost\MSSQL2014</DataSource>
-        <DatabaseDirectory>C:\Databases\MsSql2014</DatabaseDirectory>
-      </AllDatabaseSystems>
+      <AllDatabaseSystems Include="SqlServer2014" Condition="'%(DatabaseSystemsList.Identity)' == 'SqlServer2014'"></AllDatabaseSystems>
     </ItemGroup>
 
     <ItemGroup>
