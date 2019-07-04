@@ -47,6 +47,7 @@
     <SkipSourceLinks>False</SkipSourceLinks>
     <SkipNuGet>False</SkipNuGet>
     <SkipDependDB>False</SkipDependDB>
+    <DisableDocker>False</DisableDocker>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -84,6 +85,7 @@
           DatabaseSystems=$(DatabaseSystems);
           Browsers=$(Browsers);
           TestCategoriesToExclude=$(TestCategoriesToExclude);
+          DisableDocker=$(DisableDocker);
       </BuildProperties>
     </PropertyGroup>
 

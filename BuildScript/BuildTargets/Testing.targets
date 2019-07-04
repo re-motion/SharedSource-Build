@@ -83,8 +83,17 @@
     RunTestsInternal uses target batching to be called once for each combination of "Identity;Platform;DatabaseSystem;Browser".
     By batching over all the parameters, the _testOutputFiles-ItemGroup contains only a single item per batch.
   -->
-  <Target Name="RunTestsInternal" DependsOnTargets="AddAdditionalMetadataToOutputFiles;BuildTestOutputFilesCrossProduct" Outputs="%(_testOutputFiles.Identity);%(_testOutputFiles.Platform);%(_testOutputFiles.DatabaseSystem);%(_testOutputFiles.Browser)">
+  <Target Name="RunTestsInternal" DependsOnTargets="AddAdditionalMetadataToOutputFiles;BuildTestOutputFilesCrossProduct;PrepareNunitDirectory" Outputs="%(_testOutputFiles.Identity);%(_testOutputFiles.Platform);%(_testOutputFiles.DatabaseSystem);%(_testOutputFiles.Browser)">
     <Message Text="Running tests %(_testOutputFiles.FullPath), ConfigurationID=$(ConfigurationID), Additional Configuration Information = %(_testOutputFiles.Platform), %(_testOutputFiles.DatabaseSystem), %(_testOutputFiles.Browser)" Importance="High"/>
+
+    <Error Text="The property 'MSBuildExtensionPackPath' is not set." Condition="'$(MSBuildExtensionPackPath)' == ''" />
+    <Error Text="The property 'LogDirectory' is not set." Condition="'$(LogDirectory)' == ''" />
+    <Error Text="The property 'NoDatabaseRequired' is not set." Condition="'$(NoDatabaseRequired)' == ''" />
+    <Error Text="The property 'NoBrowserRequired' is not set." Condition="'$(NoBrowserRequired)' == ''" />
+    <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''" />
+    <Error Text="The property 'DotNetFrameworkRuntimeImageName' is not set." Condition="'$(DotNetFrameworkRuntimeImageName)' == ''" />
+    <Error Text="The property 'NunitFolderPathWithDefaultConfiguration' is not set." Condition="'$(NunitFolderPathWithDefaultConfiguration)' == ''" />
+    <Error Text="The property 'NunitFolderPathWithoutDotNet35Dependency' is not set." Condition="'$(NunitFolderPathWithoutDotNet35Dependency)' == ''" />
 
     <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(_testOutputFiles)">
       <Output TaskParameter="ItemCount" PropertyName="_testOutputFilesCount"/>
@@ -94,12 +103,11 @@
     <PropertyGroup>
       <_testAssemblyFileName>%(_testOutputFiles.Filename)</_testAssemblyFileName>
       <_testAssemblyFullPath>%(_testOutputFiles.FullPath)</_testAssemblyFullPath>
+      <_testAssemblyDirectory>$([System.IO.Path]::GetDirectoryName(%(_testOutputFiles.FullPath)))</_testAssemblyDirectory>
       <_use32Bit>%(_testOutputFiles.Use32Bit)</_use32Bit>
       <_executionRuntime>%(_testOutputFiles.ExecutionRuntime)</_executionRuntime>
       <_platform>%(_testOutputFiles.Platform)</_platform>
       <_databaseSystem>%(_testOutputFiles.DatabaseSystem)</_databaseSystem>
-      <_dataSource>%(_testOutputFiles.DataSource)</_dataSource>
-      <_databaseDirectory>%(_testOutputFiles.DatabaseDirectory)</_databaseDirectory>
       <_browser>%(_testOutputFiles.Browser)</_browser>
       <_appConfigFile>%(_testOutputFiles.FullPath).config</_appConfigFile>
       <_testingSetupBuildFile>%(_testOutputFiles.TestingSetupBuildFile)</_testingSetupBuildFile>
@@ -127,18 +135,62 @@
       <_testResultFile>$(LogDirectory)$(_testName).xml</_testResultFile>
     </PropertyGroup>
 
-    <MSBuild.ExtensionPack.CodeQuality.NUnit
-        ToolPath="$(NUnitToolPath)"
-        Assemblies="$(_testAssemblyFullPath)"
-        ExcludeCategory="$(TestCategoriesToExclude)"
-        ContinueOnError="True"
-        Framework="$(_executionRuntime)"
-        Use32Bit="$(_use32Bit)"
-        NoShadow="True"
-        OutputXmlFile="$(_testResultFile)">
-      <Output TaskParameter="Failures" PropertyName="_nunit_failures"/>
-      <Output TaskParameter="Errors" PropertyName="_nunit_errors"/>
-    </MSBuild.ExtensionPack.CodeQuality.NUnit>
+    <PropertyGroup>
+      <_dockerDisabled>$(DisableDocker)</_dockerDisabled>
+      <_dockerDisabled Condition="('$(_browser)' != '$(NoBrowserRequired)')">True</_dockerDisabled>
+      <_dockerDisabled Condition="('$(_executionRuntime)' == 'net-3.5')">True</_dockerDisabled>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_nunitRunnerFileName>nunit-console.exe</_nunitRunnerFileName>
+      <_nunitRunnerFileName Condition="$(_use32Bit) == 'True'">nunit-console-x86.exe</_nunitRunnerFileName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_testCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''">;</_testCategoriesToExclude>
+      <_testCategoriesToExclude Condition="'$(TestCategoriesToExclude)' != ''">$(TestCategoriesToExclude)</_testCategoriesToExclude>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_nunitCallArgumentString>/nologo /noshadow $(_testAssemblyFullPath) /exclude=$([MSBuild]::Escape('$(_testCategoriesToExclude)')) /framework=$(_executionRuntime) /xml=$(_testResultFile)</_nunitCallArgumentString>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_runTestsInDockerProperties>
+        NunitRunnerFileName=$(_nunitRunnerFileName);
+        NunitCallArgumentString=$(_nunitCallArgumentString);
+        TestAssemblyDirectory=$(_testAssemblyDirectory);
+      </_runTestsInDockerProperties>
+    </PropertyGroup>
+
+    <!--If DockerDisabled, call Nunit Runner directly-->
+    <Exec
+        Command="$(NunitFolderPathWithDefaultConfiguration)$(_nunitRunnerFileName) $(_nunitCallArgumentString)"
+        IgnoreExitCode="true"
+        Condition="$(_dockerDisabled) == 'True'"/>
+
+    <!--Else, call RunTestsInDocker target-->
+    <PropertyGroup>
+      <_dockerCommand>
+docker run ^
+--rm ^
+--volume $(NunitFolderPathWithoutDotNet35Dependency):$(NunitFolderPathWithoutDotNet35Dependency) ^
+--volume $(_testAssemblyDirectory):$(_testAssemblyDirectory) ^
+--volume $(LogDirectory):$(LogDirectory) ^
+--entrypoint $(NunitFolderPathWithoutDotNet35Dependency)$(_nunitRunnerFileName) ^
+$(DotNetFrameworkRuntimeImageName) $(_nunitCallArgumentString)
+      </_dockerCommand>
+    </PropertyGroup>
+
+    <!--This can be replaced with the "pull" flag on "docker run" as soon as Docker versions are updated to Docker version 19.09-->
+    <Exec 
+        Command="docker pull $(DotNetFrameworkRuntimeImageName)"
+        Condition="$(_dockerDisabled) == 'False'"/>
+
+    <Exec 
+        Command="$(_dockerCommand)"
+        IgnoreExitCode="true"
+        Condition="$(_dockerDisabled) == 'False'"/>
     
     <Message Text="##teamcity[importData type='nunit' path='$(_testResultFile)' verbose='true' whenNoDataPublished='error']"
              Condition="'$(TEAMCITY_VERSION)' != ''" />
@@ -148,6 +200,20 @@
         File="$(_testResultFile)"
         XPath="/test-results/test-suite/@time">
       <Output TaskParameter="Value" PropertyName="_testTime" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="$(_testResultFile)"
+        XPath="/test-results/@failures">
+      <Output TaskParameter="Value" PropertyName="_nunit_failures" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="$(_testResultFile)"
+        XPath="/test-results/@errors">
+      <Output TaskParameter="Value" PropertyName="_nunit_errors" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
@@ -168,6 +234,44 @@
         <Errors>$(_nunit_errors)</Errors>
       </FailedProjects>
     </ItemGroup>
+  </Target>
+
+  <!-- We need to configure Nunit differently to run it on a System with or without .Net 3.5 installed. Can be removed after the switch to Nunit 3-->
+  <Target Name="PrepareNunitDirectory" Outputs="%(_nunitDestinationFolderPath.Identity)">
+    <Error Text="The property 'TempDirectory' is not set." Condition="'$(TempDirectory)' == ''" />
+    <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''" />
+
+    <PropertyGroup>
+      <_dockerTempFolderName>$(TempDirectory)SharedSourceBuildNunitCopy\</_dockerTempFolderName>
+      <NunitFolderPathWithDefaultConfiguration>$(_dockerTempFolderName)NunitDefaultConfiguration\</NunitFolderPathWithDefaultConfiguration>
+      <NunitFolderPathWithoutDotNet35Dependency>$(_dockerTempFolderName)NunitWithoutDotNet35Dependency\</NunitFolderPathWithoutDotNet35Dependency>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_nunitDestinationFolderPath Include="$(NunitFolderPathWithDefaultConfiguration)">
+        <SupportedRuntimeConfiguration></SupportedRuntimeConfiguration>
+      </_nunitDestinationFolderPath>
+
+      <_nunitDestinationFolderPath Include="$(NunitFolderPathWithoutDotNet35Dependency)">
+        <SupportedRuntimeConfiguration>&lt;supportedRuntime version=&quot;v4.0.30319&quot; /&gt;</SupportedRuntimeConfiguration>
+      </_nunitDestinationFolderPath>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_filesToBeCopied Include="$(NUnitToolPath)**\*.*"></_filesToBeCopied>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_filesToBeCopied)" DestinationFolder="%(_nunitDestinationFolderPath.Identity)"></Copy>
+
+    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
+        File="%(_nunitDestinationFolderPath.Identity)nunit-console.exe.config"
+        XPath="configuration/startup"
+        InnerXml="$([MSBuild]::Unescape('%(_nunitDestinationFolderPath.SupportedRuntimeConfiguration)'))" />
+
+    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
+        File="%(_nunitDestinationFolderPath.Identity)nunit-console-x86.exe.config"
+        XPath="configuration/startup"
+        InnerXml="$([MSBuild]::Unescape('%(_nunitDestinationFolderPath.SupportedRuntimeConfiguration)'))" />
   </Target>
 
   <!--
