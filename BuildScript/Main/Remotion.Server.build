@@ -53,7 +53,6 @@
       <DatabaseSystems>SqlServer2012</DatabaseSystems>
       <Browsers>Chrome</Browsers>
       <TestCategoriesToExclude></TestCategoriesToExclude>
-      <DisableDocker>False</DisableDocker>
     </PropertyGroup>
   </Target>
   
@@ -63,7 +62,6 @@
       <DatabaseSystems>SqlServer2005+SqlServer2008+SqlServer2008R2+SqlServer2012+SqlServer2014+SqlServer2016+SqlServer2017</DatabaseSystems>
       <Browsers>Chrome+InternetExplorer</Browsers>
       <TestCategoriesToExclude></TestCategoriesToExclude>
-      <DisableDocker>False</DisableDocker>
     </PropertyGroup>
   </Target>
   
