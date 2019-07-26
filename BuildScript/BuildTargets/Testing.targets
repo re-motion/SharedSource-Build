@@ -185,6 +185,7 @@ $(DotNetFrameworkRuntimeImageName) $(_nunitCallArgumentString)
     <!--This can be replaced with the "pull" flag on "docker run" as soon as Docker versions are updated to Docker version 19.09-->
     <Exec 
         Command="docker pull $(DotNetFrameworkRuntimeImageName)"
+        IgnoreExitCode="true"
         Condition="$(_dockerDisabled) == 'False'"/>
 
     <Exec 
