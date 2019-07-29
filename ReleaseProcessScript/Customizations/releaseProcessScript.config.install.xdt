@@ -19,7 +19,7 @@
 
 <settings xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
   <jira xdt:Transform="InsertIfMissing">
-    <jiraUrl>https://www.re-motion.org/jira</jiraUrl>
+    <jiraUrl>https://re-motion.atlassian.net</jiraUrl>
     <jiraProjectKey></jiraProjectKey>
     <useNTLM>no</useNTLM>
   </jira>
