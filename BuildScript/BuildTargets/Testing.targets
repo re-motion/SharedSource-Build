@@ -91,7 +91,6 @@
     <Error Text="The property 'NoDatabaseRequired' is not set." Condition="'$(NoDatabaseRequired)' == ''" />
     <Error Text="The property 'NoBrowserRequired' is not set." Condition="'$(NoBrowserRequired)' == ''" />
     <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''" />
-    <Error Text="The property 'DotNetFrameworkRuntimeImageName' is not set." Condition="'$(DotNetFrameworkRuntimeImageName)' == ''" />
     <Error Text="The property 'NunitFolderPathWithDefaultConfiguration' is not set." Condition="'$(NunitFolderPathWithDefaultConfiguration)' == ''" />
     <Error Text="The property 'NunitFolderPathWithoutDotNet35Dependency' is not set." Condition="'$(NunitFolderPathWithoutDotNet35Dependency)' == ''" />
 
@@ -140,6 +139,7 @@
       <_dockerDisabled Condition="('$(_browser)' != '$(NoBrowserRequired)')">True</_dockerDisabled>
       <_dockerDisabled Condition="('$(_executionRuntime)' == 'net-3.5')">True</_dockerDisabled>
     </PropertyGroup>
+    <Error Text="The property 'DotNetFrameworkRuntimeImageName' is not set." Condition="'$(DotNetFrameworkRuntimeImageName)' == '' And '(_dockerDisabled)' == 'False'" />
 
     <PropertyGroup>
       <_nunitRunnerFileName>nunit-console.exe</_nunitRunnerFileName>
