@@ -35,3 +35,45 @@ function Test-Mock-All-Jira-Functions()
   Mock Jira-Release-Version { return $TRUE }
   Mock Jira-Check-Credentials { return $TRUE }
 }
+
+function Initialize-GitRepository($Dir) {
+  Copy-Item releaseProcessScript.config -Destination $Dir
+
+  Set-Location $Dir
+  $MarkerName = ".BuildProject"
+  $MarkerTemplate = 
+"<?xml version=`"1.0`" encoding=`"utf-8`"?>
+<!--Marks the path fo the releaseProcessScript config file-->
+<configFile>
+  <path>releaseProcessScript.config</path>
+  <buildToolsVersion>$($BuildToolsVersion)</buildToolsVersion>
+</configFile>"
+
+  New-Item -Type file -Name $MarkerName -Value $MarkerTemplate
+
+  git init --quiet
+  git add .
+  git commit -m "First commit"
+  git tag -a "v1.0.0" -m "v1.0.0"
+  git checkout master --quiet
+
+  New-Item -Name "TestFile.txt" -ItemType "file" -Value "SomeValue"
+
+  git add .
+  git commit -m "Second commit"
+  git tag -a "v1.1.0" -m "v1.1.0"
+}
+
+function Get-Git-Logs($Dir) {
+  Set-Location $Dir
+  return [string](git log Head --graph --pretty=format:'%d %s')
+}
+
+function Initialize-Test($Name) {
+  Set-Location $ReferenceDir
+  . "$($ScriptRoot)\GitCommandsForReferenceDir\$Name\Initialize.ps1"
+  . "$($ScriptRoot)\GitCommandsForReferenceDir\$Name\Reference.ps1"
+
+  Set-Location $TestDir
+  . "$($ScriptRoot)\GitCommandsForReferenceDir\$Name\Initialize.ps1"
+}
