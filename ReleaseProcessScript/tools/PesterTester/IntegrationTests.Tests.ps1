@@ -44,15 +44,20 @@ Describe "IntegrationTestsTest" {
     Remove-Item $ReferenceDir -Recurse -Force
   }
 
-  # Context "ReleaseFromHotfix" {
-  #   It "ReleasePatchOnSupport" {
-  #     #Add support branch to see if possible other branches do not influence the test run
-  #     git checkout -b support/v1.0
-  #     git checkout -b hotfix/v1.0.1
-  #     git commit --allow-empty -m "Now we have hotfix lingering around somewhere in the log"
-  #     { Release-Version } | Should Not Throw
-  #   }
-  # }
+  Context "ReleasePatchFromHotfix" {
+    It "releases a new patch version from hotfix to support" {
+      Initialize-Test "ReleaseMinorFromDevelop"
+      Mock Get-Develop-Current-Version { return "1.2.0" }
+      Mock Read-Version-Choice { return "1.2.0" }
+
+      { Release-Version } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+  }
 
   Context "ReleaseMinorFromDevelop" {
     It "releases a new minor version from develop to master" {
