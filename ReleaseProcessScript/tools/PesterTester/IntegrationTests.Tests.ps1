@@ -73,31 +73,20 @@ Describe "IntegrationTestsTest" {
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
 
-#    It "ReleasePrereleaseVersion" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleasePrereleaseOnDevelop"
-#      git checkout master --quiet
-#      git checkout -b develop --quiet
+    It "releases a pre-release version from develop" {
+      Initialize-Test "ReleasePrereleaseOnDevelop"
+      Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
 
-#      Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
-#      Mock Read-Version-Choice { return "1.2.0" }
-     
-#      { Release-Version } | Should Not Throw
+      { Release-Version } | Should Not Throw
 
-#      #Compare file structure
-#      $CurrentContent = git ls-tree master
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+   }
+ }
 
-#      $CurrentLog | Should Be $ExpectedLog
-#    }
-#  }
-
- 
 #  Context "ReleaseFromSupport" {
 #    It "ReleaseVersionOnSupport" {
 #      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseVersionOnSupport"
@@ -174,7 +163,7 @@ Describe "IntegrationTestsTest" {
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
-  }
+
 
   Context "ContinueRelease" {
     It "pauses the release on master" {
