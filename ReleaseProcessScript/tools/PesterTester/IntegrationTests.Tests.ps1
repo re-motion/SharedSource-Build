@@ -208,7 +208,7 @@ Describe "IntegrationTestsTest" {
 #  }
   }
   Context "ContinueRelease" {
-    It "PauseForCommitReleaseOnMaster" {
+    It "pauses the release on master" {
       Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"
       Mock Get-Develop-Current-Version { return "1.2.0" }
       Mock Read-Version-Choice {return "1.2.0"}
