@@ -28,7 +28,7 @@ function Test-Create-And-Add-Remote ($TestBaseDir, $TestDirName, $PseudoRemoteTe
   cd $TestBaseDir"\"$TestDirName
 }
 
-function Test-Mock-All-Jira-Functions()
+function Test-Mock-All-Jira-Functions ()
 {
   Mock Jira-Create-Version { return $TRUE }
   Mock Jira-Get-Current-Version { return "1.2.3" }
@@ -36,7 +36,8 @@ function Test-Mock-All-Jira-Functions()
   Mock Jira-Check-Credentials { return $TRUE }
 }
 
-function Initialize-GitRepository($Dir) {
+function Initialize-GitRepository ($Dir)
+{
   Copy-Item releaseProcessScript.config -Destination $Dir
 
   Set-Location $Dir
@@ -64,12 +65,14 @@ function Initialize-GitRepository($Dir) {
   git tag -a "v1.1.0" -m "v1.1.0"
 }
 
-function Get-Git-Logs($Dir) {
+function Get-Git-Logs ($Dir)
+{
   Set-Location $Dir
-  return [string](git log Head --graph --pretty=format:'%d %s')
+  return [string](git log Head --branches --tags --graph --oneline --decorate --pretty=format:'%d %s')
 }
 
-function Initialize-Test($Name) {
+function Initialize-Test ($Name)
+{
   Set-Location $ReferenceDir
   . "$($ScriptRoot)\GitCommandsForReferenceDir\$Name\Initialize.ps1"
   . "$($ScriptRoot)\GitCommandsForReferenceDir\$Name\Reference.ps1"

@@ -206,78 +206,36 @@ Describe "IntegrationTestsTest" {
 #      $CurrentMasterLog | Should Be $ExpectedMasterLog
 #    }
 #  }
+  }
+  Context "ContinueRelease" {
+    It "PauseForCommitReleaseOnMaster" {
+      Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"
+      Mock Get-Develop-Current-Version { return "1.2.0" }
+      Mock Read-Version-Choice {return "1.2.0"}
 
-#  Context "ContinueRelease" {
-#    It "PauseForCommitReleaseOnMaster" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMasterPauseForCommit"
-     
-#      git checkout master --quiet
+      { Release-Version -PauseForCommit } | Should Not Throw
 
-#      #Add support branch to see if possible other branches do not influence the test run
-#      git checkout -b support/v1.0
-#      git commit --allow-empty -m "Now we have support lingering around somewhere in the log"
-           
-#      git checkout master --quiet
-#      git checkout -b develop --quiet
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-#      Mock Get-Develop-Current-Version { return "1.1.0" }
-#      Mock Read-Version-Choice {return "1.2.0"}
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
 
-#      { Release-Version -PauseForCommit } | Should Not Throw
+    It "continues the release after pausing on master" {
+      Initialize-Test "ReleaseMinorFromDevelop"
+      Mock Get-Develop-Current-Version { return "1.2.0" }
+      Mock Read-Version-Choice {return "1.2.0"}
 
-#      git checkout support/v1.0 --quiet
+      { Release-Version -PauseForCommit } | Should Not Throw
 
-#      #Compare file structure
-#      $CurrentContent = git ls-tree Head
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
+      git checkout release/v1.2.0 --quiet
 
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
+      { Continue-Release } | Should Not Throw
 
-#      $CurrentLog | Should Be $ExpectedLog
-#    }
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-#    It "ContinueReleaseAfterPauseForCommitReleaseOnMaster" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ContinueReleaseAfterPauseForCommitReleaseOnMaster"
-     
-#      #Setup PauseForCommit
-#      git checkout master --quiet
-   
-#      #Add support branch to see if possible other branches do not influence the test run
-#      git checkout -b support/v1.0
-#      git commit --allow-empty -m "Now we have support lingering around somewhere in the log"
-           
-#      git checkout master --quiet
-#      git checkout -b develop --quiet
-   
-#      Mock Get-Develop-Current-Version { return "1.1.0" }
-#      Mock Read-Version-Choice {return "1.2.0"}
-   
-#      { Release-Version -PauseForCommit } | Should Not Throw
-   
-#      #Test ContinueRelease
-#      git checkout release/v1.1.0 --quiet
-   
-#      { Continue-Release } | Should Not Throw
-   
-#      #Compare file structure
-#      $CurrentContent = git ls-tree master
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
-   
-#      #Checkout the top branch so we view the whole history
-#      git checkout support/v1.0 --quiet
-   
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-   
-#      $CurrentLog | Should Be $ExpectedLog
-#    } 
-# }
-}
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    } 
+  }
 }
