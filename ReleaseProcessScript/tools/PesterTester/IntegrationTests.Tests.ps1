@@ -117,9 +117,9 @@ Describe "IntegrationTestsTest" {
 
 #      $CurrentLog | Should Be $ExpectedLog
 #    }
-#  }
+  }
 
-#  Context "ReleaseFromReleasebranch" {
+  Context "ReleaseFromReleasebranch" {
 #    It "ReleaseRC" {
 #      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseRC"
      
@@ -168,45 +168,22 @@ Describe "IntegrationTestsTest" {
    
 #      $CurrentLog | Should Be $ExpectedLog
 #    }
-   
-#    It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
-   
-#      git checkout -b develop --quiet
-#      git checkout -b prerelease/v1.1.0-rc.1 --quiet
-#      git checkout -b release/v1.1.0 --quiet
-#      git commit --allow-empty -m "Develop is now ahead of the ReleaseBranch Root"
-#      git checkout release/v1.1.0 --quiet
-             
-#      Mock Read-Choice-Of-Two { return 2 }
-#      Mock Read-Version-Choice { return "1.2.0" }
-   
-#      { Release-Version } | Should Not Throw
-   
-#      #Compare file structure
-#      $CurrentMasterContent = git ls-tree master
-#      $ExpectedMasterContent = Get-Content -Path "$($CurrentPath)\masterFileList.txt"
-     
-#      $CurrentMasterContent | Should Be $ExpectedMasterContent
-     
-#      $CurrentDevelopContent = git ls-tree develop
-#      $ExpectedDevelopContent = Get-Content -Path "$($CurrentPath)\developFileList.txt"
-     
-#      $CurrentDevelopContent | Should Be $ExpectedDevelopContent
-     
-#      #Compare commit Trees
-#      [string]$CurrentHeadLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedHeadLog = Get-Content -Path "$($CurrentPath)\developGitLog.txt"
-     
-#      $CurrentHeadLog | Should Be $ExpectedHeadLog
-     
-#      [string]$CurrentMasterLog = git log master --graph --pretty=format:'%d %s'
-#      [string]$ExpectedMasterLog = Get-Content -Path "$($CurrentPath)\masterGitLog.txt"
-     
-#      $CurrentMasterLog | Should Be $ExpectedMasterLog
-#    }
-#  }
+
+    It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
+      Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
+
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.3.0" }
+
+      { Release-Version } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
   }
+
   Context "ContinueRelease" {
     It "pauses the release on master" {
       Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"

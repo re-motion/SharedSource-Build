@@ -68,7 +68,7 @@ function Initialize-GitRepository ($Dir)
 function Get-Git-Logs ($Dir)
 {
   Set-Location $Dir
-  return [string](git log Head --branches --tags --graph --oneline --decorate --pretty=format:'%d %s')
+  return [string](git log --all --graph --oneline --decorate --pretty=format:'%d %s')
 }
 
 function Initialize-Test ($Name)
