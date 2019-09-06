@@ -81,7 +81,7 @@ function Get-Possible-Next-Versions-Develop ($Version, $WithoutPrerelease)
   } 
 }
 
-function Get-Possible-Next-Versions-Support ($Version)
+function Get-Possible-Next-Versions-Hotfix ($Version)
 {
   $Match = Parse-Semver $Version
 

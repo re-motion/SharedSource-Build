@@ -29,10 +29,10 @@ function Release-Version ()
 
   $CurrentBranchname = Get-Current-Branchname
 
-  if (Is-On-Branch "support/")
+  if (Is-On-Branch "hotfix/")
   {
-    $SupportVersion = $CurrentBranchname.Split("/")[1].Substring(1)
-    $CurrentVersion = Get-Support-Current-Version $SupportVersion $StartReleasePhase
+    $HotfixVersion = $CurrentBranchname.Split("/")[1].Substring(1)
+    $CurrentVersion = Get-Hotfix-Current-Version $HotfixVersion $StartReleasePhase
     $PreVersion = Get-PreReleaseStage $CurrentVersion
 
     if ([string]::IsNullOrEmpty($PreVersion))
@@ -84,7 +84,7 @@ function Release-Version ()
   }
   else
   {
-    throw "You have to be on either a 'support/*' or 'release/*' or 'develop' or 'master' branch to release a version."
+    throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
   }
 }
 
@@ -116,20 +116,20 @@ function Continue-Release()
   {
     if ([string]::IsNullOrEmpty($Ancestor))
     {
-      $Ancestor = Get-Ancestor "develop", "support/v"
+      $Ancestor = Get-Ancestor "develop", "hotfix/v"
     }
 
     if ($Ancestor -eq "develop" )
     {
       Continue-Master-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
     } 
-    elseif ($Ancestor.StartsWith("support/") )
+    elseif ($Ancestor.StartsWith("hotfix/") )
     {
-      Continue-Support-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
+      Continue-Hotfix-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
     }
     else
     {
-      throw "Ancestor has to be either 'develop' or a 'support/v*.*' branch"
+      throw "Ancestor has to be either 'develop' or a 'hotfix/v*.*.*' branch"
     }
   }
   else
@@ -151,24 +151,22 @@ function Release-Patch ()
     [switch] $DoNotPush,
     [switch] $OnMaster
   )
-    
+
   Check-Working-Directory
   Check-Commit-Hash $CommitHash
-    
+
   if ($OnMaster)
   {
     Check-Is-On-Branch "master"
   }
   else
   {
-    Check-Is-On-Branch "support/"
+    Check-Is-On-Branch "hotfix/"
   }
 
-  $CurrentBranchname = Get-Current-Branchname
-
   Write-Host "Current version: '$($CurrentVersion)'."
-    
-  $NextPossibleVersions = Get-Possible-Next-Versions-Support $CurrentVersion
+
+  $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
   Write-Host "Please choose next version (open JIRA issues get moved there): "
   $NextVersion = Read-Version-Choice $NextPossibleVersions
 
@@ -188,7 +186,7 @@ function Release-Patch ()
   }
 
   Create-And-Release-Jira-Versions $CurrentVersion $NextVersion 
-    
+
   Invoke-MsBuild-And-Commit -Version $CurrentVersion -MsBuildMode "prepareNextVersion" 
 
   if ($PauseForCommit)
@@ -268,9 +266,9 @@ function Release-Alpha-Beta ()
 
   $CurrentBranchname = Get-Current-Branchname
 
-  if ($CurrentBranchname.StartsWith("support/"))
+  if ($CurrentBranchname.StartsWith("hotfix/"))
   {
-    $NextPossibleVersions = Get-Possible-Next-Versions-Support $CurrentVersion
+    $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
   }
   elseif ($CurrentBranchname -eq "develop")
   {
@@ -278,7 +276,7 @@ function Release-Alpha-Beta ()
   }
   else
   {
-    throw "You have to be on either a 'support/*' branch or on 'develop' to release an alpha or beta version"
+    throw "You have to be on either a 'hotfix/*' branch or on 'develop' to release an alpha or beta version"
   }
 
   $PreReleaseBranchname = "prerelease/v$($CurrentVersion)"
@@ -318,7 +316,7 @@ function Release-RC ()
     
   if ([string]::IsNullOrEmpty($Ancestor) )
   {
-    $Ancestor = Get-Ancestor "develop", "support/v"
+    $Ancestor = Get-Ancestor "develop", "hotfix/v"
   }
     
   $CurrentBranchname = Get-Current-Branchname
@@ -330,13 +328,13 @@ function Release-RC ()
   {
     $NextPossibleVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
   }
-  elseif ($Ancestor.StartsWith("support/"))
+  elseif ($Ancestor.StartsWith("hotfix/"))
   {
-    $NextPossibleVersions = Get-Possible-Next-Versions-Support $CurrentVersion
+    $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
   }
   else
   {
-    throw "Ancestor has to be either 'develop' or a 'support/v*.*' branch"
+    throw "Ancestor has to be either 'develop' or a 'hotfix/v*.*.*' branch"
   }
 
   Write-Host "Please choose next version (open JIRA issues get moved there): "
@@ -374,7 +372,7 @@ function Release-With-RC ()
     
   if ([string]::IsNullOrEmpty($Ancestor))
   {
-    $Ancestor = Get-Ancestor "develop", "support/v"
+    $Ancestor = Get-Ancestor "develop", "hotfix/v"
   }
 
   $CurrentBranchname = Get-Current-Branchname
@@ -391,9 +389,9 @@ function Release-With-RC ()
   {
     $PossibleNextVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
   }
-  elseif ($Ancestor.StartsWith("support/"))
+  elseif ($Ancestor.StartsWith("hotfix/"))
   {
-    $PossibleNextVersions = Get-Possible-Next-Versions-Support $CurrentVersion
+    $PossibleNextVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
   }
 
   Write-Host "Choose next version (open issues get moved there): "
@@ -412,7 +410,7 @@ function Release-With-RC ()
   {
     Continue-Master-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
   }
-  elseif ($Ancestor.StartsWith("support/"))
+  elseif ($Ancestor.StartsWith("hotfix/"))
   {
     Continue-Patch-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
   }
@@ -438,14 +436,14 @@ function Continue-Patch-Release ()
   $MajorMinor = Get-Major-Minor-From-Version $CurrentVersion
   if ($OnMaster)
   {
-    $Branchname = "master"
+    $MergeTargetBranchName = "master"
   }
   else
   {
-    $Branchname = "support/v$($MajorMinor)"
+    $MergeTargetBranchName = "support/v$($MajorMinor)"
   }
     
-  Check-Branch-Up-To-Date $Branchname
+  Check-Branch-Up-To-Date $MergeTargetBranchName
   Check-Branch-Up-To-Date "release/v$($CurrentVersion)"
 
   $Tagname = "v$($CurrentVersion)"
@@ -455,11 +453,11 @@ function Continue-Patch-Release ()
     throw "Tag '$($Tagname)' already exists." 
   }
 
-  git checkout $Branchname --quiet
+  git checkout $MergeTargetBranchName --quiet
 
-  Merge-Branch-With-Reset $Branchname "release/v$($CurrentVersion)" "tagStableMergeIgnoreList"
+  Merge-Branch-With-Reset $MergeTargetBranchName "release/v$($CurrentVersion)" "tagStableMergeIgnoreList"
     
-  git checkout $Branchname --quiet
+  git checkout $MergeTargetBranchName --quiet
   git tag -a $Tagname -m $Tagname 2>&1
 
   if ($DoNotPush)
@@ -467,7 +465,7 @@ function Continue-Patch-Release ()
     return
   }
 
-  Push-To-Repos $Branchname $TRUE
+  Push-To-Repos $MergeTargetBranchName $TRUE
   Push-To-Repos "release/v$($CurrentVersion)"
 }
 
@@ -508,17 +506,16 @@ function Continue-Pre-Release ()
     [Parameter(Mandatory=$true)]
     [string] $CurrentVersion,
     [switch] $DoNotPush,
-    [string] $Ancestor   
+    [string] $Ancestor
   )
 
   Check-Working-Directory
   Check-Is-On-Branch "prerelease/"
   $PrereleaseBranchname = Get-Current-Branchname
-  $BaseVersion = Get-Version-Without-Pre $CurrentVersion
-    
+
   if ([string]::IsNullOrEmpty($Ancestor))
   {
-    $BaseBranchname = Get-Ancestor "develop", "support/v"
+    $BaseBranchname = Get-Ancestor "develop", "hotfix/v"
   }
   else
   {
