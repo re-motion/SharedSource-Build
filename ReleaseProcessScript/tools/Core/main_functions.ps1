@@ -324,7 +324,7 @@ function Release-RC ()
 
   $CurrentVersion = Find-Next-Rc $LastVersion
 
-  if ($Ancestor -eq "develop")
+  if ($Ancestor -eq "develop" -or $Ancestor.StartsWith("release/"))
   {
     $NextPossibleVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
   }
@@ -519,7 +519,7 @@ function Continue-Pre-Release ()
 
   if ([string]::IsNullOrEmpty($Ancestor))
   {
-    $BaseBranchname = Get-Ancestor "develop", "hotfix/v"
+    $BaseBranchname = Get-Ancestor "release/v", "develop", "hotfix/v"
   }
   else
   {
