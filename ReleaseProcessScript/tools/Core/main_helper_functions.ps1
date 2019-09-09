@@ -57,7 +57,7 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     #Get last Tag from master (because Get-Last-Version-Of-Branch-From-Tag does not reach master, so the master commit could be the most recent)
     $MasterVersion = Get-Last-Version-Of-Branch-From-Tag "master"
 
-      if (-not (Is-Semver $DevelopVersion))
+    if (-not (Is-Semver $DevelopVersion))
     {
       $MostRecentVersion = $MasterVersion.Substring(1)
     }

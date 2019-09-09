@@ -50,10 +50,38 @@ Describe "IntegrationTestsTest" {
   }
 
   Context "ReleasePatchFromHotfix" {
-    It "releases a new patch version from hotfix to support" {
-      Initialize-Test "ReleasePatchFromHotfix"
-      Mock Get-Hotfix-Current-Version { return "1.1.1" }
-      Mock Read-Version-Choice { return "1.1.2" }
+    # It "releases a new patch version from hotfix to support" {
+    #   Initialize-Test "ReleasePatchFromHotfix"
+    #   Mock Get-Hotfix-Current-Version { return "1.1.1" }
+    #   Mock Read-Version-Choice { return "1.1.2" }
+
+    #   { Release-Version } | Should Not Throw
+
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
+  }
+
+  Context "ReleaseFromDevelop" {
+    # It "releases a new minor version from develop to master" {
+    #   Initialize-Test "ReleaseMinorFromDevelop"
+    #   Mock Get-Develop-Current-Version { return "1.2.0" }
+    #   Mock Read-Version-Choice { return "1.3.0" }
+
+    #   { Release-Version } | Should Not Throw
+
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
+
+    It "releases a pre-release version from develop" {
+      Initialize-Test "ReleasePrereleaseOnDevelop"
+      Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
 
       { Release-Version } | Should Not Throw
 
@@ -62,34 +90,23 @@ Describe "IntegrationTestsTest" {
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
-  }
 
-  Context "ReleaseFromDevelop" {
-    # It "releases a new minor version from develop to master" {
-    #   Initialize-Test "ReleaseMinorFromDevelop"
-    #   Mock Get-Develop-Current-Version { return "1.2.0" }
-    #   Mock Read-Version-Choice { return "1.2.0" }
+    It "releases a pre-release version from develop with commit on prerelease" {
+      Initialize-Test "ReleasePrereleaseOnDevelopWithCommit"
+      Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
 
-    #   { Release-Version } | Should Not Throw
+      { Release-Version -PauseForCommit } | Should Not Throw
 
-    #   $TestDirGitLogs = Get-Git-Logs $TestDir
-    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+      git commit -m "Commit on prerelease branch" --allow-empty
 
-    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    # }
+      { Continue-Release } | Should Not Throw
 
-    # It "releases a pre-release version from develop" {
-    #   Initialize-Test "ReleasePrereleaseOnDevelop"
-    #   Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
-    #   Mock Read-Version-Choice { return "1.2.0" }
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-    #   { Release-Version } | Should Not Throw
-
-    #   $TestDirGitLogs = Get-Git-Logs $TestDir
-    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
-
-    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    # }
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
   }
 
   Context "ReleaseFromSupport" {
