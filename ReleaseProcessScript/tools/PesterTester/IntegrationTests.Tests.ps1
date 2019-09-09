@@ -41,9 +41,14 @@ Describe "IntegrationTests" {
   AfterEach {
     Set-Location $ScriptRoot
 
-    Set-Location $TestDir
-    gitex
-    Set-Location $ScriptRoot
+    # # Show repository in GitExtensions
+    # Set-Location $TestDir
+    # gitex
+    # Set-Location $ScriptRoot
+
+    # # Show press key prompt
+    # Write-Host -NoNewLine 'Press any key to continue...';
+    # $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 
     Remove-Item $TestDir -Recurse -Force
     Remove-Item $ReferenceDir -Recurse -Force
@@ -51,7 +56,7 @@ Describe "IntegrationTests" {
 
   Context "Hotfix" {
     It "releases a new patch version from hotfix to support" {
-      Initialize-Test "ReleasePatchFromHotfix"
+      Initialize-Test "Hotfix-PatchRelease"
       Mock Get-Hotfix-Current-Version { return "1.1.1" }
       Mock Read-Version-Choice { return "1.1.2" }
 
@@ -66,7 +71,7 @@ Describe "IntegrationTests" {
 
   Context "Develop" {
     It "releases a new minor version from develop to master" {
-      Initialize-Test "ReleaseMinorFromDevelop"
+      Initialize-Test "Develop-ReleaseMinor"
       Mock Get-Develop-Current-Version { return "1.2.0" }
       Mock Read-Version-Choice { return "1.3.0" }
 
@@ -79,7 +84,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a pre-release version from develop to release" {
-      Initialize-Test "ReleasePrereleaseOnDevelop"
+      Initialize-Test "Develop-PreRelease"
       Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
       Mock Read-Version-Choice { return "1.2.0" }
 
@@ -92,7 +97,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a pre-release version from develop to release with a commit on prerelease" {
-      Initialize-Test "ReleasePrereleaseOnDevelopWithCommit"
+      Initialize-Test "Develop-PreRelease-WithCommit"
       Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
       Mock Read-Version-Choice { return "1.2.0" }
 
@@ -109,7 +114,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a release version from develop to master with a commit on release" {
-      Initialize-Test "ReleaseMinorFromDevelop"
+      Initialize-Test "Develop-ReleaseMinor-WithCommit"
       Mock Get-Develop-Current-Version { return "1.2.0" }
       Mock Read-Version-Choice { return "1.3.0" }
 
@@ -128,7 +133,7 @@ Describe "IntegrationTests" {
 
   Context "Support" {
     It "throws an exception when attempting to release from support" {
-      Initialize-Test "ReleaseVersionOnSupport"
+      Initialize-Test "Support-TryRelease"
 
       { Release-Version } | Should Throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
     }
@@ -136,7 +141,7 @@ Describe "IntegrationTests" {
 
   Context "Release" {
     It "releases a release candidate version from release to release" {
-      Initialize-Test "ReleaseRC"
+      Initialize-Test "Release-RC"
       Mock Read-Choice-Of-Two { return 1 }
       Mock Read-Version-Choice { return "1.2.0" }
 
@@ -149,7 +154,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a release candidate version from release to release with a commit on prerelease" {
-      Initialize-Test "ReleaseRCWithCommit"
+      Initialize-Test "Release-RC-WithCommit"
       Mock Read-Choice-Of-Two { return 1 }
       Mock Read-Version-Choice { return "1.2.0" }
       Mock Read-Ancestor-Choice { return "release/v1.2.0" }
@@ -167,7 +172,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a release from release to master" {
-      Initialize-Test "ReleaseReleaseOnMaster"
+      Initialize-Test "Release-Release"
       Mock Read-Choice-Of-Two { return 2 }
       Mock Read-Version-Choice { return "1.3.0" }
 
@@ -180,7 +185,7 @@ Describe "IntegrationTests" {
     }
 
     It "releases a release from release to master with an additional commit on develop" {
-      Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
+      Initialize-Test "Release-Release-WithCommitOnDevelop"
       Mock Read-Choice-Of-Two { return 2 }
       Mock Read-Version-Choice { return "1.3.0" }
 
