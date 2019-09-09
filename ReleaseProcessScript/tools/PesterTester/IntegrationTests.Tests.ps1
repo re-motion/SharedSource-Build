@@ -144,34 +144,21 @@ Describe "IntegrationTestsTest" {
 #      $CurrentLog | Should Be $ExpectedLog
 #    }
 
-#    It "ReleaseOnMaster" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMaster"
-   
-#      git checkout -b develop --quiet
-#      git checkout -b prerelease/v1.1.0-rc.1 --quiet
-#      git checkout -b release/v1.1.0 --quiet
-   
-#      Mock Read-Choice-Of-Two { return 2 }
-#      Mock Read-Version-Choice { return "1.2.0" }
-   
-#      { Release-Version } | Should Not Throw
-   
-#      #Compare file structure
-#      $CurrentContent = git ls-tree master
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
-   
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-   
-#      $CurrentLog | Should Be $ExpectedLog
-#    }
+   It "ReleaseOnMaster" {
+      Initialize-Test "ReleaseReleaseOnMaster"
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.3.0" }
+
+      { Release-Version } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+   }
 
     It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
       Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
-
       Mock Read-Choice-Of-Two { return 2 }
       Mock Read-Version-Choice { return "1.3.0" }
 
