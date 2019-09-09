@@ -81,18 +81,11 @@ function Get-Hotfix-Current-Version ($LastVersion, $StartReleasePhase)
 {
   if ($StartReleasePhase)
   {
-    if ( (Get-PreReleaseStage $LastVersion.Substring(1)) -eq $NULL)
-    {
-      $CurrentVersion = Get-Next-Patch $LastVersion.Substring(1)
-    }
-    else
-    {
-      $CurrentVersion = Get-Version-Without-Pre $LastVersion.Substring(1)
-    }
+    $CurrentVersion = $LastVersion
   }
   else
   {
-    $PossibleVersions = Get-Possible-Next-Versions-Hotfix $LastVersion.Substring(1)
+    $PossibleVersions = Get-Possible-Release-Versions-Hotfix $LastVersion
     $CurrentVersion = Read-Version-Choice $PossibleVersions
   }
 

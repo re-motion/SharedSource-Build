@@ -460,6 +460,9 @@ function Continue-Patch-Release ()
   git checkout $MergeTargetBranchName --quiet
   git tag -a $Tagname -m $Tagname 2>&1
 
+  $NextPatchVersion = Get-Next-Patch $CurrentVersion
+  git branch "hotfix/v$($NextPatchVersion)"
+
   if ($DoNotPush)
   {
     return
@@ -467,6 +470,7 @@ function Continue-Patch-Release ()
 
   Push-To-Repos $MergeTargetBranchName $TRUE
   Push-To-Repos "release/v$($CurrentVersion)"
+
 }
 
 function Continue-Master-Release ()

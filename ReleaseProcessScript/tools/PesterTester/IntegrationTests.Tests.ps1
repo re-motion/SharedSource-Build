@@ -40,15 +40,20 @@ Describe "IntegrationTestsTest" {
 
   AfterEach {
     Set-Location $ScriptRoot
+
+    Set-Location $TestDir
+    gitex
+    Set-Location $ScriptRoot
+
     Remove-Item $TestDir -Recurse -Force
     Remove-Item $ReferenceDir -Recurse -Force
   }
 
   Context "ReleasePatchFromHotfix" {
     It "releases a new patch version from hotfix to support" {
-      Initialize-Test "ReleaseMinorFromDevelop"
-      Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice { return "1.2.0" }
+      Initialize-Test "ReleasePatchFromHotfix"
+      Mock Get-Hotfix-Current-Version { return "1.1.1" }
+      Mock Read-Version-Choice { return "1.1.2" }
 
       { Release-Version } | Should Not Throw
 
@@ -60,111 +65,111 @@ Describe "IntegrationTestsTest" {
   }
 
   Context "ReleaseFromDevelop" {
-    It "releases a new minor version from develop to master" {
-      Initialize-Test "ReleaseMinorFromDevelop"
-      Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice { return "1.2.0" }
+    # It "releases a new minor version from develop to master" {
+    #   Initialize-Test "ReleaseMinorFromDevelop"
+    #   Mock Get-Develop-Current-Version { return "1.2.0" }
+    #   Mock Read-Version-Choice { return "1.2.0" }
 
-      { Release-Version } | Should Not Throw
+    #   { Release-Version } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
 
-    It "releases a pre-release version from develop" {
-      Initialize-Test "ReleasePrereleaseOnDevelop"
-      Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
-      Mock Read-Version-Choice { return "1.2.0" }
+    # It "releases a pre-release version from develop" {
+    #   Initialize-Test "ReleasePrereleaseOnDevelop"
+    #   Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
+    #   Mock Read-Version-Choice { return "1.2.0" }
 
-      { Release-Version } | Should Not Throw
+    #   { Release-Version } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
   }
 
   Context "ReleaseFromSupport" {
-    It "throws an exception when attempting to release from support branch" {
-      Initialize-Test "ReleaseVersionOnSupport"
+    # It "throws an exception when attempting to release from support branch" {
+    #   Initialize-Test "ReleaseVersionOnSupport"
 
-      { Release-Version } | Should Throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
-    }
+    #   { Release-Version } | Should Throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
+    # }
   }
 
   Context "ReleaseFromReleasebranch" {
-    It "releases a release candidate version from a release branch" {
-      Initialize-Test "ReleaseRC"
-      Mock Read-Choice-Of-Two { return 1 }
-      Mock Read-Version-Choice { return "1.2.0" }
+    # It "releases a release candidate version from a release branch" {
+    #   Initialize-Test "ReleaseRC"
+    #   Mock Read-Choice-Of-Two { return 1 }
+    #   Mock Read-Version-Choice { return "1.2.0" }
 
-      { Release-Version } | Should Not Throw
+    #   { Release-Version } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
 
-    It "ReleaseOnMaster" {
-      Initialize-Test "ReleaseReleaseOnMaster"
-      Mock Read-Choice-Of-Two { return 2 }
-      Mock Read-Version-Choice { return "1.3.0" }
+    # It "ReleaseOnMaster" {
+    #   Initialize-Test "ReleaseReleaseOnMaster"
+    #   Mock Read-Choice-Of-Two { return 2 }
+    #   Mock Read-Version-Choice { return "1.3.0" }
 
-      { Release-Version } | Should Not Throw
+    #   { Release-Version } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
 
-    It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
-      Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
-      Mock Read-Choice-Of-Two { return 2 }
-      Mock Read-Version-Choice { return "1.3.0" }
+    # It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
+    #   Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
+    #   Mock Read-Choice-Of-Two { return 2 }
+    #   Mock Read-Version-Choice { return "1.3.0" }
 
-      { Release-Version } | Should Not Throw
+    #   { Release-Version } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
   }
 
   Context "ContinueRelease" {
-    It "pauses the release on master" {
-      Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"
-      Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice { return "1.3.0" }
+    # It "pauses the release on master" {
+    #   Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"
+    #   Mock Get-Develop-Current-Version { return "1.2.0" }
+    #   Mock Read-Version-Choice { return "1.3.0" }
 
-      { Release-Version -PauseForCommit } | Should Not Throw
+    #   { Release-Version -PauseForCommit } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
 
-    It "continues the release after pausing on master" {
-      Initialize-Test "ReleaseMinorFromDevelop"
-      Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice { return "1.3.0" }
+    # It "continues the release after pausing on master" {
+    #   Initialize-Test "ReleaseMinorFromDevelop"
+    #   Mock Get-Develop-Current-Version { return "1.2.0" }
+    #   Mock Read-Version-Choice { return "1.3.0" }
 
-      { Release-Version -PauseForCommit } | Should Not Throw
+    #   { Release-Version -PauseForCommit } | Should Not Throw
 
-      git checkout release/v1.2.0 --quiet
+    #   git checkout release/v1.2.0 --quiet
 
-      { Continue-Release } | Should Not Throw
+    #   { Continue-Release } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
   }
 }
