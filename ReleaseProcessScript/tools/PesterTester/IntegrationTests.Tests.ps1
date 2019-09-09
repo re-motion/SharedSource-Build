@@ -188,7 +188,7 @@ Describe "IntegrationTestsTest" {
     It "pauses the release on master" {
       Initialize-Test "ReleaseReleaseOnMasterPauseForCommit"
       Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice {return "1.2.0"}
+      Mock Read-Version-Choice { return "1.3.0" }
 
       { Release-Version -PauseForCommit } | Should Not Throw
 
@@ -201,7 +201,7 @@ Describe "IntegrationTestsTest" {
     It "continues the release after pausing on master" {
       Initialize-Test "ReleaseMinorFromDevelop"
       Mock Get-Develop-Current-Version { return "1.2.0" }
-      Mock Read-Version-Choice {return "1.2.0"}
+      Mock Read-Version-Choice { return "1.3.0" }
 
       { Release-Version -PauseForCommit } | Should Not Throw
 
@@ -213,6 +213,6 @@ Describe "IntegrationTestsTest" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    } 
+    }
   }
 }
