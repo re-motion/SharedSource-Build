@@ -131,23 +131,23 @@ Describe "IntegrationTestsTest" {
     #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     # }
 
-    It "releases a release candidate version from a release branch with commit on prerelease branch" {
-      Initialize-Test "ReleaseRCWithCommit"
-      Mock Read-Choice-Of-Two { return 1 }
-      Mock Read-Version-Choice { return "1.2.0" }
-      Mock Read-Ancestor-Choice { return "release/v1.2.0" }
+    # It "releases a release candidate version from a release branch with commit on prerelease branch" {
+    #   Initialize-Test "ReleaseRCWithCommit"
+    #   Mock Read-Choice-Of-Two { return 1 }
+    #   Mock Read-Version-Choice { return "1.2.0" }
+    #   Mock Read-Ancestor-Choice { return "release/v1.2.0" }
 
-      { Release-Version -PauseForCommit } | Should Not Throw
+    #   { Release-Version -PauseForCommit } | Should Not Throw
 
-      git commit -m "Commit on prerelease branch" --allow-empty
+    #   git commit -m "Commit on prerelease branch" --allow-empty
 
-      { Continue-Release } | Should Not Throw
+    #   { Continue-Release } | Should Not Throw
 
-      $TestDirGitLogs = Get-Git-Logs $TestDir
-      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+    #   $TestDirGitLogs = Get-Git-Logs $TestDir
+    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    }
+    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    # }
 
     # It "ReleaseOnMaster" {
     #   Initialize-Test "ReleaseReleaseOnMaster"
@@ -162,18 +162,18 @@ Describe "IntegrationTestsTest" {
     #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     # }
 
-    # It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
-    #   Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
-    #   Mock Read-Choice-Of-Two { return 2 }
-    #   Mock Read-Version-Choice { return "1.3.0" }
+    It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
+      Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.3.0" }
 
-    #   { Release-Version } | Should Not Throw
+      { Release-Version } | Should Not Throw
 
-    #   $TestDirGitLogs = Get-Git-Logs $TestDir
-    #   $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-    #   $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-    # }
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
   }
 
   Context "ContinueRelease" {
