@@ -84,8 +84,8 @@ Describe "IntegrationTestsTest" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-   }
- }
+    }
+  }
 
   Context "ReleaseFromSupport" {
     It "throws an exception when attempting to release from support branch" {
@@ -96,31 +96,20 @@ Describe "IntegrationTestsTest" {
   }
 
   Context "ReleaseFromReleasebranch" {
-#    It "ReleaseRC" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseRC"
-     
-#      git checkout -b develop --quiet
-#      git checkout -b release/v1.1.0 --quiet
+    It "releases a release candidate version from a release branch" {
+      Initialize-Test "ReleaseRC"
+      Mock Read-Choice-Of-Two { return 1 }
+      Mock Read-Version-Choice { return "1.2.0" }
 
-#      Mock Read-Choice-Of-Two { return 1 }
-#      Mock Read-Version-Choice { return "1.2.0" }
+      { Release-Version } | Should Not Throw
 
-#      { Release-Version } | Should Not Throw
-     
-#      #Compare file structure
-#      $CurrentContent = git ls-tree master
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
 
-#      $CurrentLog | Should Be $ExpectedLog
-#    }
-
-   It "ReleaseOnMaster" {
+    It "ReleaseOnMaster" {
       Initialize-Test "ReleaseReleaseOnMaster"
       Mock Read-Choice-Of-Two { return 2 }
       Mock Read-Version-Choice { return "1.3.0" }
@@ -131,7 +120,7 @@ Describe "IntegrationTestsTest" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
-   }
+    }
 
     It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
       Initialize-Test "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
@@ -145,7 +134,7 @@ Describe "IntegrationTestsTest" {
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
-
+  }
 
   Context "ContinueRelease" {
     It "pauses the release on master" {
