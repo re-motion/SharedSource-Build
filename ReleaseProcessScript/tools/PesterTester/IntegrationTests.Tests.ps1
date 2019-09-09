@@ -59,7 +59,7 @@ Describe "IntegrationTestsTest" {
     }
   }
 
-  Context "ReleaseMinorFromDevelop" {
+  Context "ReleaseFromDevelop" {
     It "releases a new minor version from develop to master" {
       Initialize-Test "ReleaseMinorFromDevelop"
       Mock Get-Develop-Current-Version { return "1.2.0" }
@@ -87,30 +87,12 @@ Describe "IntegrationTestsTest" {
    }
  }
 
-#  Context "ReleaseFromSupport" {
-#    It "ReleaseVersionOnSupport" {
-#      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseVersionOnSupport"
+  Context "ReleaseFromSupport" {
+    It "throws an exception when attempting to release from support branch" {
+      Initialize-Test "ReleaseVersionOnSupport"
 
-#      git checkout master --quiet
-#      git checkout -b support/v1.1
-
-#      Mock Get-Support-Current-Version { return "1.1.1" }
-#      Mock Read-Version-Choice { return "1.2.0" }
-
-#      { Release-Version } | Should Not Throw
-
-#      #Compare file structure
-#      $CurrentContent = git ls-tree master
-#      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-     
-#      $CurrentContent | Should Be $ExpectedContent
-
-#      #Compare commit Trees
-#      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-#      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-
-#      $CurrentLog | Should Be $ExpectedLog
-#    }
+      { Release-Version } | Should Throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
+    }
   }
 
   Context "ReleaseFromReleasebranch" {
