@@ -153,6 +153,24 @@ Describe "IntegrationTests" {
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
 
+    It "releases a second release candidate version from release to release" {
+      Initialize-Test "Release-RC-SecondRC"
+      Mock Read-Choice-Of-Two { return 1 }
+      Mock Read-Version-Choice { return "1.2.0" }
+      Mock Read-Ancestor-Choice { return "release/v1.2.0" }
+
+      { Release-Version -PauseForCommit } | Should Not Throw
+
+      git commit -m "Another commit on prerelease" --allow-empty *>$NULL
+
+      { Continue-Release } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
     It "releases a release candidate version from release to release with a commit on prerelease" {
       Initialize-Test "Release-RC-WithCommit"
       Mock Read-Choice-Of-Two { return 1 }
