@@ -1,6 +1,6 @@
 function Parse-Semver ($Semver)
 {
-  $regex= "^(?<major>\d+)\.(?<minor>\d+)(\.(?<patch>\d+)(-(?<pre>alpha|beta|rc)\.(?<preversion>\d+))?)?$"
+  $regex= "^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(-(?<pre>alpha|beta|rc)\.(?<preversion>\d+))?$"
      
   if(-not [regex]::IsMatch($Semver, $Regex, 'MultiLine'))
   {
@@ -81,54 +81,18 @@ function Get-Possible-Next-Versions-Develop ($Version, $WithoutPrerelease)
   } 
 }
 
-function Get-Possible-Next-Versions-Hotfix ($Version)
+function Get-Possible-Versions-Hotfix ($Version, $MeantForCurrentVersion = $false)
 {
   $Match = Parse-Semver $Version
 
   $Major = $Match.Groups["major"].ToString()
   $Minor = $Match.Groups["minor"].ToString()
   $Patch = $Match.Groups["patch"].ToString()
-  $NextPatchVersion = [string](1 + $Patch)
-  $NextPossiblePatch = "$($Major).$($Minor).$($NextPatchVersion)"
 
-  #Compute 1.2.3-alpha.4
-  if ($Match.Groups["pre"].Success)
+  if (-not $MeantForCurrentVersion)
   {
-    $Pre = $Match.Groups["pre"].ToString()
-    $PreVersion = $Match.Groups["preversion"].ToString()
-    $NextPossibleFullVersion = "$($Major).$($Minor).$($Patch)"
-
-    $NextPreVersion = [string](1 + $PreVersion)
-    $NextPossiblePreVersion = "$($Major).$($Minor).$($Patch)-$($Pre).$($NextPreVersion)"
-
-    if ($Pre -eq "alpha")
-    {
-      $NextPossiblePre = "$($Major).$($Minor).$($Patch)-beta.1"
-
-      return $NextPossiblePreVersion, $NextPossiblePre, $NextPossibleFullVersion
-    }
-    elseif ($Pre -eq "beta")
-    {
-      return $NextPossiblePreVersion, $NextPossibleFullVersion
-    }
-    elseif ($Pre -eq "rc")
-    {
-      return $NextPossiblePreVersion, $NextPossibleFullVersion
-    }
+    $Patch = [string](1 + $Patch)
   }
-  else
-  {
-    return $NextPossiblePatch, "$($NextPossiblePatch)-alpha.1", "$($NextPossiblePatch)-beta.1"
-  }
-}
-
-function Get-Possible-Release-Versions-Hotfix ($Version)
-{
-  $Match = Parse-Semver $Version
-
-  $Major = $Match.Groups["major"].ToString()
-  $Minor = $Match.Groups["minor"].ToString()
-  $Patch = $Match.Groups["patch"].ToString()
   $NextPossiblePatch = "$($Major).$($Minor).$($Patch)"
 
   #Compute 1.2.3-alpha.4

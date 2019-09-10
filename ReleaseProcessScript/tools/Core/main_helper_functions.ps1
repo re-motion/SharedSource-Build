@@ -85,7 +85,7 @@ function Get-Hotfix-Current-Version ($LastVersion, $StartReleasePhase)
   }
   else
   {
-    $PossibleVersions = Get-Possible-Release-Versions-Hotfix $LastVersion
+    $PossibleVersions = Get-Possible-Versions-Hotfix $LastVersion $true
     $CurrentVersion = Read-Version-Choice $PossibleVersions
   }
 

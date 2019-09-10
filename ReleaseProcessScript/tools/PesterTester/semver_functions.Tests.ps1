@@ -67,14 +67,14 @@ Describe "semver_functions" {
         $Version = "1.2.0-alpha.4"
         $NextVersions = "1.2.0-alpha.5", "1.2.0-beta.1", "1.2.0"
 
-        Get-Possible-Next-Versions-Hotfix $Version | Should Be $NextVersions
+        Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
       }
 
       It "Get-Possible-Next-Versions-Hotfix_WithBeta_ShouldReturnArray" {
         $Version = "1.2.0-beta.3"
         $NextVersions = "1.2.0-beta.4", "1.2.0"
 
-        Get-Possible-Next-Versions-Hotfix $Version | Should Be $NextVersions
+        Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
       }
 
       It "Get-Possible-Next-Versions-Hotfix_WithRc_ShouldReturnArray" {
@@ -88,7 +88,7 @@ Describe "semver_functions" {
         $Version = "1.2.0"
         $NextVersions = "1.2.1-alpha.1", "1.2.1-beta.1", "1.2.1"
 
-        Get-Possible-Next-Versions-Hotfix $Version | Should Be $NextVersions
+        Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
       }
   }
 

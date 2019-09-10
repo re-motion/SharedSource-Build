@@ -166,7 +166,7 @@ function Release-Patch ()
 
   Write-Host "Current version: '$($CurrentVersion)'."
 
-  $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
+  $NextPossibleVersions = Get-Possible-Versions-Hotfix $CurrentVersion
   Write-Host "Please choose next version (open JIRA issues get moved there): "
   $NextVersion = Read-Version-Choice $NextPossibleVersions
 
@@ -268,7 +268,7 @@ function Release-Alpha-Beta ()
 
   if ($CurrentBranchname.StartsWith("hotfix/"))
   {
-    $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
+    $NextPossibleVersions = Get-Possible-Versions-Hotfix $CurrentVersion
   }
   elseif ($CurrentBranchname -eq "develop")
   {
@@ -330,7 +330,7 @@ function Release-RC ()
   }
   elseif ($Ancestor.StartsWith("hotfix/"))
   {
-    $NextPossibleVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
+    $NextPossibleVersions = Get-Possible-Versions-Hotfix $CurrentVersion
   }
   else
   {
@@ -391,7 +391,7 @@ function Release-With-RC ()
   }
   elseif ($Ancestor.StartsWith("hotfix/"))
   {
-    $PossibleNextVersions = Get-Possible-Next-Versions-Hotfix $CurrentVersion
+    $PossibleNextVersions = Get-Possible-Versions-Hotfix $CurrentVersion
   }
 
   Write-Host "Choose next version (open issues get moved there): "
