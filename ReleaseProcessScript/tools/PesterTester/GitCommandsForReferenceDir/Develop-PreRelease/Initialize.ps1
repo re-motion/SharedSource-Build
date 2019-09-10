@@ -1,2 +1,2 @@
-git checkout -b develop
-git commit -m "Commit on Develop" --allow-empty
+git checkout -b develop *>$NULL
+git commit -m "Commit on Develop" --allow-empty *>$NULL
