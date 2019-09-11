@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Remotion.BuildScript</RootNamespace>
     <AssemblyName>Remotion.BuildScript</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>124f8b8d</NuGetPackageImportStamp>
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;JETBRAINS_ANNOTATIONS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -38,9 +38,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="BuildTargets\DependDB.targets">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="BuildTargets\TestingConfigurations.targets">
       <SubType>Designer</SubType>
     </None>
     <None Include="BuildTargets\ContentLayout.content" />
@@ -114,12 +111,28 @@
     <Compile Include="..\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
+    <Compile Include="BuildTasks\CreateTestConfigurations.cs" />
+    <Compile Include="BuildTasks\StringEnumerableExtensions.cs" />
+    <Compile Include="BuildTasks\ExecutionRuntime.cs" />
+    <Compile Include="BuildTasks\MetadataValueCollection.cs" />
+    <Compile Include="BuildTasks\MetadataValueDictionary.cs" />
+    <Compile Include="BuildTasks\TargetRuntimeConverter.cs" />
+    <Compile Include="BuildTasks\TestConfiguration.cs" />
+    <Compile Include="BuildTasks\TestConfigurationsFactory.cs" />
+    <Compile Include="BuildTasks\MetadataValueConstants.cs" />
+    <Compile Include="BuildTasks\TestConfigurationsFilter.cs" />
+    <Compile Include="BuildTasks\TestConfigurationMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations, Version=2019.1.3.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
+      <HintPath>..\packages\JetBrains.Annotations.2019.1.3\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="System" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
