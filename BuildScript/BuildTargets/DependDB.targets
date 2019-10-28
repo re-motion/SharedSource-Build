@@ -73,6 +73,7 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <_preProcessorParameters>$(_preProcessorParameters) --msbuild-path="$(MSBuildToolsPath)\msbuild.exe"</_preProcessorParameters>
       <_preProcessorParameters>$(_preProcessorParameters) --project-name="$(DependDBProjectName)"</_preProcessorParameters>
       <_preProcessorParameters>$(_preProcessorParameters) --project-branch="$(DependDBProjectBranch)"</_preProcessorParameters>
       <_preProcessorParameters>$(_preProcessorParameters) --project-version="$(DependDBProjectVersion)"</_preProcessorParameters>
