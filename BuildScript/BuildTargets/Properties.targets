@@ -17,7 +17,7 @@
  ! under the License.
 -->
 
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Target Name="CheckBuildConfigurationProperties" >
     <Error Text="The property 'SolutionKeyFile' is not set." Condition="'$(SolutionKeyFile)' == ''" />
