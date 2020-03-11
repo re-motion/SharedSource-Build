@@ -1,5 +1,6 @@
 . $PSScriptRoot"\config_functions.ps1"
 . $PSScriptRoot"\semver_functions.ps1"
+. $PSScriptRoot"\read_functions.ps1"
 
 function Get-Branch-Exists ($Branchname)
 {
