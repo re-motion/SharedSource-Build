@@ -281,12 +281,12 @@ function Get-Ancestor ($ExpectedAncestors)
     return Read-Host "We expected some of the following Ancestors: '$ExpectedAncestors' but found none. Please enter the name of the Ancestor Branch"
   }
 
-  if ($FoundAncestors.Count -gt 1)
+  if ($FoundAncestors.Count -eq 1)
   {
-    return Read-Ancestor-Choice $ExpectedAncestors $FoundAncestors
+    return $FoundAncestors[0]
   }
 
-  return $FoundAncestors[0]
+  return Read-Ancestor-Choice $ExpectedAncestors $FoundAncestors
 }
 
 function Get-BranchHeads-On-Head ()
