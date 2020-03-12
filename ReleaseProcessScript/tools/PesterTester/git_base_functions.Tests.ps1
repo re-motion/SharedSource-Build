@@ -195,4 +195,5 @@ Describe "git_base_functions" {
 
       Assert-VerifiableMock
     }
+  }
 }
