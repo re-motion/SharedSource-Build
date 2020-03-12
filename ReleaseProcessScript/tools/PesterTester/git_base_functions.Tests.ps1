@@ -183,5 +183,17 @@ Describe "git_base_functions" {
 
       Get-Ancestor $ExpectedAncestors | Should Be "master"
     }
+
+    It "should print all found ancestors if multiple are found" {
+      git checkout -b "additionalAncestor" --quiet
+      git checkout -b "newBranch" --quiet
+      $ExpectedAncestors = "master", "additionalAncestor"
+      Mock Write-Host -Verifiable -ParameterFilter {$Object -eq "We expected to find one of following Ancestors: ['master','additionalAncestor'], but found multiple possible Ancestors."}
+      Mock Read-Host {return 1}
+
+      Get-Ancestor $ExpectedAncestors | Should Be "additionalAncestor"
+
+      Assert-VerifiableMock
+    }
   }
 }

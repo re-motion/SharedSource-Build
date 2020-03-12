@@ -1,5 +1,6 @@
 . $PSScriptRoot"\config_functions.ps1"
 . $PSScriptRoot"\semver_functions.ps1"
+. $PSScriptRoot"\read_functions.ps1"
 
 function Get-Branch-Exists ($Branchname)
 {
@@ -266,30 +267,27 @@ function Get-Ancestor ($ExpectedAncestors)
   
   $Ancestors = git show-branch | Where-Object { $_.Contains('!') -eq $TRUE } | Where-Object { $_.Contains($Branchname) -ne $TRUE } | % {$_ -replace('.*\[(.*)\].*','$1')} | % { $_ -replace('[\^~].*','') }
 
-  $ReturnAncestor = $NULL
+  [System.Collections.ArrayList]$FoundAncestors = @()
   foreach ($Ancestor in $Ancestors) 
   {
     if ($ExpectedAncestors.Contains($Ancestor) -or ($ExpectedAncestors | ForEach-Object { return $Ancestor.StartsWith($_) }) -Contains $true)
     {
-      #In the List of Ancestors is more than one of the expected Ancestors. Commence to panic and ask the user
-      if ($ReturnAncestor -ne $NULL)
-      {
-        $ReturnAncestor = Read-Ancestor-Choice $ExpectedAncestors $ReturnAncestor
-        return $ReturnAncestor
-      }
-      else
-      {
-        $ReturnAncestor = $Ancestor
-      }
+      $FoundAncestors.Add($Ancestor) | Out-Null
     }
   }
 
-  if ($ReturnAncestor -eq $NULL)
+  if ($FoundAncestors.Count -eq 0)
   {
-     $ReturnAncestor = Read-Host "We expected some of the following Ancestors: '$ExpectedAncestors' but found none. Please enter the name of the Ancestor Branch"
+    $JointExpectedAncestors = "'$($ExpectedAncestors -join "','")'"
+    return Read-Host "We expected some of the following Ancestors: [$JointExpectedAncestors] but found none. Please enter the name of the Ancestor Branch:"
   }
 
-  return $ReturnAncestor
+  if ($FoundAncestors.Count -eq 1)
+  {
+    return $FoundAncestors[0]
+  }
+
+  return Read-Ancestor-Choice $ExpectedAncestors $FoundAncestors
 }
 
 function Get-BranchHeads-On-Head ()

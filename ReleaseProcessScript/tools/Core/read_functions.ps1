@@ -121,7 +121,8 @@ function Read-Current-Version ()
 
 function Read-Ancestor-Choice ($ExpectedAncestors, $ReturnAncestor) 
 {
-  Write-Host "We expected to find one of following Ancestors: '$ExpectedAncestors', but found multiple possible Ancestors."
+  $JointExpectedAncestors = "'$($ExpectedAncestors -join "','")'"
+  Write-Host "We expected to find one of following Ancestors: [$JointExpectedAncestors], but found multiple possible Ancestors."
   $ChosenAncestor = Read-Version-Choice $ReturnAncestor
   return $ChosenAncestor
 }
