@@ -270,7 +270,7 @@ function Get-Ancestor ($ExpectedAncestors)
   $ReturnAncestor = $NULL
   foreach ($Ancestor in $Ancestors) 
   {
-    if ($ExpectedAncestors.Contains($Ancestor) -or $Ancestor.StartsWith($ExpectedAncestors))
+    if ($ExpectedAncestors.Contains($Ancestor) -or ($ExpectedAncestors | ForEach-Object { return $Ancestor.StartsWith($_) }) -Contains $true)
     {
       #In the List of Ancestors is more than one of the expected Ancestors. Commence to panic and ask the user
       if ($ReturnAncestor -ne $NULL)

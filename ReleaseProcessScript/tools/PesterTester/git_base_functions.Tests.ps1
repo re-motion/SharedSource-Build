@@ -175,4 +175,13 @@ Describe "git_base_functions" {
       { Check-Branch-Up-To-Date "master" } | Should Not Throw 
     }
   }
+
+  Context "Get-Ancestor" {
+    It "should find the correct ancestor even if only the start of the ancestor is passed" {
+      git checkout -b "newBranch" --quiet
+      $ExpectedAncestors = "mast", "someOtherBranch"
+
+      Get-Ancestor $ExpectedAncestors | Should Be "master"
+    }
+  }
 }
