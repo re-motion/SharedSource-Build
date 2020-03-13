@@ -68,8 +68,9 @@
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' == ''">False</IsWebTest>
         <IsWebTest Condition="'%(TestOutputFiles.IsWebTest)' != ''">%(TestOutputFiles.IsWebTest)</IsWebTest>
-        <TestingSetupBuildFile Condition="'%(TestOutputFiles.TestingSetupBuildFile)' == ''"></TestingSetupBuildFile>
-        <TestingSetupBuildFile Condition="'%(TestOutputFiles.TestingSetupBuildFile)' != ''">%(TestOutputFiles.TestingSetupBuildFile)</TestingSetupBuildFile>
+        <TestConfiguration Condition="'%(TestOutputFiles.TestConfiguration)' != ''">%(TestOutputFiles.TestingConfiguration)</TestConfiguration>
+        <TestSetupBuildFile Condition="'%(TestOutputFiles.TestSetupBuildFile)' == ''"></TestSetupBuildFile>
+        <TestSetupBuildFile Condition="'%(TestOutputFiles.TestSetupBuildFile)' != ''">%(TestOutputFiles.TestingSetupBuildFile)</TestSetupBuildFile>
         <ExecutionRuntime Condition="'%(TestOutputFiles.ExecutionRuntime)' == ''">$(DefaultTestExecutionRuntime)</ExecutionRuntime>
         <ExecutionRuntime Condition="'%(TestOutputFiles.ExecutionRuntime)' != ''">%(TestOutputFiles.ExecutionRuntime)</ExecutionRuntime>
       </_projectFiles>
@@ -83,7 +84,8 @@
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest>%(IsWebTest)</IsWebTest>
-        <TestingSetupBuildFile>%(TestingSetupBuildFile)</TestingSetupBuildFile>
+        <TestConfiguration>%(TestConfiguration)</TestConfiguration>
+        <TestSetupBuildFile>%(TestSetupBuildFile)</TestSetupBuildFile>
         <ExecutionRuntime>%(ExecutionRuntime)</ExecutionRuntime>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
       </TestOutputFiles>

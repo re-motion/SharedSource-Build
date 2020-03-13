@@ -47,7 +47,6 @@
     <SkipSourceLinks>False</SkipSourceLinks>
     <SkipNuGet>False</SkipNuGet>
     <SkipDependDB>False</SkipDependDB>
-    <DisableDocker>False</DisableDocker>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -82,8 +81,9 @@
           Platforms=$(Platforms);
           DatabaseSystems=$(DatabaseSystems);
           Browsers=$(Browsers);
+          ExecutionRuntimes=$(ExecutionRuntimes);
+          TargetRuntimes=$(TargetRuntimes);
           TestCategoriesToExclude=$(TestCategoriesToExclude);
-          DisableDocker=$(DisableDocker);
       </BuildProperties>
     </PropertyGroup>
 
@@ -137,16 +137,16 @@
   <Target Name="BuildAll" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">
 
     <ItemGroup>
-      <_allConfigurations Remove="@(_allConfigurations)" />
+      <_configurationIDs Remove="@(_allConfigurations)" />
       <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
-      <_allConfigurations Include="Debug" />
-      <_allConfigurations Include="Release" />
+      <_configurationIDs Include="Debug" />
+      <_configurationIDs Include="Release" />
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFile)"
              BuildInParallel="false"
              Targets="$(FullBuildTargets)"
-             Properties="ConfigurationID=%(_allConfigurations.Identity);$(BuildProperties);"/>
+             Properties="ConfigurationID=%(_configurationIDs.Identity);$(BuildProperties);"/>
   </Target>
   
   <Target Name="TestBuildDebugOnly" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">

@@ -19,11 +19,19 @@
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <_thisFileParentDirectory>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))</_thisFileParentDirectory>
+    <_thisFileGrandParentDirectory>$([System.IO.Directory]::GetParent($(_thisFileParentDirectory)))</_thisFileGrandParentDirectory>
+    <_taskAssemblyPath>$(_thisFileGrandParentDirectory)\lib\net47\Remotion.BuildScript.dll</_taskAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(_taskAssemblyPath)" TaskName="CreateTestConfigurations"/>
+
   <!-- Constants -->
   <PropertyGroup>
     <DefaultTestExecutionRuntime>net-4.5</DefaultTestExecutionRuntime>
-    <NoDatabaseRequired>NoDatabaseRequired</NoDatabaseRequired>
-    <NoBrowserRequired>NoBrowserRequired</NoBrowserRequired>
+    <NoDB>NoDB</NoDB>
+    <NoBrowser>NoBrowser</NoBrowser>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,53 +71,41 @@
       <RunTestsStartTime>$([System.DateTime]::UtcNow)</RunTestsStartTime>
     </PropertyGroup>
   </Target>
-  
-  <!-- 
-    Actual testing happens here.
-    BuildTestOutputFilesCrossProduct creates all test configurations 
-    (the result is a cross product of TestOutputFiles x AllPlatforms x AllDatabaseSystems x AllBrowsers), 
-    see description on the target for more information. Afterwards _testOutputFiles contains entries like:
-    
-      Identity = MyUnitTests1.dll ; Platform = x86 ; DatabaseSystem = SqlServer2005 ; Browser = NoBrowserRequired
-      Identity = MyUnitTests1.dll ; Platform = x64 ; DatabaseSystem = SqlServer2005 ; Browser = NoBrowserRequired
-      Identity = MyUnitTests1.dll ; Platform = x86 ; DatabaseSystem = SqlServer2008 ; Browser = NoBrowserRequired
-      ...
-      Identity = MyUnitTests2.dll ; Platform = x86 ; DatabaseSystem = NoDatabaseRequired ; Browser = NoBrowserRequired
-      ...
-      Identity = MyWebTests1.dll ; Platform = x86 ; DatabaseSystem = NoDatabaseRequired ; Browser = Chrome
-      ...
-      (only relevant metadata shown)
-      
-    RunTestsInternal uses target batching to be called once for each combination of "Identity;Platform;DatabaseSystem;Browser".
-    By batching over all the parameters, the _testOutputFiles-ItemGroup contains only a single item per batch.
-  -->
-  <Target Name="RunTestsInternal" DependsOnTargets="AddAdditionalMetadataToOutputFiles;BuildTestOutputFilesCrossProduct;PrepareNunitDirectory" Outputs="%(_testOutputFiles.Identity);%(_testOutputFiles.Platform);%(_testOutputFiles.DatabaseSystem);%(_testOutputFiles.Browser)">
-    <Message Text="Running tests %(_testOutputFiles.FullPath), ConfigurationID=$(ConfigurationID), Additional Configuration Information = %(_testOutputFiles.Platform), %(_testOutputFiles.DatabaseSystem), %(_testOutputFiles.Browser)" Importance="High"/>
 
-    <Error Text="The property 'MSBuildExtensionPackPath' is not set." Condition="'$(MSBuildExtensionPackPath)' == ''" />
-    <Error Text="The property 'LogDirectory' is not set." Condition="'$(LogDirectory)' == ''" />
-    <Error Text="The property 'NoDatabaseRequired' is not set." Condition="'$(NoDatabaseRequired)' == ''" />
-    <Error Text="The property 'NoBrowserRequired' is not set." Condition="'$(NoBrowserRequired)' == ''" />
-    <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''" />
-    <Error Text="The property 'NunitFolderPathWithDefaultConfiguration' is not set." Condition="'$(NunitFolderPathWithDefaultConfiguration)' == ''" />
-    <Error Text="The property 'NunitFolderPathWithoutDotNet35Dependency' is not set." Condition="'$(NunitFolderPathWithoutDotNet35Dependency)' == ''" />
+
+  <Target Name="RunTestsInternal"
+          DependsOnTargets="AddAdditionalMetadataToOutputFiles;CreateTestConfigurations;PrepareNunitDirectory"
+          Outputs="%(_testOutputFiles.Identity)">
+    <Message Text="Running tests %(_testOutputFiles.Identity)" Importance="High"/>
+
+    <Error Text="The property 'MSBuildExtensionPackPath' is not set." Condition="'$(MSBuildExtensionPackPath)' == ''"/>
+    <Error Text="The property 'LogDirectory' is not set." Condition="'$(LogDirectory)' == ''"/>
+    <Error Text="The property 'NoDB' is not set." Condition="'$(NoDB)' == ''"/>
+    <Error Text="The property 'NoBrowser' is not set." Condition="'$(NoBrowser)' == ''"/>
+    <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''"/>
+    <Error Text="The property 'NunitFolderPathWithDefaultConfiguration' is not set." Condition="'$(NunitFolderPathWithDefaultConfiguration)' == ''"/>
+    <Error Text="The property 'NunitFolderPathWithoutDotNet35Dependency' is not set." Condition="'$(NunitFolderPathWithoutDotNet35Dependency)' == ''"/>
 
     <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(_testOutputFiles)">
       <Output TaskParameter="ItemCount" PropertyName="_testOutputFilesCount"/>
     </MSBuild.ExtensionPack.Framework.MsBuildHelper>
-    <Error Text="More than one item found in _testOutputFiles." Condition="$(_testOutputFilesCount) &gt; 1" />
 
     <PropertyGroup>
-      <_testAssemblyFileName>%(_testOutputFiles.Filename)</_testAssemblyFileName>
-      <_testAssemblyFullPath>%(_testOutputFiles.FullPath)</_testAssemblyFullPath>
-      <_testAssemblyDirectory>$([System.IO.Path]::GetDirectoryName(%(_testOutputFiles.FullPath)))</_testAssemblyDirectory>
+      <_testAssemblyFileName>%(_testOutputFiles.TestAssemblyFileName)</_testAssemblyFileName>
+      <_testAssemblyFullPath>%(_testOutputFiles.TestAssemblyFullPath)</_testAssemblyFullPath>
+      <_testAssemblyDirectory>%(_testOutputFiles.TestAssemblyDirectoryName)</_testAssemblyDirectory>
       <_use32Bit>%(_testOutputFiles.Use32Bit)</_use32Bit>
-      <_executionRuntime>%(_testOutputFiles.ExecutionRuntime)</_executionRuntime>
+      <_dockerImageName>%(_testOutputFiles.ExecutionRuntimeValue)</_dockerImageName>
+      <_executionRuntimeKey>%(_testOutputFiles.ExecutionRuntimeKey)</_executionRuntimeKey>
+      <_targetRuntime>%(_testOutputFiles.TargetRuntime)</_targetRuntime>
       <_platform>%(_testOutputFiles.Platform)</_platform>
       <_databaseSystem>%(_testOutputFiles.DatabaseSystem)</_databaseSystem>
       <_browser>%(_testOutputFiles.Browser)</_browser>
-      <_appConfigFile>%(_testOutputFiles.FullPath).config</_appConfigFile>
+      <_appConfigFile>%(_testOutputFiles.TestAssemblyFullPath).config</_appConfigFile>
       <_testingSetupBuildFile>%(_testOutputFiles.TestingSetupBuildFile)</_testingSetupBuildFile>
+      <_dockerEnabled>%(_testOutputFiles.UseDocker)</_dockerEnabled>
+      <_excludeCategoriesInTestConfiguration>%(_testOutputFiles.ExcludeCategories)</_excludeCategoriesInTestConfiguration>
+      <_includeCategoriesInTestConfiguration>%(_testOutputFiles.IncludeCategories)</_includeCategoriesInTestConfiguration>
     </PropertyGroup>
 
     <!-- Update configuration for tests -->
@@ -128,18 +124,29 @@
     <!-- Run tests -->
 
     <PropertyGroup>
-      <_testName>$(_testAssemblyFileName).$(ConfigurationID).$(_platform)</_testName>
-      <_testName Condition="'$(_databaseSystem)' != '$(NoDatabaseRequired)'">$(_testName).$(_databaseSystem)</_testName>
-      <_testName Condition="'$(_browser)' != '$(NoBrowserRequired)'">$(_testName).$(_browser)</_testName>
-      <_testResultFile>$(LogDirectory)$(_testName).xml</_testResultFile>
+      <_mergedTestCategoriesToExclude>$(TestCategoriesToExclude.Replace(';', ',')),$(_excludeCategoriesInTestConfiguration)</_mergedTestCategoriesToExclude>
+      <_mergedTestCategoriesToExclude>$(_mergedTestCategoriesToExclude.Trim(','))</_mergedTestCategoriesToExclude>
+
+      <_excludeCategoriesCallArgumentString></_excludeCategoriesCallArgumentString>
+      <_excludeCategoriesCallArgumentString Condition="'$(_mergedTestCategoriesToExclude)' != ''">/exclude=$(_mergedTestCategoriesToExclude)</_excludeCategoriesCallArgumentString>
     </PropertyGroup>
 
     <PropertyGroup>
-      <_dockerDisabled>$(DisableDocker)</_dockerDisabled>
-      <_dockerDisabled Condition="('$(_browser)' != '$(NoBrowserRequired)')">True</_dockerDisabled>
-      <_dockerDisabled Condition="('$(_executionRuntime)' == 'net-3.5')">True</_dockerDisabled>
+      <_mergedTestCategoriesToInclude>$(TestCategoriesToInclude.Replace(';', ',')),$(_includeCategoriesInTestConfiguration)</_mergedTestCategoriesToInclude>
+      <_mergedTestCategoriesToInclude>$(_mergedTestCategoriesToInclude.Trim(','))</_mergedTestCategoriesToInclude>
+
+      <_includeCategoriesCallArgumentString></_includeCategoriesCallArgumentString>
+      <_includeCategoriesCallArgumentString Condition="'$(_mergedTestCategoriesToInclude)' != ''">/include=$(_mergedTestCategoriesToInclude)</_includeCategoriesCallArgumentString>
     </PropertyGroup>
-    <Error Text="The property 'DotNetFrameworkRuntimeImageName' is not set." Condition="'$(DotNetFrameworkRuntimeImageName)' == '' And '(_dockerDisabled)' == 'False'" />
+
+    <PropertyGroup>
+      <_testName>$(_testAssemblyFileName).$(ConfigurationID).$(_platform).$(_executionRuntimeKey).$(_targetRuntime)</_testName>
+      <_testName Condition="'$(_databaseSystem)' != $(NoDB)">$(_testName).$(_databaseSystem)</_testName>
+      <_testName Condition="'$(_browser)' != $(NoBrowser)">$(_testName).$(_browser)</_testName>
+      <_testName Condition="'$(_mergedTestCategoriesToExclude)' !=''">$(_testName).Exclude=$(_mergedTestCategoriesToExclude.Replace(',', '-'))</_testName>
+      <_testName Condition="'$(_mergedTestCategoriesToInclude)' !=''">$(_testName).Include=$(_mergedTestCategoriesToInclude.Replace(',', '-'))</_testName>
+      <_testResultFile>$(LogDirectory)$(_testName).xml</_testResultFile>
+    </PropertyGroup>
 
     <PropertyGroup>
       <_nunitRunnerFileName>nunit-console.exe</_nunitRunnerFileName>
@@ -147,12 +154,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_testCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''">;</_testCategoriesToExclude>
-      <_testCategoriesToExclude Condition="'$(TestCategoriesToExclude)' != ''">$(TestCategoriesToExclude)</_testCategoriesToExclude>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <_nunitCallArgumentString>/nologo /noshadow $(_testAssemblyFullPath) /exclude=$([MSBuild]::Escape('$(_testCategoriesToExclude)')) /framework=$(_executionRuntime) /xml=$(_testResultFile)</_nunitCallArgumentString>
+      <_nunitCallArgumentString>/nologo /noshadow $(_testAssemblyFullPath) $(_includeCategoriesCallArgumentString) $(_excludeCategoriesCallArgumentString) /framework=$(_targetRuntime) /xml=$(_testResultFile)</_nunitCallArgumentString>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -167,7 +169,7 @@
     <Exec
         Command="$(NunitFolderPathWithDefaultConfiguration)$(_nunitRunnerFileName) $(_nunitCallArgumentString)"
         IgnoreExitCode="true"
-        Condition="$(_dockerDisabled) == 'True'"/>
+        Condition="$(_dockerEnabled) == 'False'"/>
 
     <!--Else, call RunTestsInDocker target-->
     <PropertyGroup>
@@ -178,21 +180,21 @@ docker run ^
 --volume $(_testAssemblyDirectory):$(_testAssemblyDirectory) ^
 --volume $(LogDirectory):$(LogDirectory) ^
 --entrypoint $(NunitFolderPathWithoutDotNet35Dependency)$(_nunitRunnerFileName) ^
-$(DotNetFrameworkRuntimeImageName) $(_nunitCallArgumentString)
+$(_dockerImageName) $(_nunitCallArgumentString)
       </_dockerCommand>
     </PropertyGroup>
 
     <!--This can be replaced with the "pull" flag on "docker run" as soon as Docker versions are updated to Docker version 19.09-->
-    <Exec 
-        Command="docker pull $(DotNetFrameworkRuntimeImageName)"
+    <Exec
+        Command="docker pull $(_dockerImageName)"
         IgnoreExitCode="true"
-        Condition="$(_dockerDisabled) == 'False'"/>
+        Condition="$(_dockerEnabled) == 'True'"/>
 
-    <Exec 
+    <Exec
         Command="$(_dockerCommand)"
         IgnoreExitCode="true"
-        Condition="$(_dockerDisabled) == 'False'"/>
-    
+        Condition="$(_dockerEnabled) == 'True'"/>
+
     <Message Text="##teamcity[importData type='nunit' path='$(_testResultFile)' verbose='true' whenNoDataPublished='error']"
              Condition="'$(TEAMCITY_VERSION)' != ''" />
 
@@ -220,13 +222,13 @@ $(DotNetFrameworkRuntimeImageName) $(_nunitCallArgumentString)
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
       <Output TaskParameter="NewString" PropertyName="_testTime" />
     </MSBuild.ExtensionPack.Framework.TextString>
-    
-    <Message Text="##teamcity[buildStatisticValue key='$(_testName)' value='$(_testTime)']" 
-             Condition="'$(TEAMCITY_VERSION)' != ''" />
 
-    <ItemGroup  Condition="$(_nunit_failures) &gt; 0 or $(_nunit_errors) &gt; 0">
-      <NumberOfTestFailuresPerProject Include="$(_nunit_failures)" />
-      <NumberOfTestErrorsPerProject Include="$(_nunit_errors)" />
+    <Message Text="##teamcity[buildStatisticValue key='$(_testName)' value='$(_testTime)']"
+             Condition="'$(TEAMCITY_VERSION)' != ''"/>
+
+    <ItemGroup Condition="$(_nunit_failures) &gt; 0 or $(_nunit_errors) &gt; 0">
+      <NumberOfTestFailuresPerProject Include="$(_nunit_failures)"/>
+      <NumberOfTestErrorsPerProject Include="$(_nunit_errors)"/>
       <FailedProjects Include="$(_testAssemblyFullPath)">
         <Platform>$(_platform)</Platform>
         <DatabaseSystem>$(_databaseSystem)</DatabaseSystem>
@@ -275,80 +277,37 @@ $(DotNetFrameworkRuntimeImageName) $(_nunitCallArgumentString)
         InnerXml="$([MSBuild]::Unescape('%(_nunitDestinationFolderPath.SupportedRuntimeConfiguration)'))" />
   </Target>
 
-  <!--
-    BuildTestOutputFilesCrossProduct creates all test configurations 
-    (the result is a cross product of TestOutputFiles x AllPlatforms x AllDatabaseSystems x AllBrowsers).
-    
-    Building cross products with MSBuild is not straightforward, see:
-    http://coding-insomnia.com/2007/02/02/generating-a-cross-product-with-msbuild/
-    for more details.    
-  -->
-  <Target Name="BuildTestOutputFilesCrossProduct">
-    <!-- Step 1: Build the cross product testOutputFiles1 = TestOutputFiles x AllPlatforms -->
-    <CreateItem Include="@(TestOutputFiles)"
-                AdditionalMetadata="Platform=%(AllPlatforms.Identity);
-                                    Use32Bit=%(AllPlatforms.Use32Bit);">
-      <Output ItemName="_testOutputFiles1" TaskParameter="Include"/>
-    </CreateItem>
-
-    <!-- Step 2: Build the cross product _testOutputFiles2 = _testOutputFiles1 x AllDatabaseSystems
-           Warning: Contains also entries for %(_testOutputFiles1.IsDatabaseTest) == False as well! -->
-    <CreateItem Include="@(_testOutputFiles1)"
-                AdditionalMetadata="DatabaseSystem=%(AllDatabaseSystems.Identity);">
-      <!-- Condition="'%(IsDatabaseTest)' == 'True'" not possible (double batching) => filter afterwards -->
-      <Output ItemName="_testOutputFiles2" TaskParameter="Include"/>
-    </CreateItem>
-
-    <!-- Step 3: Filter entries, _testOutputFiles3 = _testOutputFiles2 where %(IsDatabaseTest) -->
+  <Target Name="CreateTestConfigurations">
     <ItemGroup>
-      <_testOutputFiles3 Remove="@(_testOutputFiles3)"/>
-      <_testOutputFiles3 Include="@(_testOutputFiles2)" Condition="'%(IsDatabaseTest)' == 'True'"/>
+      <EnabledBrowsers Include="$(Browsers.Split('+'))"/>
+      <EnabledExecutionRuntimes Include="$(ExecutionRuntimes.Split('+'))"/>
+      <EnabledPlatforms Include="$(Platforms.Split('+'))"/>
+      <EnabledDatabaseSystems Include="$(DatabaseSystems.Split('+'))"/>
+      <EnabledTargetRuntimes Include="$(TargetRuntimes.Split('+'))"/>
+      <EnabledConfigurationIDs Include="$(ConfigurationID)"/>
     </ItemGroup>
 
-    <!-- Step 4: Add additional $(NoDatabaseRequired)-metadata to _testOutputFiles1 where !%(IsDatabaseText) -> _testOutputFiles4 -->
-    <CreateItem Include="@(_testOutputFiles1)"
-                AdditionalMetadata="DatabaseSystem=$(NoDatabaseRequired);"
-                Condition="'%(IsDatabaseTest)' == 'False'">
-      <Output ItemName="_testOutputFiles4" TaskParameter="Include"/>
-    </CreateItem>
+    <CreateTestConfigurations
+        Input="@(TestOutputFiles)"
 
-    <!-- Step 5: _testOutputFiles5 = _testOutputFiles3 + _testOutputFiles4 -->
-    <ItemGroup>
-      <_testOutputFiles5 Remove="@(_testOutputFiles5)"/>
-      <_testOutputFiles5 Include="@(_testOutputFiles3)"/>
-      <_testOutputFiles5 Include="@(_testOutputFiles4)"/>
-    </ItemGroup>
-    
-    <!-- Step 6: Build the cross product _testOutputFiles6 = _testOutputFiles5 x AllBrowsers
-           Warning: Contains also entries for %(_testOutputFiles5.IsWebTest) == False as well! -->
-    <CreateItem Include="@(_testOutputFiles5)"
-                AdditionalMetadata="Browser=%(AllBrowsers.Identity)">
-      <!-- Condition="'%(IsWebTest)' == 'True'" not possible (double batching) => filter afterwards -->
-      <Output ItemName="_testOutputFiles6" TaskParameter="Include"/>
-    </CreateItem>
+        EnabledPlatforms="@(EnabledPlatforms)"
+        SupportedPlatforms="@(SupportedPlatforms)"
 
-    <!-- Step 7: Filter entries, _testOutputFiles7 = _testOutputFiles6 where %(IsWebTest) And %(Browser) != '' (%(Browser) is empty if AllBrowsers is empty) -->
-    <ItemGroup>
-      <_testOutputFiles7 Remove="@(_testOutputFiles7)"/>
-      <_testOutputFiles7 Include="@(_testOutputFiles6)" Condition="'%(IsWebTest)' == 'True' And '%(Browser)' != ''"/>
-    </ItemGroup>
-    
-    <!-- Step 8: Add additional $(NoBrowserRequired)-metadata to _testOutputFiles5 where !%(IsWebTest) -> _testOutputFiles8 -->
-    <CreateItem Include="@(_testOutputFiles5)"
-                AdditionalMetadata="Browser=$(NoBrowserRequired)"
-                Condition="'%(IsWebTest)' == 'False'">
-      <Output ItemName="_testOutputFiles8" TaskParameter="Include"/>
-    </CreateItem>
-    
-    <!-- Step 9: _testOutputFiles = _testOutputFiles8 + _testOutputFiles7 (so that web tests are executed in the end) -->
-    <ItemGroup>
-      <_testOutputFiles Remove="@(_testOutputFiles)"/>
-      <_testOutputFiles Include="@(_testOutputFiles8)"/>
-      <_testOutputFiles Include="@(_testOutputFiles7)"/>
-    </ItemGroup>
+        EnabledDatabaseSystems="@(EnabledDatabaseSystems)"
+        SupportedDatabaseSystems="@(SupportedDatabaseSystems)"
 
-    <!-- Print all created configurations -->
-    <Message Text="Created test configuration: $(ConfigurationID) %(_testOutputFiles.FullPath) %(_testOutputFiles.Platform) %(_testOutputFiles.DatabaseSystem) %(_testOutputFiles.Browser)" Importance="high"/>
+        EnabledBrowsers="@(EnabledBrowsers)"
+        SupportedBrowsers="@(SupportedBrowsers)"
+
+        EnabledExecutionRuntimes="@(EnabledExecutionRuntimes)"
+        SupportedExecutionRuntimes="@(SupportedExecutionRuntimes)"
+
+        EnabledTargetRuntimes="@(EnabledTargetRuntimes)"
+        SupportedTargetRuntimes="@(SupportedTargetRuntimes)"
+
+        EnabledConfigurationIDs="@(EnabledConfigurationIDs)">
+
+      <Output TaskParameter="Output" ItemName="_testOutputFiles"/>
+    </CreateTestConfigurations>
   </Target>
-
 </Project>
