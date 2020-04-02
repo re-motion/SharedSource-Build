@@ -36,25 +36,19 @@
 
   <ItemGroup>
     <NumberOfTestFailuresPerProject Include="0"/>
-    <NumberOfTestErrorsPerProject Include="0"/>
   </ItemGroup>
 
   <!-- Main target; reporting only, calls RunTestsInternal for actual work -->
   <Target Name="RunTests" DependsOnTargets="CreateTestConfigurations;CreateLogDirectory;BuildTestProjects;LogRunTestsStartTime;RunTestsInternal">
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Error Text="ItemGroup 'NumberOfTestFailuresPerProject' is empty, but should contain test results!" Condition="@(NumberOfTestFailuresPerProject) == ''"/>
-    <Error Text="ItemGroup 'NumberOfTestErrorsPerProject' is empty, but should contain test results!" Condition="@(NumberOfTestErrorsPerProject) == ''"/>
-
     <MSBuild.ExtensionPack.Science.Maths TaskAction="Add" Numbers="@(NumberOfTestFailuresPerProject)">
       <Output PropertyName="_failures" TaskParameter="Result"/>
     </MSBuild.ExtensionPack.Science.Maths>
-    <MSBuild.ExtensionPack.Science.Maths TaskAction="Add" Numbers="@(NumberOfTestErrorsPerProject)">
-      <Output PropertyName="_errors" TaskParameter="Result"/>
-    </MSBuild.ExtensionPack.Science.Maths>
 
     <Error
-      Text="Running Unit-Tests failed because of $(_failures) failures and/or $(_errors) errors in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures and %(Errors) errors','%0A')"
-      Condition="$(_failures) &gt; 0 or $(_errors) &gt; 0"/>
+      Text="Running Unit-Tests failed because of $(_failures) failures in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures','%0A')"
+      Condition="$(_failures) &gt; 0"/>
 
     <PropertyGroup>
       <_timeTaken>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse($(RunTestsStartTime)))).TotalMilliseconds.ToString(0))</_timeTaken>
@@ -83,8 +77,6 @@
     <Error Text="The property 'NoDB' is not set." Condition="'$(NoDB)' == ''"/>
     <Error Text="The property 'NoBrowser' is not set." Condition="'$(NoBrowser)' == ''"/>
     <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''"/>
-    <Error Text="The property 'NunitFolderPathWithDefaultConfiguration' is not set." Condition="'$(NunitFolderPathWithDefaultConfiguration)' == ''"/>
-    <Error Text="The property 'NunitFolderPathWithoutDotNet35Dependency' is not set." Condition="'$(NunitFolderPathWithoutDotNet35Dependency)' == ''"/>
 
     <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(_testOutputFiles)">
       <Output TaskParameter="ItemCount" PropertyName="_testOutputFilesCount"/>
@@ -127,16 +119,39 @@
       <_mergedTestCategoriesToExclude>$(TestCategoriesToExclude.Replace(';', ',')),$(_excludeCategoriesInTestConfiguration)</_mergedTestCategoriesToExclude>
       <_mergedTestCategoriesToExclude>$(_mergedTestCategoriesToExclude.Trim(','))</_mergedTestCategoriesToExclude>
 
-      <_excludeCategoriesCallArgumentString></_excludeCategoriesCallArgumentString>
-      <_excludeCategoriesCallArgumentString Condition="'$(_mergedTestCategoriesToExclude)' != ''">/exclude=$(_mergedTestCategoriesToExclude)</_excludeCategoriesCallArgumentString>
-    </PropertyGroup>
-
-    <PropertyGroup>
       <_mergedTestCategoriesToInclude>$(TestCategoriesToInclude.Replace(';', ',')),$(_includeCategoriesInTestConfiguration)</_mergedTestCategoriesToInclude>
       <_mergedTestCategoriesToInclude>$(_mergedTestCategoriesToInclude.Trim(','))</_mergedTestCategoriesToInclude>
+    </PropertyGroup>
 
-      <_includeCategoriesCallArgumentString></_includeCategoriesCallArgumentString>
-      <_includeCategoriesCallArgumentString Condition="'$(_mergedTestCategoriesToInclude)' != ''">/include=$(_mergedTestCategoriesToInclude)</_includeCategoriesCallArgumentString>
+    <ItemGroup>
+      <_splitCategoriesToExclude Remove="@(_splitCategoriesToExclude)"/>
+      <_splitCategoriesToExclude Include="$(_mergedTestCategoriesToExclude.Split(','))"/>
+
+      <_splitCategoriesToInclude Remove="@(_splitCategoriesToInclude)"/>
+      <_splitCategoriesToInclude Include="$(_mergedTestCategoriesToInclude.Split(','))"/>
+
+      <_exludeFilters Remove="@(_exludeFilters)"/>
+      <_exludeFilters Include="cat != %(_splitCategoriesToExclude.Identity) "/>
+
+      <_inludeFilters Remove="@(_inludeFilters)"/>
+      <_inludeFilters Include="cat == %(_splitCategoriesToInclude.Identity) "/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_excludeCategoriesCallArgumentString>@(_exludeFilters)</_excludeCategoriesCallArgumentString>
+      <_excludeCategoriesCallArgumentString>$(_excludeCategoriesCallArgumentString.Replace(";", " &amp;&amp; "))</_excludeCategoriesCallArgumentString>
+
+      <_includeCategoriesCallArgumentString>@(_inludeFilters)</_includeCategoriesCallArgumentString>
+      <_includeCategoriesCallArgumentString>$(_includeCategoriesCallArgumentString.Replace(";", " &amp;&amp; "))</_includeCategoriesCallArgumentString>
+    </PropertyGroup>
+
+    <!--  Output example: where "cat != ExcludeMe1 && cat != ExcludeMe2 && cat == IncludeMe"  -->
+    <PropertyGroup>
+      <_nunitTestFilter></_nunitTestFilter>
+      <_nunitTestFilter Condition="$(_mergedTestCategoriesToExclude)!='' And $(_mergedTestCategoriesToInclude)!=''">$(_excludeCategoriesCallArgumentString) &amp;&amp; $(_includeCategoriesCallArgumentString)</_nunitTestFilter>
+      <_nunitTestFilter Condition="$(_mergedTestCategoriesToExclude)!='' And $(_mergedTestCategoriesToInclude)==''">$(_excludeCategoriesCallArgumentString)</_nunitTestFilter>
+      <_nunitTestFilter Condition="$(_mergedTestCategoriesToExclude)=='' And $(_mergedTestCategoriesToInclude)!=''">$(_includeCategoriesCallArgumentString)</_nunitTestFilter>
+      <_nunitTestFilter Condition="$(_nunitTestFilter)!=''">--where "$(_nunitTestFilter)"</_nunitTestFilter>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -149,12 +164,16 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_nunitRunnerFileName>nunit-console.exe</_nunitRunnerFileName>
-      <_nunitRunnerFileName Condition="$(_use32Bit) == 'True'">nunit-console-x86.exe</_nunitRunnerFileName>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <_nunitCallArgumentString>/nologo /noshadow $(_testAssemblyFullPath) $(_includeCategoriesCallArgumentString) $(_excludeCategoriesCallArgumentString) /framework=$(_targetRuntime) /xml=$(_testResultFile)</_nunitCallArgumentString>
+      <_nunitRunnerFileName>nunit3-console.exe</_nunitRunnerFileName>
+      <_use32BitArgument Condition="$(_use32Bit) == 'True'">--x86</_use32BitArgument>
+      <_nunitCallArgumentString> ^
+        $(_use32BitArgument) ^
+        $(_testAssemblyFullPath) ^
+        $(_nunitTestFilter) ^
+        --framework=$(_targetRuntime) ^
+        --result=$(_testResultFile) ^
+        --list-extensions
+      </_nunitCallArgumentString>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -167,7 +186,7 @@
 
     <!--If DockerDisabled, call Nunit Runner directly-->
     <Exec
-        Command="$(NunitFolderPathWithDefaultConfiguration)$(_nunitRunnerFileName) $(_nunitCallArgumentString)"
+        Command="$(_nunitRunnerFolderPath)$(_nunitRunnerFileName) $(_nunitCallArgumentString)"
         IgnoreExitCode="true"
         Condition="$(_dockerEnabled) == 'False'"/>
 
@@ -176,10 +195,10 @@
       <_dockerCommand>
 docker run ^
 --rm ^
---volume $(NunitFolderPathWithoutDotNet35Dependency):$(NunitFolderPathWithoutDotNet35Dependency) ^
+--volume $(_nunitRunnerFolderPath):$(_nunitRunnerFolderPath) ^
 --volume $(_testAssemblyDirectory):$(_testAssemblyDirectory) ^
 --volume $(LogDirectory):$(LogDirectory) ^
---entrypoint $(NunitFolderPathWithoutDotNet35Dependency)$(_nunitRunnerFileName) ^
+--entrypoint $(_nunitRunnerFolderPath)$(_nunitRunnerFileName) ^
 $(_dockerImageName) $(_nunitCallArgumentString)
       </_dockerCommand>
     </PropertyGroup>
@@ -201,22 +220,15 @@ $(_dockerImageName) $(_nunitCallArgumentString)
     <MSBuild.ExtensionPack.Xml.XmlFile
         TaskAction="ReadAttribute"
         File="$(_testResultFile)"
-        XPath="/test-results/test-suite/@time">
+        XPath="/test-run/test-suite/@duration">
       <Output TaskParameter="Value" PropertyName="_testTime" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
     <MSBuild.ExtensionPack.Xml.XmlFile
         TaskAction="ReadAttribute"
         File="$(_testResultFile)"
-        XPath="/test-results/@failures">
+        XPath="/test-run/@failed">
       <Output TaskParameter="Value" PropertyName="_nunit_failures" />
-    </MSBuild.ExtensionPack.Xml.XmlFile>
-
-    <MSBuild.ExtensionPack.Xml.XmlFile
-        TaskAction="ReadAttribute"
-        File="$(_testResultFile)"
-        XPath="/test-results/@errors">
-      <Output TaskParameter="Value" PropertyName="_nunit_errors" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
@@ -226,55 +238,37 @@ $(_dockerImageName) $(_nunitCallArgumentString)
     <Message Text="##teamcity[buildStatisticValue key='$(_testName)' value='$(_testTime)']"
              Condition="'$(TEAMCITY_VERSION)' != ''"/>
 
-    <ItemGroup Condition="$(_nunit_failures) &gt; 0 or $(_nunit_errors) &gt; 0">
+    <ItemGroup Condition="$(_nunit_failures) &gt; 0">
       <NumberOfTestFailuresPerProject Include="$(_nunit_failures)"/>
-      <NumberOfTestErrorsPerProject Include="$(_nunit_errors)"/>
       <FailedProjects Include="$(_testAssemblyFullPath)">
         <Platform>$(_platform)</Platform>
         <DatabaseSystem>$(_databaseSystem)</DatabaseSystem>
         <Browser>$(_browser)</Browser>
         <Failures>$(_nunit_failures)</Failures>
-        <Errors>$(_nunit_errors)</Errors>
       </FailedProjects>
     </ItemGroup>
   </Target>
 
-  <!-- We need to configure Nunit differently to run it on a System with or without .Net 3.5 installed. Can be removed after the switch to Nunit 3-->
-  <Target Name="PrepareNunitDirectory" Outputs="%(_nunitDestinationFolderPath.Identity)">
+  <Target Name="PrepareNunitDirectory" Outputs="$(_nunitRunnerFolderPath)">
     <Error Text="The property 'TempDirectory' is not set." Condition="'$(TempDirectory)' == ''" />
     <Error Text="The property 'NUnitToolPath' is not set." Condition="'$(NUnitToolPath)' == ''" />
 
     <PropertyGroup>
-      <_dockerTempFolderName>$(TempDirectory)SharedSourceBuildNunitCopy\</_dockerTempFolderName>
-      <NunitFolderPathWithDefaultConfiguration>$(_dockerTempFolderName)NunitDefaultConfiguration\</NunitFolderPathWithDefaultConfiguration>
-      <NunitFolderPathWithoutDotNet35Dependency>$(_dockerTempFolderName)NunitWithoutDotNet35Dependency\</NunitFolderPathWithoutDotNet35Dependency>
+      <_nunitRunnerFolderPath>$(TempDirectory)SharedSourceBuildNunitCopy\</_nunitRunnerFolderPath>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_nunitDestinationFolderPath Include="$(NunitFolderPathWithDefaultConfiguration)">
-        <SupportedRuntimeConfiguration></SupportedRuntimeConfiguration>
-      </_nunitDestinationFolderPath>
-
-      <_nunitDestinationFolderPath Include="$(NunitFolderPathWithoutDotNet35Dependency)">
-        <SupportedRuntimeConfiguration>&lt;supportedRuntime version=&quot;v4.0.30319&quot; /&gt;</SupportedRuntimeConfiguration>
-      </_nunitDestinationFolderPath>
-    </ItemGroup>
+    <WriteLinesToFile
+        File="$(NUnitToolPath)Remotion.NUnit.addins"
+        Lines="*.dll"
+        Overwrite="true"
+        Encoding="Unicode"/>
 
     <ItemGroup>
-      <_filesToBeCopied Include="$(NUnitToolPath)**\*.*"></_filesToBeCopied>
+      <_filesToBeCopied Include="$(NUnitToolPath)**\*.*" />
+      <_filesToBeCopied Include="%(NUnitExtensionsPaths.Identity)**\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_filesToBeCopied)" DestinationFolder="%(_nunitDestinationFolderPath.Identity)"></Copy>
-
-    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
-        File="%(_nunitDestinationFolderPath.Identity)nunit-console.exe.config"
-        XPath="configuration/startup"
-        InnerXml="$([MSBuild]::Unescape('%(_nunitDestinationFolderPath.SupportedRuntimeConfiguration)'))" />
-
-    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
-        File="%(_nunitDestinationFolderPath.Identity)nunit-console-x86.exe.config"
-        XPath="configuration/startup"
-        InnerXml="$([MSBuild]::Unescape('%(_nunitDestinationFolderPath.SupportedRuntimeConfiguration)'))" />
+    <Copy SourceFiles="@(_filesToBeCopied)" DestinationFolder="$(_nunitRunnerFolderPath)" />
   </Target>
 
   <Target Name="CreateTestConfigurations">
