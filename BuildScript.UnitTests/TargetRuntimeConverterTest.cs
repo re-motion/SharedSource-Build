@@ -23,19 +23,47 @@ namespace Remotion.BuildScript.UnitTests
   public class TargetRuntimeConverterTest
   {
     [Test]
-    public void ToNUnitFormat ()
+    [TestCase ("NET48", "NET-4.8")]
+    [TestCase ("net48", "NET-4.8")]
+    [TestCase ("nEt48", "NET-4.8")]
+    public void ToNUnitFormat_WithSingleDecimalPlace_CaseInsensitive (string input, string expected)
     {
-      var result = TargetRuntimeConverter.ToNUnitFormat ("NET45");
+      var result = TargetRuntimeConverter.ToNUnitFormat (input);
 
-      Assert.That (result, Is.EqualTo ("NET-4.5"));
+      Assert.That (result, Is.EqualTo (expected));
     }
 
     [Test]
-    public void ToInitialFormat ()
+    [TestCase ("NET472", "NET-4.7.2")]
+    [TestCase ("net472", "NET-4.7.2")]
+    [TestCase ("nEt472", "NET-4.7.2")]
+    public void ToNUnitFormat_WithMultipleDecimalPlaces_CaseInsensitive (string input, string expected)
     {
-      var result = TargetRuntimeConverter.ToTargetFrameworkMoniker ("NET-4.5");
+      var result = TargetRuntimeConverter.ToNUnitFormat (input);
 
-      Assert.That (result, Is.EqualTo ("NET45"));
+      Assert.That (result, Is.EqualTo (expected));
+    }
+
+    [Test]
+    [TestCase ("NET-4.8", "NET48")]
+    [TestCase ("net-4.8", "NET48")]
+    [TestCase ("nEt-4.8", "NET48")]
+    public void ToTargetFrameworkMoniker_WithSingleDecimalPlace_CaseInsensitive (string input, string expected)
+    {
+      var result = TargetRuntimeConverter.ToTargetFrameworkMoniker (input);
+
+      Assert.That (result, Is.EqualTo (expected));
+    }
+
+    [Test]
+    [TestCase ("NET-4.7.2", "NET472")]
+    [TestCase ("net-4.7.2", "NET472")]
+    [TestCase ("nEt-4.7.2", "NET472")]
+    public void ToTargetFrameworkMoniker_WithMultipleDecimalPlaces_CaseInsensitive (string input, string expected)
+    {
+      var result = TargetRuntimeConverter.ToTargetFrameworkMoniker (input);
+
+      Assert.That (result, Is.EqualTo (expected));
     }
   }
 }

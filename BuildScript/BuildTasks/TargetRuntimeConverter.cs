@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 //
+using System;
 using System.Text.RegularExpressions;
 
 namespace Remotion.BuildScript.BuildTasks
@@ -25,12 +26,18 @@ namespace Remotion.BuildScript.BuildTasks
   {
     public static string ToNUnitFormat (string targetFrameworkMoniker)
     {
-      return Regex.Replace (targetFrameworkMoniker, @"NET(\d)(\d)", "NET-$1.$2", RegexOptions.IgnoreCase);
+      var versionString = Regex.Replace (targetFrameworkMoniker, "NET", "", RegexOptions.IgnoreCase);
+      var versionDigits = versionString.ToCharArray();
+
+      return "NET-" + string.Join (".", versionDigits);
     }
 
     public static string ToTargetFrameworkMoniker (string nUnitFormat)
     {
-      return Regex.Replace (nUnitFormat, @"NET-(\d).(\d)", "NET$1$2", RegexOptions.IgnoreCase);
+      var versionString = Regex.Replace (nUnitFormat, "NET-", "", RegexOptions.IgnoreCase);
+      var versionDigits = versionString.Split ('.');
+
+      return "NET" + string.Join ("", versionDigits);
     }
   }
 }
