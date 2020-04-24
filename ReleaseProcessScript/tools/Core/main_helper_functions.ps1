@@ -77,35 +77,17 @@ function Get-Develop-Current-Version ($StartReleasebranch)
   return $CurrentVersion
 }
 
-function Get-Support-Current-Version ($SupportVersion, $StartReleasePhase)
+function Get-Hotfix-Current-Version ($LastVersion, $StartReleasePhase)
 {
-	#Check if there exists a version already on Support 
-	if (Get-Last-Version-Of-Branch-From-Tag-Exists)
+  if ($StartReleasePhase)
   {
-    $LastVersion = Get-Last-Version-Of-Branch-From-Tag
-     
-    if ($StartReleasePhase)
-    {
-      if ( (Get-PreReleaseStage $LastVersion.Substring(1)) -eq $NULL)
-      {
-        $CurrentVersion = Get-Next-Patch $LastVersion.Substring(1)
-      }
-      else
-      {
-        $CurrentVersion = Get-Version-Without-Pre $LastVersion.Substring(1)
-      }
-    }
-    else
-    {
-      $PossibleVersions = Get-Possible-Next-Versions-Support $LastVersion.Substring(1)
-      $CurrentVersion = Read-Version-Choice $PossibleVersions
-    }
+    $CurrentVersion = $LastVersion
   }
   else
   {
-    #When no Tag already exists on the support branch, start with .0
-    $CurrentVersion = "$($SupportVersion).0"
-  }    
+    $PossibleVersions = Get-Possible-Versions-Hotfix $LastVersion $true
+    $CurrentVersion = Read-Version-Choice $PossibleVersions
+  }
 
   return $CurrentVersion
 }
