@@ -89,7 +89,7 @@
     <Error Text="The property 'BuildNumber' is not set." Condition="'$(BuildNumber)' == ''" />
 
     <PropertyGroup>
-      <Version>$(Version)-x.1.$(BuildNumber)</Version>
+      <Version>$(Version).$(BuildNumber)</Version> <!-- I had to change it since the old way threw an error -->
     </PropertyGroup>
   </Target>
 
@@ -106,5 +106,11 @@
   <!-- Customization Targets -->
 
   <Import Project="$(CustomizationsDirectory)Server\*.targets" />
+
+  <Target Name="CheckBuildLocationProperties" >
+  </Target>
+
+  <Target Name="CheckBuildConfigurationProperties" >
+  </Target>
 
 </Project>
