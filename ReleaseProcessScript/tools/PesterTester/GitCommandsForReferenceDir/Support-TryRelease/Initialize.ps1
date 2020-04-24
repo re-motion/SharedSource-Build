@@ -1,0 +1,1 @@
+git checkout -b "support/v1.1" *>$NULL
