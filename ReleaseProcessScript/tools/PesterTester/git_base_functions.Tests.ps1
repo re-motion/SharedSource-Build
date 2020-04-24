@@ -11,6 +11,7 @@ $TestRemoteName = "testRemote"
 
 Describe "git_base_functions" {
   BeforeEach {
+    Set-Alias -Name git -Value (Get-Custom-Git-Path $ScriptRoot)
     cd $ScriptRoot
     [xml]$ConfigFile = Get-Content "releaseProcessScript.config"
 
@@ -188,12 +189,12 @@ Describe "git_base_functions" {
       git checkout -b "additionalAncestor" --quiet
       git checkout -b "newBranch" --quiet
       $ExpectedAncestors = "master", "additionalAncestor"
-      Mock Write-Host -Verifiable -ParameterFilter {$Object -eq "We expected to find one of following Ancestors: ['master','additionalAncestor'], but found multiple possible Ancestors."}
+      Mock Write-Host -ParameterFilter {$Object -eq "We expected to find one of following Ancestors: ['master','additionalAncestor'], but found multiple possible Ancestors."}
       Mock Read-Host {return 1}
 
       Get-Ancestor $ExpectedAncestors | Should Be "additionalAncestor"
 
-      Assert-VerifiableMock
+      Assert-MockCalled Write-Host 1
     }
   }
 }

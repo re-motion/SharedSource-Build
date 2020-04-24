@@ -9,6 +9,7 @@ $TestDirName = "GitUnitTestDir"
 
 Describe "get-ancestor_function" {
   BeforeEach {
+    Set-Alias -Name git -Value (Get-Custom-Git-Path $ScriptRoot)
     cd $ScriptRoot
 
     Test-Create-Repository "$($TestBaseDir)\\$($TestDirName)"
