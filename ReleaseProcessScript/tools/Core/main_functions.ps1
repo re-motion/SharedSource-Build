@@ -324,7 +324,7 @@ function Release-RC ()
 
   $CurrentVersion = Find-Next-Rc $LastVersion
 
-  if ($Ancestor -eq "develop" -or $Ancestor.StartsWith("release/"))
+  if ($Ancestor -eq "develop")
   {
     $NextPossibleVersions = Get-Possible-Next-Versions-Develop $CurrentVersion
   }
