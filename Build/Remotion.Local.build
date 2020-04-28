@@ -36,11 +36,16 @@
     <SkipNuGet>True</SkipNuGet>
     <SkipDependDB>True</SkipDependDB>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <DockerImageDotNetFrameworkRuntime4_7 Condition="'$(DockerImageDotNetFrameworkRuntime4_7)' == ''">Unavailable</DockerImageDotNetFrameworkRuntime4_7>
+    <DockerImageDotNetFrameworkRuntime4_8 Condition="'$(DockerImageDotNetFrameworkRuntime4_8)' == ''">Unavailable</DockerImageDotNetFrameworkRuntime4_8>
+  </PropertyGroup>
+
   <Target Name="TestBuild_Configuration">
     <PropertyGroup>
       <Platforms>x86</Platforms>
-      <DatabaseSystems>NoDB+SqlServerDefault</DatabaseSystems>
+      <DatabaseSystems>NoDB</DatabaseSystems>
       <Browsers>NoBrowser</Browsers>
       <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
       <TargetRuntimes>NET48</TargetRuntimes>
@@ -52,8 +57,8 @@
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
       <Platforms>x64</Platforms>
-      <DatabaseSystems>NoDB+SqlServerDefault</DatabaseSystems>
-      <Browsers>NoBrowser+Chrome</Browsers>
+      <DatabaseSystems>NoDB</DatabaseSystems>
+      <Browsers>NoBrowser</Browsers>
       <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
       <TargetRuntimes>NET48</TargetRuntimes>
       <TestCategoriesToExclude></TestCategoriesToExclude>
