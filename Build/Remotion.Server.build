@@ -89,7 +89,7 @@
     <Error Text="The property 'BuildNumber' is not set." Condition="'$(BuildNumber)' == ''" />
 
     <PropertyGroup>
-      <Version>$(Version).$(BuildNumber)</Version> <!-- I had to change it since the old way threw an error -->
+      <Version>$(Version).$(BuildNumber)</Version>
     </PropertyGroup>
   </Target>
 
