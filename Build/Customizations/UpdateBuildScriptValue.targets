@@ -19,7 +19,6 @@
   <PropertyGroup>
     <RemotionBuildFile Condition="'$(RemotionBuildFile)' == ''">$(SolutionDirectory)\BuildScript\Main\Remotion.build</RemotionBuildFile>
     <AssemblyNuGetVersion></AssemblyNuGetVersion>
-    <Version></Version>
   </PropertyGroup>
 
   <Target Name="After_UpdateAssemblyInfosForDevelopment" AfterTargets="UpdateAssemblyInfosLocalBuild" DependsOnTargets="PrepareAssemblyNuGetVersion">
