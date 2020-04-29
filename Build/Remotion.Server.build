@@ -107,10 +107,4 @@
 
   <Import Project="$(CustomizationsDirectory)Server\*.targets" />
 
-  <Target Name="CheckBuildLocationProperties" >
-  </Target>
-
-  <Target Name="CheckBuildConfigurationProperties" >
-  </Target>
-
 </Project>
