@@ -33,23 +33,25 @@ Describe "release_process_script_flow" {
   }
 
   Context "Release-Version Initial Choice" {
-    It "Release-Version_OnSupportBranch_MockChoiceAlpha" {
-      Mock Get-Support-Current-Version { return "1.1.1-alpha.1" }
+    It "Release-Version_OnHotfixBranch_MockChoiceAlpha" {
+      Mock Get-Hotfix-Current-Version { return "1.1.1-alpha.1" }
       Mock Release-Alpha-Beta { return }
 
       git checkout -b "support/v1.1" --quiet
+      git checkout -b "hotfix/v1.1.1" --quiet
 
       Release-Version 
 
       Assert-MockCalled Release-Alpha-Beta -Times 1
     }
        
-    It "Release-Version_OnSupportBranch_MockChoicePatch" {
-      Mock Get-Support-Current-Version { return "1.1.1" }
+    It "Release-Version_OnHotfixBranch_MockChoicePatch" {
+      Mock Get-Hotfix-Current-Version { return "1.1.1" }
       Mock Release-Patch { return }
 
       git checkout -b "support/v1.1" --quiet
-           
+      git checkout -b "hotfix/v1.1.1" --quiet
+
       Release-Version
 
       Assert-MockCalled Release-Patch -Times 1
@@ -99,20 +101,22 @@ Describe "release_process_script_flow" {
 }
 
 Context "Release-Version Functions called" {
-    It "ReleaseVersion_OnSupport_ReleaseSupport_ReleaseAlpha" {
-      Mock Get-Support-Current-Version { return "1.1.1-alpha.1" }
+    It "ReleaseVersion_OnHotfix_ReleaseHotfix_ReleaseAlpha" {
+      Mock Get-Hotfix-Current-Version { return "1.1.1-alpha.1" }
       Mock Read-Version-Choice { return "1.1.1-alpha.2" }
       git checkout -b "support/v1.1" --quiet
+      git checkout -b "hotfix/v1.1.1" --quiet
       Test-Add-Commit
 
       { Release-Version }| Should Not Throw
     }    
 
-    It "ReleaseVersion_OnSupport_ReleaseSupport_ReleasePatch" {
-      Mock Get-Support-Current-Version { return "1.1.1" }
+    It "ReleaseVersion_OnHotfix_ReleaseHotfix_ReleasePatch" {
+      Mock Get-Hotfix-Current-Version { return "1.1.1" }
       Mock Read-Version-Choice { return "1.1.2" }
 
       git checkout -b "support/v1.1" --quiet
+      git checkout -b "hotfix/v1.1.2" --quiet
 
       { Release-Version }| Should Not Throw
     }

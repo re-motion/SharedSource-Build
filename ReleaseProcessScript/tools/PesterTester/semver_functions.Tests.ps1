@@ -62,34 +62,34 @@ Describe "semver_functions" {
     }
   }
 
-  Context "Get-Possible-Next-Versions-Support" {
-      It "Get-Possible-Next-Versions-Support_WithAlpha_ShouldReturnArray" {
-        $Version = "1.2.0-alpha.4"
-        $NextVersions = "1.2.0-alpha.5", "1.2.0-beta.1", "1.2.0"
+  Context "Get-Possible-Next-Versions-Hotfix" {
+    It "Get-Possible-Next-Versions-Hotfix_WithAlpha_ShouldReturnArray" {
+      $Version = "1.2.0-alpha.4"
+      $NextVersions = "1.2.0-alpha.5", "1.2.0-beta.1", "1.2.0"
 
-        Get-Possible-Next-Versions-Support $Version | Should Be $NextVersions
-      }
+      Get-Possible-Versions-Hotfix $Version $true | Should Be $NextVersions
+    }
 
-      It "Get-Possible-Next-Versions-Support_WithBeta_ShouldReturnArray" {
-        $Version = "1.2.0-beta.3"
-        $NextVersions = "1.2.0-beta.4", "1.2.0"
+    It "Get-Possible-Next-Versions-Hotfix_WithBeta_ShouldReturnArray" {
+      $Version = "1.2.0-beta.3"
+      $NextVersions = "1.2.0-beta.4", "1.2.0"
 
-        Get-Possible-Next-Versions-Support $Version | Should Be $NextVersions
-      }
+      Get-Possible-Versions-Hotfix $Version $true | Should Be $NextVersions
+    }
 
-      It "Get-Possible-Next-Versions-Support_WithRc_ShouldReturnArray" {
-        $Version = "1.2.0-rc.1"
-        $NextVersions = "1.2.0-rc.2", "1.2.0"
+    It "Get-Possible-Next-Versions-Hotfix_WithRc_ShouldReturnArray" {
+      $Version = "1.2.0-rc.1"
+      $NextVersions = "1.2.0-rc.2", "1.2.0"
 
-        Get-Possible-Next-Versions-Support $Version | Should Be $NextVersions
-      }
+      Get-Possible-Versions-Hotfix $Version $true | Should Be $NextVersions
+    }
 
-      It "Get-Possible-Next-Versions-Support_WithoutPre_ShouldReturnArray" {
-        $Version = "1.2.0"
-        $NextVersions = "1.2.1-alpha.1", "1.2.1-beta.1", "1.2.1"
+    It "Get-Possible-Next-Versions-Hotfix_WithoutPre_ShouldReturnArray" {
+      $Version = "1.2.0"
+      $NextVersions = "1.2.1", "1.2.1-alpha.1", "1.2.1-beta.1"
 
-        Get-Possible-Next-Versions-Support $Version | Should Be $NextVersions
-      }
+      Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
+    }
   }
 
   Context "Get-Most-Recent-Version" {
