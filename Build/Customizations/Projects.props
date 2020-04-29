@@ -1,7 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<ItemGroup>
+  <PropertyGroup>
+    <NormalTestConfiguration Condition="'$(NormalTestConfiguration)' == ''">
+      Win_NET48    + NET45 + NoBrowser + NoDB + Debug     + x86;
+      Win_NET48    + NET45 + NoBrowser + NoDB + Release   + x64;
+      LocalMachine + NET45 + NoBrowser + NoDB + Debug     + x86;
+    </NormalTestConfiguration>
+  </PropertyGroup>
+
+  <ItemGroup>
     <ReleaseProjectFiles Include="$(SolutionDirectory)\BuildScript\Buildscript.csproj"/>
     <ReleaseProjectFiles Include="$(SolutionDirectory)\ReleaseProcessScript\ReleaseProcessScript.csproj"/>
+    <UnitTestProjectFiles Include="$(SolutionDirectory)\BuildScript.UnitTests\BuildScript.UnitTests.csproj">
+      <TestConfiguration>$(NormalTestConfiguration)</TestConfiguration>
+    </UnitTestProjectFiles>
   </ItemGroup>
 </Project>

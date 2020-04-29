@@ -50,10 +50,10 @@
   <Target Name="TestBuild_Configuration">
     <PropertyGroup>
       <Platforms>x86</Platforms>
-      <DatabaseSystems>NoDB+SqlServer2012</DatabaseSystems>
-      <Browsers>NoBrowser+Chrome</Browsers>
-      <ExecutionRuntimes>Win_NET48+EnforcedLocalMachine</ExecutionRuntimes>
-      <TargetRuntimes>NET48</TargetRuntimes>
+      <DatabaseSystems>NoDB</DatabaseSystems>
+      <Browsers>NoBrowser</Browsers>
+      <ExecutionRuntimes>Win_NET48</ExecutionRuntimes>
+      <TargetRuntimes>NET45</TargetRuntimes>
       <TestCategoriesToExclude></TestCategoriesToExclude>
     </PropertyGroup>
   </Target>
@@ -61,10 +61,10 @@
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
       <Platforms>x86+x64</Platforms>
-      <DatabaseSystems>SqlServer2012+SqlServer2014+SqlServer2016+SqlServer2017</DatabaseSystems>
-      <Browsers>NoBrowser+Chrome+InternetExplorer+Firefox+Edge</Browsers>
-      <ExecutionRuntimes>Win_NET472+Win_NET48+EnforcedLocalMachine</ExecutionRuntimes>
-      <TargetRuntimes>NET472+NET48</TargetRuntimes>
+      <DatabaseSystems>NoDB</DatabaseSystems>
+      <Browsers>NoBrowser</Browsers>
+      <ExecutionRuntimes>Win_NET48</ExecutionRuntimes>
+      <TargetRuntimes>NET45</TargetRuntimes>
       <TestCategoriesToExclude></TestCategoriesToExclude>
     </PropertyGroup>
   </Target>

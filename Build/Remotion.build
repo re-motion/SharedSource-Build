@@ -29,8 +29,17 @@
     <NuGetToolPath Condition="'$(NuGetToolPath)' == ''">$(PackagesDirectory)NuGet.CommandLine.2.8.2\tools\</NuGetToolPath>
     <NuGetForMSBuildPath Condition="'$(NuGetForMSBuildPath)' == ''">$(PackagesDirectory)NuGet.for.MSBuild.1.4.3\build\</NuGetForMSBuildPath>
     <RemotionBuildTasksPath Condition="'$(RemotionBuildTasksPath)' == ''">$(PackagesDirectory)Remotion.BuildTools.MSBuildTasks.1.0.5827.25795\tools\</RemotionBuildTasksPath>
-    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.2.0.0-alpha015\BuildTargets\</RemotionBuildScriptPath>
+    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.2.0.0-alpha022\BuildTargets\</RemotionBuildScriptPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedBrowsers Remove="@(SupportedBrowsers)"/>
+    <SupportedPlatforms Include="x86;x64"/>
+    <SupportedDatabaseSystems Remove="@(SupportedDatabaseSystems)"/>
+    <SupportedExecutionRuntimes Include="Win_NET48=$(DockerImageDotNetFrameworkRuntime4_8)"/>
+    <SupportedTargetRuntimes Include="NET45"/>
+    <SupportedConfigurationIDs Include="Debug;Release"/>
+  </ItemGroup>
 
   <Import Project="$(RemotionBuildScriptPath)*.targets" />
   <Import Project="$(MSBuildExtensionPackPath)MSBuild.ExtensionPack.tasks" />
