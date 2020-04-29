@@ -2,9 +2,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NormalTestConfiguration Condition="'$(NormalTestConfiguration)' == ''">
-      Win_NET48     + NET45 + NoBrowser + NoDB + Debug     + x86;
-      Win_NET48     + NET45 + NoBrowser + NoDB + Release   + x64;
-      LocalMachine  + NET45 + NoBrowser + NoDB + Debug     + x64;
+      Win_NET48    + NET45 + NoBrowser + NoDB + Debug     + x86;
+      Win_NET48    + NET45 + NoBrowser + NoDB + Release   + x64;
+      LocalMachine + NET45 + NoBrowser + NoDB + Debug     + x86;
     </NormalTestConfiguration>
   </PropertyGroup>
 
