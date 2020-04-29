@@ -36,8 +36,8 @@
     <SupportedBrowsers Remove="@(SupportedBrowsers)"/>
     <SupportedPlatforms Include="x86;x64"/>
     <SupportedDatabaseSystems Remove="@(SupportedDatabaseSystems)"/>
-    <SupportedExecutionRuntimes Include="Win_NET472=$(DockerImageDotNetFrameworkRuntime4_7);Win_NET48=$(DockerImageDotNetFrameworkRuntime4_8)"/>
-    <SupportedTargetRuntimes Include="NET48;NET472;"/>
+    <SupportedExecutionRuntimes Include="Win_NET48=$(DockerImageDotNetFrameworkRuntime4_8)"/>
+    <SupportedTargetRuntimes Include="NET45;"/>
     <SupportedConfigurationIDs Include="Debug;Release"/>
   </ItemGroup>
 
