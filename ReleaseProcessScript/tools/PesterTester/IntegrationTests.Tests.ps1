@@ -10,319 +10,210 @@
 #There was an Issue that $PSScriptRoot was null in BeforeEach/AfterEach, so we have to cache it here
 $ScriptRoot = $PSScriptRoot
 
-$TestBaseDir = "C:\temp"
+$TestBaseDir = (Get-Item -LiteralPath $env:TEMP).FullName
 $TestDir = "$($TestBaseDir)\ReleaseProcessScriptTestRepository"
-$TestDirName = "GitUnitTestDir"
+$ReferenceDir = "$($TestBaseDir)\ReleaseProcessScriptReferenceRepository"
 
 #TODO: Add a MSBuild Step which commits something to test the correct git branching
 #TODO: Same with File ignore
 
-Describe "IntegrationTestsTest" {
-  
+Describe "IntegrationTests" {
+
   BeforeEach {
+    Set-Alias -Name git -Value (Get-Custom-Git-Path $ScriptRoot)
     #Mock Things which we dont want to test automated in an integration test as they could break something online
     Test-Mock-All-Jira-Functions
-    Test-Path $TestDir | Should Be False
     
-    #Create Base Directory
+    #Delete base directory if exists and create it
+    if (Test-Path $TestDir) {
+      Remove-Item $TestDir -Recurse
+    }
     New-Item $TestDir -ItemType directory
 
-    Copy-Item releaseProcessScript.config -Destination $TestDir
+    if (Test-Path $ReferenceDir) {
+      Remove-Item $ReferenceDir -Recurse
+    }
+    New-Item $ReferenceDir -ItemType directory
 
-    cd $TestDir
-    $MarkerName = ".BuildProject"
-    $MarkerTemplate = 
-"<?xml version=`"1.0`" encoding=`"utf-8`"?>
-<!--Marks the path fo the releaseProcessScript config file-->
-<configFile>
-    <path>releaseProcessScript.config</path>
-    <buildToolsVersion>$($BuildToolsVersion)</buildToolsVersion>
-</configFile>"
-
-    New-Item -Type file -Name $MarkerName -Value $MarkerTemplate
-
-    git init --quiet
-    git add .
-    git commit -m "First commit"
-    git tag -a "v1.0.0" -m "v1.0.0"
-    git checkout master --quiet
-
-    New-Item -Name "TestFile.txt" -ItemType "file" -Value "SomeValue"
-    
-    git add .
-    git commit -m "Second commit"
+    Initialize-GitRepository $TestDir
+    Initialize-GitRepository $ReferenceDir
   }
 
   AfterEach {
-    cd $ScriptRoot
-    Remove-Item $TestDir -Recurse -Force  
+    Set-Location $ScriptRoot
+
+    # # Show repository in GitExtensions
+    # Set-Location $TestDir
+    # gitex
+    # Set-Location $ScriptRoot
+
+    # # Show press key prompt
+    # Write-Host -NoNewLine 'Press any key to continue...';
+    # $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
+
+    Remove-Item $TestDir -Recurse -Force
+    Remove-Item $ReferenceDir -Recurse -Force
   }
 
-  Context "ReleaseFromMaster" {
-    It "ReleasePatchOnMaster" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleasePatchOnMaster"
-      Mock Read-Version-Choice { return "1.0.2" }
-      git checkout master --quiet
-    
-      { Release-Version } | Should Not Throw
-    
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
-    
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-      Write-Host $CurrentLog
-      
-      $CurrentLog | Should Be $ExpectedLog
-    }
-  }
-    
-  Context "ReleaseFromDevelop" {
-    It "ReleaseVersionOnMaster" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseVersionOnMaster"
-      git checkout master --quiet
+  Context "Hotfix" {
+    It "releases a new patch version from hotfix to support" {
+      Initialize-Test "Hotfix-PatchRelease"
+      Mock Get-Hotfix-Current-Version { return "1.1.1" }
+      Mock Read-Version-Choice { return "1.1.2" }
 
-      #Add support branch to see if possible other branches do not influence the test run
-      git checkout -b support/v1.0
-      git commit --allow-empty -m "Now we have support lingering around somewhere in the log"
-    
-      git checkout master --quiet
-        
-      git checkout -b develop --quiet
-      Mock Get-Develop-Current-Version { return "1.1.0" }
-      Mock Read-Version-Choice { return "1.2.0" }
-      
       { Release-Version } | Should Not Throw
 
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      #Checkout the top branch so we view the whole history
-      git checkout support/v1.0 --quiet
-
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-
-      $CurrentLog | Should Be $ExpectedLog
-    }
-
-    It "ReleasePrereleaseVersion" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleasePrereleaseOnDevelop"
-      git checkout master --quiet
-      git checkout -b develop --quiet
-
-      Mock Get-Develop-Current-Version { return "1.1.0-alpha.1" }
-      Mock Read-Version-Choice { return "1.2.0" }
-      
-      { Release-Version } | Should Not Throw
-
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
-
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-
-      $CurrentLog | Should Be $ExpectedLog
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
   }
 
-  
-  Context "ReleaseFromSupport" {
-    It "ReleaseVersionOnSupport" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseVersionOnSupport"
+  Context "Develop" {
+    It "releases a new minor version from develop to master" {
+      Initialize-Test "Develop-ReleaseMinor"
+      Mock Get-Develop-Current-Version { return "1.2.0" }
+      Mock Read-Version-Choice { return "1.3.0" }
 
-      git checkout master --quiet
-      git checkout -b support/v1.1
+      { Release-Version } | Should Not Throw
 
-      Mock Get-Support-Current-Version { return "1.1.1" }
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "releases a pre-release version from develop to release" {
+      Initialize-Test "Develop-PreRelease"
+      Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
       Mock Read-Version-Choice { return "1.2.0" }
 
       { Release-Version } | Should Not Throw
 
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
 
-      $CurrentLog | Should Be $ExpectedLog
+    It "releases a pre-release version from develop to release with a commit on prerelease" {
+      Initialize-Test "Develop-PreRelease-WithCommit"
+      Mock Get-Develop-Current-Version { return "1.2.0-alpha.1" }
+      Mock Read-Version-Choice { return "1.2.0" }
+
+      { Release-Version -PauseForCommit } | Should Not Throw
+
+      git commit -m "Commit on prerelease branch" --allow-empty
+
+      { Continue-Release } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "releases a release version from develop to master with a commit on release" {
+      Initialize-Test "Develop-ReleaseMinor-WithCommit"
+      Mock Get-Develop-Current-Version { return "1.2.0" }
+      Mock Read-Version-Choice { return "1.3.0" }
+
+      { Release-Version -PauseForCommit } | Should Not Throw
+
+      git commit -m "Commit on release branch" --allow-empty
+
+      { Continue-Release } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
   }
 
-  Context "ReleaseFromReleasebranch" {
-    It "ReleaseRC" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseRC"
-      
-      git checkout -b develop --quiet
-      git checkout -b release/v1.1.0 --quiet
+  Context "Support" {
+    It "throws an exception when attempting to release from support" {
+      Initialize-Test "Support-TryRelease"
 
+      { Release-Version } | Should Throw "You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version."
+    }
+  }
+
+  Context "Release" {
+    It "releases a release candidate version from release to release" {
+      Initialize-Test "Release-RC"
       Mock Read-Choice-Of-Two { return 1 }
       Mock Read-Version-Choice { return "1.2.0" }
 
       { Release-Version } | Should Not Throw
-      
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
 
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
-      $CurrentLog | Should Be $ExpectedLog
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
     }
 
-    It "ReleaseOnMaster" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMaster"
-    
-      git checkout -b develop --quiet
-      git checkout -b prerelease/v1.1.0-rc.1 --quiet
-      git checkout -b release/v1.1.0 --quiet
-    
-      Mock Read-Choice-Of-Two { return 2 }
+    It "releases a second release candidate version from release to release" {
+      Initialize-Test "Release-RC-SecondRC"
+      Mock Read-Choice-Of-Two { return 1 }
       Mock Read-Version-Choice { return "1.2.0" }
-    
-      { Release-Version } | Should Not Throw
-    
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
-    
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-    
-      $CurrentLog | Should Be $ExpectedLog
-    }
-    
-    It "ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseOnMasterWithDevelopHeaderNotOnReleaseBranchRoot"
-    
-      git checkout -b develop --quiet
-      git checkout -b prerelease/v1.1.0-rc.1 --quiet
-      git checkout -b release/v1.1.0 --quiet
-      git commit --allow-empty -m "Develop is now ahead of the ReleaseBranch Root"
-      git checkout release/v1.1.0 --quiet
-              
-      Mock Read-Choice-Of-Two { return 2 }
-      Mock Read-Version-Choice { return "1.2.0" }
-    
-      { Release-Version } | Should Not Throw
-    
-      #Compare file structure
-      $CurrentMasterContent = git ls-tree master
-      $ExpectedMasterContent = Get-Content -Path "$($CurrentPath)\masterFileList.txt"
-      
-      $CurrentMasterContent | Should Be $ExpectedMasterContent
-      
-      $CurrentDevelopContent = git ls-tree develop
-      $ExpectedDevelopContent = Get-Content -Path "$($CurrentPath)\developFileList.txt"
-      
-      $CurrentDevelopContent | Should Be $ExpectedDevelopContent
-      
-      #Compare commit Trees
-      [string]$CurrentHeadLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedHeadLog = Get-Content -Path "$($CurrentPath)\developGitLog.txt"
-      
-      $CurrentHeadLog | Should Be $ExpectedHeadLog
-      
-      [string]$CurrentMasterLog = git log master --graph --pretty=format:'%d %s'
-      [string]$ExpectedMasterLog = Get-Content -Path "$($CurrentPath)\masterGitLog.txt"
-      
-      $CurrentMasterLog | Should Be $ExpectedMasterLog
-    }
-  }
+      Mock Read-Ancestor-Choice { return "release/v1.2.0" }
 
-  Context "ContinueRelease" {
-    It "PauseForCommitReleaseOnMaster" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ReleaseReleaseOnMasterPauseForCommit"
-      
-      git checkout master --quiet
- 
-      #Add support branch to see if possible other branches do not influence the test run
-      git checkout -b support/v1.0
-      git commit --allow-empty -m "Now we have support lingering around somewhere in the log"
-            
-      git checkout master --quiet
-      git checkout -b develop --quiet
- 
-      Mock Get-Develop-Current-Version { return "1.1.0" }
-      Mock Read-Version-Choice {return "1.2.0"}
- 
       { Release-Version -PauseForCommit } | Should Not Throw
- 
-      git checkout support/v1.0 --quiet
 
-      #Compare file structure
-      $CurrentContent = git ls-tree Head
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
+      git commit -m "Another commit on prerelease" --allow-empty *>$NULL
 
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-
-      $CurrentLog | Should Be $ExpectedLog
-    }
-
-    It "ContinueReleaseAfterPauseForCommitReleaseOnMaster" {
-      $CurrentPath = "$($ScriptRoot)\TestDirectories\ContinueReleaseAfterPauseForCommitReleaseOnMaster"
-      
-      #Setup PauseForCommit
-      git checkout master --quiet
-    
-      #Add support branch to see if possible other branches do not influence the test run
-      git checkout -b support/v1.0
-      git commit --allow-empty -m "Now we have support lingering around somewhere in the log"
-            
-      git checkout master --quiet
-      git checkout -b develop --quiet
-    
-      Mock Get-Develop-Current-Version { return "1.1.0" }
-      Mock Read-Version-Choice {return "1.2.0"}
-    
-      { Release-Version -PauseForCommit } | Should Not Throw
-    
-      #Test ContinueRelease
-      git checkout release/v1.1.0 --quiet
-    
       { Continue-Release } | Should Not Throw
-    
-      #Compare file structure
-      $CurrentContent = git ls-tree master
-      $ExpectedContent = Get-Content -Path "$($CurrentPath)\fileList.txt"
-      
-      $CurrentContent | Should Be $ExpectedContent
-    
-      #Checkout the top branch so we view the whole history
-      git checkout support/v1.0 --quiet
-    
-      #Compare commit Trees
-      [string]$CurrentLog = git log Head --graph --pretty=format:'%d %s'
-      [string]$ExpectedLog = Get-Content -Path "$($CurrentPath)\gitLog.txt"
-    
-      $CurrentLog | Should Be $ExpectedLog
-    } 
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "releases a release candidate version from release to release with a commit on prerelease" {
+      Initialize-Test "Release-RC-WithCommit"
+      Mock Read-Choice-Of-Two { return 1 }
+      Mock Read-Version-Choice { return "1.2.0" }
+      Mock Read-Ancestor-Choice { return "release/v1.2.0" }
+
+      { Release-Version -PauseForCommit } | Should Not Throw
+
+      git commit -m "Commit on prerelease branch" --allow-empty
+
+      { Continue-Release } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "releases a release from release to master" {
+      Initialize-Test "Release-Release"
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.3.0" }
+
+      { Release-Version } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "releases a release from release to master with an additional commit on develop" {
+      Initialize-Test "Release-Release-WithCommitOnDevelop"
+      Mock Read-Choice-Of-Two { return 2 }
+      Mock Read-Version-Choice { return "1.3.0" }
+
+      { Release-Version } | Should Not Throw
+
+      $TestDirGitLogs = Get-Git-Logs $TestDir
+      $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
+
+      $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
   }
 }
