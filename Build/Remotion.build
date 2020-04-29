@@ -37,7 +37,7 @@
     <SupportedPlatforms Include="x86;x64"/>
     <SupportedDatabaseSystems Remove="@(SupportedDatabaseSystems)"/>
     <SupportedExecutionRuntimes Include="Win_NET48=$(DockerImageDotNetFrameworkRuntime4_8)"/>
-    <SupportedTargetRuntimes Include="NET45;"/>
+    <SupportedTargetRuntimes Include="NET45"/>
     <SupportedConfigurationIDs Include="Debug;Release"/>
   </ItemGroup>
 
