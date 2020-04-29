@@ -4,7 +4,7 @@ function Parse-Semver ($Semver)
      
   if(-not [regex]::IsMatch($Semver, $Regex, 'MultiLine'))
   {
-    throw "Your version '$($Semver)' does not have a valid format (e.g. 1.2.3-alpha.1)."
+    throw "Your version '$Semver' does not have a valid format (e.g. 1.2.3-alpha.1)."
   }
 
   return [regex]::Match($Semver, $Regex)
@@ -87,12 +87,15 @@ function Get-Possible-Versions-Hotfix ($Version, $MeantForCurrentVersion = $fals
 
   $Major = $Match.Groups["major"].ToString()
   $Minor = $Match.Groups["minor"].ToString()
-  $Patch = $Match.Groups["patch"].ToString()      
- 
-  $NextPatch = [string](1 + $Patch)
-  $NextPossiblePatch = "$($Major).$($Minor).$($NextPatch)"
+  $Patch = $Match.Groups["patch"].ToString()
 
-  #Compute 1.2.3-alpha.4 
+  if (-not $MeantForCurrentVersion)
+  {
+    $Patch = [string](1 + $Patch)
+  }
+  $NextPossiblePatch = "$($Major).$($Minor).$($Patch)"
+
+  #Compute 1.2.3-alpha.4
   if ($Match.Groups["pre"].Success)
   {
     $Pre = $Match.Groups["pre"].ToString()

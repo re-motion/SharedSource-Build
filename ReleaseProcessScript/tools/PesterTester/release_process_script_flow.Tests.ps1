@@ -14,6 +14,7 @@ $PseudoRemoteTestDir = "RemoteTestDir"
 
 Describe "release_process_script_flow" {
   BeforeEach {
+    Set-Alias -Name git -Value (Get-Custom-Git-Path $ScriptRoot)
     Load-Config-File
     $ConfigFilePath = Get-Config-File-Path
     Mock Get-Config-File-Path { return $ConfigFilePath }

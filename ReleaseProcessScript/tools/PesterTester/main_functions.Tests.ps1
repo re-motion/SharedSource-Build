@@ -15,6 +15,7 @@ $PseudoRemoteTestDir = "RemoteTestDir"
 Describe "main_functions" {
 
   BeforeEach {
+    Set-Alias -Name git -Value (Get-Custom-Git-Path $ScriptRoot)
     #Run once to save Config file in global Memory
     Load-Config-File
 

@@ -2,12 +2,12 @@ function Parse-Version-From-ReleaseBranch ($Branchname)
 {
   $SplitBranchname = $Branchname.Split("/v")
 
-  if ($SplitBranchname.Length -ne 3)
+  if ($SplitBranchname.Length -ne 2)
   {
     throw "Current branch name is not in a valid format (e.g. release/v1.2.3)."
   }
     
-  return $SplitBranchname[2]
+  return $SplitBranchname[1]
 }
 
 function Create-And-Release-Jira-Versions ($CurrentVersion, $NextVersion, $SquashUnreleased)
