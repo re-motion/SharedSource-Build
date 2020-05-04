@@ -22,7 +22,7 @@
   <PropertyGroup>
     <_thisFileParentDirectory>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))</_thisFileParentDirectory>
     <_thisFileGrandParentDirectory>$([System.IO.Directory]::GetParent($(_thisFileParentDirectory)))</_thisFileGrandParentDirectory>
-    <_taskAssemblyPath>$(_thisFileGrandParentDirectory)\lib\net47\Remotion.BuildScript.dll</_taskAssemblyPath>
+    <_taskAssemblyPath>$(_thisFileGrandParentDirectory)\lib\net461\Remotion.BuildScript.dll</_taskAssemblyPath>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(_taskAssemblyPath)" TaskName="CreateTestConfigurations"/>
