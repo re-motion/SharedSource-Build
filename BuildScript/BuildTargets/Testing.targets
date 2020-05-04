@@ -48,7 +48,7 @@
 
     <Error
       Text="Running Unit-Tests failed because of $(_failures) failures in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures','%0A')"
-      Condition="$(_failures) &gt; 0 and '$(_nunitIsSuccess)' == 'False'"/>
+      Condition="$(_failures) &gt; 0"/>
 
     <Error
       Text="One or more test runs resulted in a failure, but the tests themselves have passed. This most likely means that a Setup, Teardown, OneTimeSetup or OneTimeTeardown method threw and exception. Check the log for more information. Failed test assemblies: %0A@(FailedProjects->'%(Identity)','%0A')"
