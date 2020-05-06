@@ -50,6 +50,10 @@
       Text="Running Unit-Tests failed because of $(_failures) failures in: %0A@(FailedProjects->'%(Identity) (%(Platform)/%(DatabaseSystem)) with %(Failures) failures','%0A')"
       Condition="$(_failures) &gt; 0"/>
 
+    <Error
+      Text="One or more test runs resulted in a failure, but the tests themselves have passed. This most likely means that a Setup, Teardown, OneTimeSetup or OneTimeTeardown method threw and exception. Check the log for more information. Failed test assemblies: %0A@(FailedProjects->'%(Identity)','%0A')"
+      Condition="$(_failures) == 0 and '$(_nunitIsSuccess)' == 'False'"/>
+
     <PropertyGroup>
       <_timeTaken>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse($(RunTestsStartTime)))).TotalMilliseconds.ToString(0))</_timeTaken>
     </PropertyGroup>
@@ -231,6 +235,13 @@ $(_dockerImageName) $(_nunitCallArgumentString)
       <Output TaskParameter="Value" PropertyName="_nunit_failures" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="$(_testResultFile)"
+        XPath="/test-run/@result">
+      <Output TaskParameter="Value" PropertyName="_nunitResult" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
       <Output TaskParameter="NewString" PropertyName="_testTime" />
     </MSBuild.ExtensionPack.Framework.TextString>
@@ -238,7 +249,7 @@ $(_dockerImageName) $(_nunitCallArgumentString)
     <Message Text="##teamcity[buildStatisticValue key='$(_testName)' value='$(_testTime)']"
              Condition="'$(TEAMCITY_VERSION)' != ''"/>
 
-    <ItemGroup Condition="$(_nunit_failures) &gt; 0">
+    <ItemGroup Condition="'$(_nunitResult)' == 'Failed'">
       <NumberOfTestFailuresPerProject Include="$(_nunit_failures)"/>
       <FailedProjects Include="$(_testAssemblyFullPath)">
         <Platform>$(_platform)</Platform>
@@ -247,6 +258,10 @@ $(_dockerImageName) $(_nunitCallArgumentString)
         <Failures>$(_nunit_failures)</Failures>
       </FailedProjects>
     </ItemGroup>
+
+    <PropertyGroup>
+      <_nunitIsSuccess Condition="'$(_nunitResult)' == 'Failed'">False</_nunitIsSuccess>
+    </PropertyGroup>
   </Target>
 
   <Target Name="PrepareNunitDirectory" Outputs="$(_nunitRunnerFolderPath)">
