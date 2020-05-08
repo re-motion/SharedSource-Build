@@ -242,6 +242,16 @@ $(_dockerImageName) $(_nunitCallArgumentString)
       <Output TaskParameter="Value" PropertyName="_nunitResult" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <!--  NUnit2 tests display the assembly path in both the name and fullname attribute  -->
+    <!--  An issue has been created here: https://github.com/nunit/nunit-v2-framework-driver/issues/39 -->
+    <!--  Once the issue is resolved, this can be removed  -->
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="UpdateElement"
+        File="$(_testResultFile)"
+        XPath="/test-run/test-suite/@name"
+        InnerText="$(_testAssemblyFileName)">
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
     <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_testTime)" OldValue="." NewValue="">
       <Output TaskParameter="NewString" PropertyName="_testTime" />
     </MSBuild.ExtensionPack.Framework.TextString>
