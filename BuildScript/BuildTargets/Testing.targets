@@ -228,6 +228,10 @@ $(_dockerImageName) $(_nunitCallArgumentString)
       <Output TaskParameter="Value" PropertyName="_testTime" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <PropertyGroup>
+      <_testTime Condition="'$(_testTime)' == ''">0</_testTime>
+    </PropertyGroup>
+
     <MSBuild.ExtensionPack.Xml.XmlFile
         TaskAction="ReadAttribute"
         File="$(_testResultFile)"
@@ -240,6 +244,13 @@ $(_dockerImageName) $(_nunitCallArgumentString)
         File="$(_testResultFile)"
         XPath="/test-run/@result">
       <Output TaskParameter="Value" PropertyName="_nunitResult" />
+    </MSBuild.ExtensionPack.Xml.XmlFile>
+
+    <MSBuild.ExtensionPack.Xml.XmlFile
+        TaskAction="ReadAttribute"
+        File="$(_testResultFile)"
+        XPath="/test-run/@testcasecount">
+      <Output TaskParameter="Value" PropertyName="_nunitTestCaseCount" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
     <!--  NUnit2 tests display the assembly path in both the name and fullname attribute  -->
@@ -271,6 +282,10 @@ $(_dockerImageName) $(_nunitCallArgumentString)
 
     <PropertyGroup>
       <_nunitIsSuccess Condition="'$(_nunitResult)' == 'Failed'">False</_nunitIsSuccess>
+
+      <!-- NUnit counts a test run as failed if no tests or testfixtures could be found. -->
+      <!-- For our needs, we would like to prevent such case from causing the build to fail -->
+      <_nunitIsSuccess Condition="'$(_nunitTestCaseCount)' == '0'">True</_nunitIsSuccess>
     </PropertyGroup>
   </Target>
 
