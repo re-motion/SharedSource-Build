@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Remotion.BuildScript.BuildTasks;
 
@@ -103,6 +104,37 @@ namespace Remotion.BuildScript.UnitTests
       var result = collection.ContainsKey (searchKey);
 
       Assert.That (result, Is.True);
+    }
+
+    [Test]
+    [TestCase ("AAA", "CCC")]
+    [TestCase ("aaa", "ccc")]
+    [TestCase ("AAA", "ccc")]
+    [TestCase ("AaA", "cCc")]
+    public void GetAllMatches_IsCaseInsensitive (string searchKey1, string searchKey2)
+    {
+      var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
+      var collection = new MetadataValueDictionary (rawCollection);
+      var searchKeys = new[] { searchKey1, searchKey2, "RegularSearchKey" };
+
+      var matches = collection.GetAllMatches (searchKeys, () => new Exception()).ToArray();
+
+      Assert.That (matches[0].Key, Is.EqualTo ("AAA"));
+      Assert.That (matches[0].Value, Is.EqualTo ("BBB"));
+      Assert.That (matches[1].Key, Is.EqualTo ("CCC"));
+      Assert.That (matches[1].Value, Is.EqualTo ("DDD"));
+    }
+
+    [Test]
+    public void GetAllMatches_DoesNotExist_ThrowsException ()
+    {
+      var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
+      var collection = new MetadataValueDictionary (rawCollection);
+      var searchKeys = new[] { "SearchKey1", "SearchKey2" };
+
+      Assert.That (
+          () => collection.GetAllMatches (searchKeys, () => new Exception ("MyMessage")).ToArray(),
+          Throws.Exception.With.Message.EqualTo ("MyMessage"));
     }
   }
 }
