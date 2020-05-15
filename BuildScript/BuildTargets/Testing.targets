@@ -73,6 +73,7 @@
 
   <Target Name="RunTestsInternal"
           DependsOnTargets="AddAdditionalMetadataToOutputFiles;CreateTestConfigurations;PrepareNunitDirectory"
+          Inputs="%(_testOutputFiles.Identity)"
           Outputs="%(_testOutputFiles.Identity)">
     <Message Text="Running tests %(_testOutputFiles.Identity)" Importance="High"/>
 
