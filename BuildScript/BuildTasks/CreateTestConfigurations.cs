@@ -161,6 +161,7 @@ namespace Remotion.BuildScript.BuildTasks
       item.SetMetadata (TestConfigurationMetadata.Platform, testConfiguration.Platform);
       item.SetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue, testConfiguration.ExecutionRuntime.Value);
       item.SetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey, testConfiguration.ExecutionRuntime.Key);
+      item.SetMetadata (TestConfigurationMetadata.DockerImage, testConfiguration.ExecutionRuntime.DockerImage);
       item.SetMetadata (TestConfigurationMetadata.TargetRuntime, testConfiguration.TargetRuntime);
       item.SetMetadata (TestConfigurationMetadata.Use32Bit, testConfiguration.Use32Bit.ToString());
       item.SetMetadata (TestConfigurationMetadata.UseDocker, testConfiguration.ExecutionRuntime.UseDocker.ToString());

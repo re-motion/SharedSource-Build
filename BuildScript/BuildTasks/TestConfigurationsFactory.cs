@@ -144,11 +144,46 @@ namespace Remotion.BuildScript.BuildTasks
 
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
-      var kvp = _supportedExecutionRuntimes.Single (configurationItems, () => CreateMissingConfigurationItemException ("execution runtime"));
+      var enumeratedConfigurationItems = configurationItems.ToArray();
+      if (IsEnforcedLocalMachineAndHasDockerImage (enumeratedConfigurationItems, out var dockerImageOfEnforcedLocalMachine))
+      {
+        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, dockerImageOfEnforcedLocalMachine);
+      }
+
+      var kvp = _supportedExecutionRuntimes.Single (enumeratedConfigurationItems, () => CreateMissingConfigurationItemException ("execution runtime"));
 
       var shouldUseDocker = ShouldUseDocker (kvp.Value);
+      var dockerImage = shouldUseDocker ? kvp.Value : "";
 
-      return new ExecutionRuntime (kvp.Key, kvp.Value, shouldUseDocker);
+      return new ExecutionRuntime (kvp.Key, kvp.Value, shouldUseDocker, dockerImage);
+    }
+
+    private bool IsEnforcedLocalMachineAndHasDockerImage (IEnumerable<string> configurationItems, out string dockerImage)
+    {
+      dockerImage = null;
+      var enumeratedConfigurationItems = configurationItems.ToArray();
+
+      var possibleExecutionRuntimes = _supportedExecutionRuntimes.GetAllMatches (
+              enumeratedConfigurationItems,
+              () => CreateMissingConfigurationItemException ("execution runtime"))
+          .ToArray();
+
+      if (possibleExecutionRuntimes.Length == 1)
+        return false;
+
+      if (!possibleExecutionRuntimes.Select (x => x.Key).Contains (MetadataValueConstants.EnforcedLocalMachine, StringComparer.OrdinalIgnoreCase))
+        return false;
+
+      var itemsWithoutEnforcedLocalMachine = enumeratedConfigurationItems.Where (x => x != MetadataValueConstants.EnforcedLocalMachine);
+      var kvp = _supportedExecutionRuntimes.Single (itemsWithoutEnforcedLocalMachine, () => CreateMissingConfigurationItemException ("execution runtime"));
+
+      if (kvp.Key != MetadataValueConstants.LocalMachine)
+      {
+        dockerImage = kvp.Value;
+        return true;
+      }
+
+      return false;
     }
 
     private string GetDatabaseSystem (IEnumerable<string> configurationItems)

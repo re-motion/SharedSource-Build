@@ -23,12 +23,15 @@ namespace Remotion.BuildScript.BuildTasks
     public bool UseDocker { get; }
     public string Key { get; }
     public string Value { get; }
+    public string DockerImage { get; }
 
-    public ExecutionRuntime (string key, string value, bool useDocker)
+
+    public ExecutionRuntime (string key, string value, bool useDocker, string dockerImage)
     {
       Key = key;
       Value = value;
       UseDocker = useDocker;
+      DockerImage = dockerImage;
     }
   }
 }
