@@ -92,7 +92,7 @@
       <_testAssemblyFullPath>%(_testOutputFiles.TestAssemblyFullPath)</_testAssemblyFullPath>
       <_testAssemblyDirectory>%(_testOutputFiles.TestAssemblyDirectoryName)</_testAssemblyDirectory>
       <_use32Bit>%(_testOutputFiles.Use32Bit)</_use32Bit>
-      <_dockerImageName>%(_testOutputFiles.ExecutionRuntimeValue)</_dockerImageName>
+      <_dockerImageName>%(_testOutputFiles.DockerImage)</_dockerImageName>
       <_executionRuntimeKey>%(_testOutputFiles.ExecutionRuntimeKey)</_executionRuntimeKey>
       <_targetRuntime>%(_testOutputFiles.TargetRuntime)</_targetRuntime>
       <_platform>%(_testOutputFiles.Platform)</_platform>
@@ -115,7 +115,8 @@
                 Platform=$(_platform);
                 AppConfigFile=$(_appConfigFile);
                 DatabaseSystem=$(_databaseSystem);
-                Browser=$(_browser);"
+                Browser=$(_browser);
+                DockerImage=$(_dockerImageName);"
              Condition="'$(_testingSetupBuildFile)' != ''"/>
 
     <!-- Run tests -->
