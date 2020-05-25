@@ -145,7 +145,7 @@ namespace Remotion.BuildScript.BuildTasks
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
       var enumeratedConfigurationItems = configurationItems.ToArray();
-      if (IsEnforcedLocalMachineAndHasDockerImage (enumeratedConfigurationItems, out var dockerImageOfEnforcedLocalMachine))
+      if (TryGetDockerImageIfIsEnforcedLocalMachine (enumeratedConfigurationItems, out var dockerImageOfEnforcedLocalMachine))
       {
         return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, dockerImageOfEnforcedLocalMachine);
       }
@@ -158,7 +158,7 @@ namespace Remotion.BuildScript.BuildTasks
       return new ExecutionRuntime (kvp.Key, kvp.Value, shouldUseDocker, dockerImage);
     }
 
-    private bool IsEnforcedLocalMachineAndHasDockerImage (IEnumerable<string> configurationItems, out string dockerImage)
+    private bool TryGetDockerImageIfIsEnforcedLocalMachine (IEnumerable<string> configurationItems, out string dockerImage)
     {
       dockerImage = null;
       var enumeratedConfigurationItems = configurationItems.ToArray();
