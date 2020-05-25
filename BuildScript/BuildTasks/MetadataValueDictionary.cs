@@ -68,7 +68,7 @@ namespace Remotion.BuildScript.BuildTasks
       return _rawDictionary.ContainsKey (key);
     }
 
-    public IEnumerable<KeyValuePair<string, string>> GetAllMatches (IEnumerable<string> possibleKeys)
+    public IEnumerable<KeyValuePair<string, string>> Intersect (IEnumerable<string> possibleKeys)
     {
       var enumeratedPossibleKeys = possibleKeys.ToArray();
 

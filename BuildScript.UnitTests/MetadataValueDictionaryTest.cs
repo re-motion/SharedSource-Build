@@ -117,7 +117,7 @@ namespace Remotion.BuildScript.UnitTests
       var collection = new MetadataValueDictionary (rawCollection);
       var searchKeys = new[] { searchKey1, searchKey2, "RegularSearchKey" };
 
-      var matches = collection.GetAllMatches (searchKeys).ToArray();
+      var matches = collection.Intersect (searchKeys).ToArray();
 
       Assert.That (matches[0].Key, Is.EqualTo ("AAA"));
       Assert.That (matches[0].Value, Is.EqualTo ("BBB"));
