@@ -68,7 +68,7 @@ namespace Remotion.BuildScript.BuildTasks
       return _rawDictionary.ContainsKey (key);
     }
 
-    public IEnumerable<KeyValuePair<string, string>> GetAllMatches (IEnumerable<string> possibleKeys, Func<Exception> createEmptySequenceException)
+    public IEnumerable<KeyValuePair<string, string>> GetAllMatches (IEnumerable<string> possibleKeys)
     {
       var enumeratedPossibleKeys = possibleKeys.ToArray();
 

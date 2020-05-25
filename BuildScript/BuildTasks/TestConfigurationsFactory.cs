@@ -163,10 +163,7 @@ namespace Remotion.BuildScript.BuildTasks
       dockerImage = null;
       var enumeratedConfigurationItems = configurationItems.ToArray();
 
-      var possibleExecutionRuntimes = _supportedExecutionRuntimes.GetAllMatches (
-              enumeratedConfigurationItems,
-              () => CreateMissingConfigurationItemException ("execution runtime"))
-          .ToArray();
+      var possibleExecutionRuntimes = _supportedExecutionRuntimes.GetAllMatches (enumeratedConfigurationItems).ToArray();
 
       if (possibleExecutionRuntimes.Length == 1)
         return false;
