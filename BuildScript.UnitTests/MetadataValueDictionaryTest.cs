@@ -124,17 +124,5 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (matches[1].Key, Is.EqualTo ("CCC"));
       Assert.That (matches[1].Value, Is.EqualTo ("DDD"));
     }
-
-    [Test]
-    public void GetAllMatches_DoesNotExist_ThrowsException ()
-    {
-      var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
-      var collection = new MetadataValueDictionary (rawCollection);
-      var searchKeys = new[] { "SearchKey1", "SearchKey2" };
-
-      Assert.That (
-          () => collection.GetAllMatches (searchKeys, () => new Exception ("MyMessage")).ToArray(),
-          Throws.Exception.With.Message.EqualTo ("MyMessage"));
-    }
   }
 }

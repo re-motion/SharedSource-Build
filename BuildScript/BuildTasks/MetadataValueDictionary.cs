@@ -74,15 +74,8 @@ namespace Remotion.BuildScript.BuildTasks
 
       var intersection = _rawDictionary.Keys.Intersect (enumeratedPossibleKeys, _dictionaryStringComparer).ToArray();
 
-      if (intersection.Length == 0)
-      {
-        throw createEmptySequenceException();
-      }
-      else
-      {
-        foreach (var key in intersection)
-          yield return new KeyValuePair<string, string> (key, _rawDictionary[key]);
-      }
+      foreach (var key in intersection)
+        yield return new KeyValuePair<string, string> (key, _rawDictionary[key]);
     }
   }
 }
