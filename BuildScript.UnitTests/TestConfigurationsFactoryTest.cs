@@ -654,6 +654,22 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo (""));
     }
 
+    [Test]
+    public void CreateTestConfigurations_MultipleExecutionRuntimes_ThrowsException ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { "Win_NET472", "DockerNet472" },
+                                          { "Win_NET48", "DockerNet48" }
+                                      });
+
+      Assert.That (
+          () => factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET472+Win_NET48+release+net45" }),
+          Throws.InvalidOperationException.With.Message.EqualTo ("Found multiple execution runtimes: Win_NET472,Win_NET48")
+          );
+    }
+
     private TestConfigurationsFactory CreateTestConfigurationFactory (
         IReadOnlyCollection<string> supportedPlatforms = null,
         IReadOnlyCollection<string> supportedDatabaseSystems = null,

@@ -126,12 +126,6 @@ namespace Remotion.BuildScript.BuildTasks
           includeCategories: includeCategories);
     }
 
-    private bool ShouldUseDocker (string executionRuntimeValue)
-    {
-      return !string.Equals (executionRuntimeValue, MetadataValueConstants.LocalMachine, StringComparison.OrdinalIgnoreCase)
-             && !string.Equals (executionRuntimeValue, MetadataValueConstants.EnforcedLocalMachine, StringComparison.OrdinalIgnoreCase);
-    }
-
     private string GetConfigurationID (IEnumerable<string> configurationItems)
     {
       return _supportedConfigurationIDs.Single (configurationItems, () => CreateMissingConfigurationItemException ("configuration ID"));
@@ -145,42 +139,50 @@ namespace Remotion.BuildScript.BuildTasks
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
       var enumeratedConfigurationItems = configurationItems.ToArray();
-      if (TryGetDockerImageIfIsEnforcedLocalMachine (enumeratedConfigurationItems, out var dockerImageOfEnforcedLocalMachine))
+      var intersection = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
+
+      if (intersection.Length == 0)
       {
-        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, dockerImageOfEnforcedLocalMachine);
+        throw CreateMissingConfigurationItemException ("execution runtime");
       }
-
-      var kvp = _supportedExecutionRuntimes.Single (enumeratedConfigurationItems, () => CreateMissingConfigurationItemException ("execution runtime"));
-
-      var shouldUseDocker = ShouldUseDocker (kvp.Value);
-      var dockerImage = shouldUseDocker ? kvp.Value : "";
-
-      return new ExecutionRuntime (kvp.Key, kvp.Value, shouldUseDocker, dockerImage);
+      else if (intersection.Length == 1)
+      {
+        return CreateExecutionRuntimeFromSingle (intersection.Single());
+      }
+      else
+      {
+        return CreateExecutionRuntimeFromMultiple (intersection, enumeratedConfigurationItems);
+      }
     }
 
-    private bool TryGetDockerImageIfIsEnforcedLocalMachine (IEnumerable<string> configurationItems, out string dockerImage)
+    private ExecutionRuntime CreateExecutionRuntimeFromSingle (KeyValuePair<string, string> keyValuePair)
     {
-      dockerImage = null;
-      var enumeratedConfigurationItems = configurationItems.ToArray();
-
-      var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
-
-      if (possibleExecutionRuntimes.Length == 1)
-        return false;
-
-      if (!possibleExecutionRuntimes.Select (x => x.Key).Contains (MetadataValueConstants.EnforcedLocalMachine, StringComparer.OrdinalIgnoreCase))
-        return false;
-
-      var itemsWithoutEnforcedLocalMachine = enumeratedConfigurationItems.Where (x => x != MetadataValueConstants.EnforcedLocalMachine);
-      var kvp = _supportedExecutionRuntimes.Single (itemsWithoutEnforcedLocalMachine, () => CreateMissingConfigurationItemException ("execution runtime"));
-
-      if (kvp.Key != MetadataValueConstants.LocalMachine)
+      switch (keyValuePair.Key)
       {
-        dockerImage = kvp.Value;
-        return true;
-      }
+        case MetadataValueConstants.LocalMachine:
+          return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
 
-      return false;
+        case MetadataValueConstants.EnforcedLocalMachine:
+          return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, "");
+
+        default:
+          return new ExecutionRuntime (keyValuePair.Key, keyValuePair.Value, true, keyValuePair.Value);
+      }
+    }
+
+    private ExecutionRuntime CreateExecutionRuntimeFromMultiple (IEnumerable<KeyValuePair<string, string>> keyValuePairs, IEnumerable<string> configurationItems)
+    {
+      var keys = keyValuePairs.Select (kvp => kvp.Key).ToArray();
+
+      if (!keys.Contains (MetadataValueConstants.EnforcedLocalMachine))
+        throw new InvalidOperationException ($"Found multiple execution runtimes: {string.Join (",", keys)}");
+
+      var itemsWithoutEnforcedLocalMachine = configurationItems.Where (x => x != MetadataValueConstants.EnforcedLocalMachine);
+      var dockerImage = _supportedExecutionRuntimes
+          .Single (itemsWithoutEnforcedLocalMachine, () => CreateMissingConfigurationItemException ("execution runtime"))
+          .Value;
+
+      return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, dockerImage);
     }
 
     private string GetDatabaseSystem (IEnumerable<string> configurationItems)
