@@ -139,19 +139,19 @@ namespace Remotion.BuildScript.BuildTasks
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
       var enumeratedConfigurationItems = configurationItems.ToArray();
-      var intersection = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
+      var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
 
-      if (intersection.Length == 0)
+      if (possibleExecutionRuntimes.Length == 0)
       {
         throw CreateMissingConfigurationItemException ("execution runtime");
       }
-      else if (intersection.Length == 1)
+      else if (possibleExecutionRuntimes.Length == 1)
       {
-        return CreateExecutionRuntimeFromSingle (intersection.Single());
+        return CreateExecutionRuntimeFromSingle (possibleExecutionRuntimes.Single());
       }
       else
       {
-        return CreateExecutionRuntimeFromMultiple (intersection, enumeratedConfigurationItems);
+        return CreateExecutionRuntimeFromMultiple (possibleExecutionRuntimes, enumeratedConfigurationItems);
       }
     }
 
