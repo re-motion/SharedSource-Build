@@ -116,13 +116,11 @@ namespace Remotion.BuildScript.UnitTests
       var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
       var collection = new MetadataValueDictionary (rawCollection);
       var searchKeys = new[] { searchKey1, searchKey2, "RegularSearchKey" };
+      var expected = new[] { new KeyValuePair<string, string> ("AAA", "BBB"), new KeyValuePair<string, string> ("CCC", "DDD") };
 
-      var matches = collection.Intersect (searchKeys).ToArray();
+      var intersection = collection.Intersect (searchKeys).ToArray();
 
-      Assert.That (matches[0].Key, Is.EqualTo ("AAA"));
-      Assert.That (matches[0].Value, Is.EqualTo ("BBB"));
-      Assert.That (matches[1].Key, Is.EqualTo ("CCC"));
-      Assert.That (matches[1].Value, Is.EqualTo ("DDD"));
+      Assert.That (intersection, Is.EquivalentTo (expected));
     }
   }
 }
