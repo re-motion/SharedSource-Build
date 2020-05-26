@@ -139,44 +139,36 @@ namespace Remotion.BuildScript.BuildTasks
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
       var enumeratedConfigurationItems = configurationItems.ToArray();
-      var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
+      var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToList();
 
-      if (possibleExecutionRuntimes.Length == 0)
+      if (possibleExecutionRuntimes.Count == 0)
         throw CreateMissingConfigurationItemException ("execution runtime");
-      else if (possibleExecutionRuntimes.Length == 1)
-        return CreateExecutionRuntimeFromSingle (possibleExecutionRuntimes.Single());
-      else
-        return CreateExecutionRuntimeFromMultiple (possibleExecutionRuntimes, enumeratedConfigurationItems);
-    }
 
-    private ExecutionRuntime CreateExecutionRuntimeFromSingle (KeyValuePair<string, string> keyValuePair)
-    {
-      switch (keyValuePair.Key)
+      var hasLocalMachine = possibleExecutionRuntimes.Remove (MetadataValueConstants.LocalMachine);
+      var hasEnforcedLocalMachine = possibleExecutionRuntimes.Remove (MetadataValueConstants.EnforcedLocalMachine);
+
+      if (hasLocalMachine && hasEnforcedLocalMachine)
+        CreateMultipleExecutionRuntimesException (MetadataValueConstants.LocalMachine, MetadataValueConstants.EnforcedLocalMachine);
+
+      if (possibleExecutionRuntimes.Count > 1)
       {
-        case MetadataValueConstants.LocalMachine:
-          return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
-
-        case MetadataValueConstants.EnforcedLocalMachine:
-          return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, "");
-
-        default:
-          return new ExecutionRuntime (keyValuePair.Key, keyValuePair.Value, true, keyValuePair.Value);
+        var executionRuntimeKeys = possibleExecutionRuntimes.Select (kvp => kvp.Key).ToArray();
+        CreateMultipleExecutionRuntimesException (executionRuntimeKeys);
       }
+
+      var dockerImage = possibleExecutionRuntimes.SingleOrDefault();
+
+      if (hasLocalMachine)
+        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, false, "");
+      else if (hasEnforcedLocalMachine)
+        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, false, dockerImage.Value ?? "");
+      else
+        return new ExecutionRuntime (dockerImage.Key, dockerImage.Value, true, dockerImage.Value);
     }
 
-    private ExecutionRuntime CreateExecutionRuntimeFromMultiple (IEnumerable<KeyValuePair<string, string>> keyValuePairs, IEnumerable<string> configurationItems)
+    private static void CreateMultipleExecutionRuntimesException (params string[] executionRuntimeKeys)
     {
-      var keys = keyValuePairs.Select (kvp => kvp.Key).ToArray();
-
-      if (!keys.Contains (MetadataValueConstants.EnforcedLocalMachine))
-        throw new InvalidOperationException ($"Found multiple execution runtimes: {string.Join (",", keys)}");
-
-      var itemsWithoutEnforcedLocalMachine = configurationItems.Where (x => x != MetadataValueConstants.EnforcedLocalMachine);
-      var dockerImage = _supportedExecutionRuntimes
-          .Single (itemsWithoutEnforcedLocalMachine, () => CreateMissingConfigurationItemException ("execution runtime"))
-          .Value;
-
-      return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false, dockerImage);
+      throw new InvalidOperationException ($"Found multiple execution runtimes: {string.Join (",", executionRuntimeKeys)}");
     }
 
     private string GetDatabaseSystem (IEnumerable<string> configurationItems)

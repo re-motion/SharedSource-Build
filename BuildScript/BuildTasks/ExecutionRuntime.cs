@@ -32,5 +32,13 @@ namespace Remotion.BuildScript.BuildTasks
       UseDocker = useDocker;
       DockerImage = dockerImage;
     }
+
+    public ExecutionRuntime (string sameKeyAndValue, bool useDocker, string dockerImage)
+    {
+      Key = sameKeyAndValue;
+      Value = sameKeyAndValue;
+      UseDocker = useDocker;
+      DockerImage = dockerImage;
+    }
   }
 }

@@ -608,11 +608,12 @@ namespace Remotion.BuildScript.UnitTests
     [Test]
     public void CreateTestConfigurations_EnforcedLocalMachine_CanBeExtraFlag ()
     {
-      var factory = CreateTestConfigurationFactory (supportedExecutionRuntimes: new Dictionary<string, string>
-                                                                                {
-                                                                                    { "WIN_NET462", "DockerImageValue" },
-                                                                                    { "EnforcedLocalMachine", "EnforcedLocalMachine" }
-                                                                                });
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { "WIN_NET462", "DockerImageValue" },
+                                          { "EnforcedLocalMachine", "EnforcedLocalMachine" }
+                                      });
 
       var testConfigurations = factory.CreateTestConfigurations (
           "C:\\Path\\To\\MyTest.dll",
@@ -667,6 +668,22 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (
           () => factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET472+Win_NET48+release+net45" }),
           Throws.InvalidOperationException.With.Message.EqualTo ("Found multiple execution runtimes: Win_NET472,Win_NET48")
+          );
+    }
+
+    [Test]
+    public void CreateTestConfigurations_MultipleLocalExecutionRuntimes_ThrowsException ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine },
+                                          { MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine }
+                                      });
+
+      Assert.That (
+          () => factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+LocalMachine+EnforcedLocalMachine+release+net45" }),
+          Throws.InvalidOperationException.With.Message.EqualTo ("Found multiple execution runtimes: LocalMachine,EnforcedLocalMachine")
           );
     }
 
