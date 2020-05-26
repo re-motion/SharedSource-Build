@@ -111,7 +111,7 @@ namespace Remotion.BuildScript.UnitTests
     [TestCase ("aaa", "ccc")]
     [TestCase ("AAA", "ccc")]
     [TestCase ("AaA", "cCc")]
-    public void GetAllMatches_IsCaseInsensitive (string searchKey1, string searchKey2)
+    public void Intersect_IsCaseInsensitive (string searchKey1, string searchKey2)
     {
       var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
       var collection = new MetadataValueDictionary (rawCollection);
