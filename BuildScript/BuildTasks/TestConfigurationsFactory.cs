@@ -142,17 +142,11 @@ namespace Remotion.BuildScript.BuildTasks
       var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToArray();
 
       if (possibleExecutionRuntimes.Length == 0)
-      {
         throw CreateMissingConfigurationItemException ("execution runtime");
-      }
       else if (possibleExecutionRuntimes.Length == 1)
-      {
         return CreateExecutionRuntimeFromSingle (possibleExecutionRuntimes.Single());
-      }
       else
-      {
         return CreateExecutionRuntimeFromMultiple (possibleExecutionRuntimes, enumeratedConfigurationItems);
-      }
     }
 
     private ExecutionRuntime CreateExecutionRuntimeFromSingle (KeyValuePair<string, string> keyValuePair)
