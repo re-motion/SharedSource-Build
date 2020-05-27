@@ -159,9 +159,9 @@ namespace Remotion.BuildScript.BuildTasks
       var dockerImage = possibleExecutionRuntimes.SingleOrDefault();
 
       if (hasLocalMachine)
-        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, false, "");
+        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
       else if (hasEnforcedLocalMachine)
-        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, false, dockerImage.Value ?? "");
+        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine,false, dockerImage.Value ?? "");
       else
         return new ExecutionRuntime (dockerImage.Key, dockerImage.Value, true, dockerImage.Value);
     }
