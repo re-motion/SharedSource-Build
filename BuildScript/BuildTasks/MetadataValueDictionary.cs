@@ -72,10 +72,9 @@ namespace Remotion.BuildScript.BuildTasks
     {
       var enumeratedPossibleKeys = possibleKeys.ToArray();
 
-      var intersection = _rawDictionary.Keys.Intersect (enumeratedPossibleKeys, _dictionaryStringComparer).ToArray();
-
-      foreach (var key in intersection)
-        yield return new KeyValuePair<string, string> (key, _rawDictionary[key]);
+      return _rawDictionary.Keys
+          .Intersect (enumeratedPossibleKeys, _dictionaryStringComparer)
+          .Select (key => new KeyValuePair<string, string> (key, _rawDictionary[key]));
     }
   }
 }
