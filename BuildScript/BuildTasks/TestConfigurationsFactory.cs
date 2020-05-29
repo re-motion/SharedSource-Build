@@ -126,12 +126,6 @@ namespace Remotion.BuildScript.BuildTasks
           includeCategories: includeCategories);
     }
 
-    private bool ShouldUseDocker (string executionRuntimeValue)
-    {
-      return !string.Equals (executionRuntimeValue, MetadataValueConstants.LocalMachine, StringComparison.OrdinalIgnoreCase)
-             && !string.Equals (executionRuntimeValue, MetadataValueConstants.EnforcedLocalMachine, StringComparison.OrdinalIgnoreCase);
-    }
-
     private string GetConfigurationID (IEnumerable<string> configurationItems)
     {
       return _supportedConfigurationIDs.Single (configurationItems, () => CreateMissingConfigurationItemException ("configuration ID"));
@@ -144,11 +138,37 @@ namespace Remotion.BuildScript.BuildTasks
 
     private ExecutionRuntime GetExecutionRuntime (IEnumerable<string> configurationItems)
     {
-      var kvp = _supportedExecutionRuntimes.Single (configurationItems, () => CreateMissingConfigurationItemException ("execution runtime"));
+      var enumeratedConfigurationItems = configurationItems.ToArray();
+      var possibleExecutionRuntimes = _supportedExecutionRuntimes.Intersect (enumeratedConfigurationItems).ToList();
 
-      var shouldUseDocker = ShouldUseDocker (kvp.Value);
+      if (possibleExecutionRuntimes.Count == 0)
+        throw CreateMissingConfigurationItemException ("execution runtime");
 
-      return new ExecutionRuntime (kvp.Key, kvp.Value, shouldUseDocker);
+      var hasLocalMachine = possibleExecutionRuntimes.Remove (MetadataValueConstants.LocalMachine);
+      var hasEnforcedLocalMachine = possibleExecutionRuntimes.Remove (MetadataValueConstants.EnforcedLocalMachine);
+
+      if (hasLocalMachine && hasEnforcedLocalMachine)
+        CreateMultipleExecutionRuntimesException (MetadataValueConstants.LocalMachine, MetadataValueConstants.EnforcedLocalMachine);
+
+      if (possibleExecutionRuntimes.Count > 1)
+      {
+        var executionRuntimeKeys = possibleExecutionRuntimes.Select (kvp => kvp.Key).ToArray();
+        CreateMultipleExecutionRuntimesException (executionRuntimeKeys);
+      }
+
+      var dockerImage = possibleExecutionRuntimes.SingleOrDefault();
+
+      if (hasLocalMachine)
+        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
+      else if (hasEnforcedLocalMachine)
+        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine,false, dockerImage.Value ?? "");
+      else
+        return new ExecutionRuntime (dockerImage.Key, dockerImage.Value, true, dockerImage.Value);
+    }
+
+    private static void CreateMultipleExecutionRuntimesException (params string[] executionRuntimeKeys)
+    {
+      throw new InvalidOperationException ($"Found multiple execution runtimes: {string.Join (",", executionRuntimeKeys)}");
     }
 
     private string GetDatabaseSystem (IEnumerable<string> configurationItems)

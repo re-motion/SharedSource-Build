@@ -29,6 +29,7 @@ namespace Remotion.BuildScript.BuildTasks
     public const string Platform = "Platform";
     public const string ExecutionRuntimeValue = "ExecutionRuntimeValue";
     public const string ExecutionRuntimeKey = "ExecutionRuntimeKey";
+    public const string DockerImage = "DockerImage";
     public const string IsWebTest = "IsWebTest";
     public const string IsDatabaseTest = "IsDatabaseTest";
     public const string Use32Bit = "Use32Bit";

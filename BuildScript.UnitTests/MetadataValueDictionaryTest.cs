@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Remotion.BuildScript.BuildTasks;
 
@@ -103,6 +104,23 @@ namespace Remotion.BuildScript.UnitTests
       var result = collection.ContainsKey (searchKey);
 
       Assert.That (result, Is.True);
+    }
+
+    [Test]
+    [TestCase ("AAA", "CCC")]
+    [TestCase ("aaa", "ccc")]
+    [TestCase ("AAA", "ccc")]
+    [TestCase ("AaA", "cCc")]
+    public void Intersect_IsCaseInsensitive (string searchKey1, string searchKey2)
+    {
+      var rawCollection = new Dictionary<string, string> { { "AAA", "BBB" }, { "CCC", "DDD" } };
+      var collection = new MetadataValueDictionary (rawCollection);
+      var searchKeys = new[] { searchKey1, searchKey2, "RegularSearchKey" };
+      var expected = new[] { new KeyValuePair<string, string> ("AAA", "BBB"), new KeyValuePair<string, string> ("CCC", "DDD") };
+
+      var intersection = collection.Intersect (searchKeys).ToArray();
+
+      Assert.That (intersection, Is.EquivalentTo (expected));
     }
   }
 }

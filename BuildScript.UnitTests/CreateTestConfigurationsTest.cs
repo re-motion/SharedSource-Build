@@ -66,6 +66,7 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.Platform), Is.EqualTo ("x64"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("DockerImageForWinNet45"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("Win_NET45"));
+      Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo ("DockerImageForWinNet45"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.TargetRuntime), Is.EqualTo ("NET-4.5"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.Use32Bit), Is.EqualTo ("False"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("True"));
@@ -84,6 +85,7 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.Platform), Is.EqualTo ("x64"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("LocalMachine"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("LocalMachine"));
+      Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo (""));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.TargetRuntime), Is.EqualTo ("NET-4.5"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.Use32Bit), Is.EqualTo ("False"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("False"));
@@ -190,6 +192,44 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (
           () => task.Execute(),
           Throws.ArgumentException.With.Message.Contains ("Duplicate keys found in dictionary: 'Win_NET45','Win_NET46'."));
+    }
+
+    [Test]
+    public void CreatedTestConfigurations_EnforcedExecutionRuntimeCanBeExtraFlag ()
+    {
+        var task = new CreateTestConfigurations
+                   {
+                           SupportedBrowsers = new ITaskItem[] { new TaskItem ("Chrome"), new TaskItem ("Firefox") },
+                           EnabledBrowsers = new ITaskItem[] { new TaskItem ("Chrome"), new TaskItem ("NoBrowser") },
+                           SupportedDatabaseSystems = new ITaskItem[] { new TaskItem ("SqlServer2012"), new TaskItem ("SqlServer2014") },
+                           EnabledDatabaseSystems = new ITaskItem[] { new TaskItem ("SqlServer2012"), new TaskItem ("NoDB") },
+                           SupportedPlatforms = new ITaskItem[] { new TaskItem ("x64") },
+                           EnabledPlatforms = new ITaskItem[] { new TaskItem ("x64") },
+                           SupportedExecutionRuntimes =
+                                   new ITaskItem[] { new TaskItem ("Win_NET45=DockerImageForWinNet45"), new TaskItem ("Win_NET46=DockerImageForWinNet46") },
+                           EnabledExecutionRuntimes = new ITaskItem[] { new TaskItem ("EnforcedLocalMachine"), new TaskItem ("Win_NET45") },
+                           SupportedTargetRuntimes = new ITaskItem[] { new TaskItem ("NET45") },
+                           EnabledTargetRuntimes = new ITaskItem[] { new TaskItem ("NET45") },
+                           EnabledConfigurationIDs = new ITaskItem[] { new TaskItem ("debug"), new TaskItem ("release") },
+                   };
+
+
+        var taskItem = new TaskItem (@"C:\TestAssemblyDirectory1\TestAssembly1.dll");
+        taskItem.SetMetadata (
+                "TestConfiguration",
+                "Chrome+SqlServer2012+Win_NET45+NET45+x64+debug+EnforcedLocalMachine");
+
+        task.Input = new ITaskItem[] { taskItem };
+
+        var result = task.Execute();
+
+        Assert.That (result, Is.True);
+        var testConfiguration = task.Output[0];
+
+        Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("EnforcedLocalMachine"));
+        Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("EnforcedLocalMachine"));
+        Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo ("DockerImageForWinNet45"));
+        Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("False"));
     }
   }
 }

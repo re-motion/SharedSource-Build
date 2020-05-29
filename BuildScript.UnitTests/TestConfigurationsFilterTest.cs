@@ -403,7 +403,11 @@ namespace Remotion.BuildScript.UnitTests
           configurationID ?? "debug",
           false,
           platform ?? "x64",
-          new ExecutionRuntime (executionRuntimeKey ?? "Win_NET45", executionRuntimeValue ?? "DockerImageForWinNET45", true),
+          new ExecutionRuntime (
+              executionRuntimeKey ?? "Win_NET45",
+              executionRuntimeValue ?? "DockerImageForWinNET45",
+              true,
+              executionRuntimeValue ?? "DockerImageForWinNET45"),
           "TestAssembly.dll",
           testAssemblyFullPath ?? "C:\\Path\\To\\TestAssembly.dll''",
           "DirectoryFileName",

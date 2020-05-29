@@ -605,6 +605,88 @@ namespace Remotion.BuildScript.UnitTests
           Is.EqualTo ("MyTest.dll+Chrome+SqlServer2014+x64+Win_NET46+NET45+release+IncludeCategories=a,b,c+ExcludeCategories=d,e"));
     }
 
+    [Test]
+    public void CreateTestConfigurations_EnforcedLocalMachine_CanBeExtraFlag ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { "WIN_NET462", "DockerImageValue" },
+                                          { "EnforcedLocalMachine", "EnforcedLocalMachine" }
+                                      });
+
+      var testConfigurations = factory.CreateTestConfigurations (
+          "C:\\Path\\To\\MyTest.dll",
+          new[] { "Chrome+SqlServer2014+x64+WIN_NET462+release+net45+EnforcedLocalMachine" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.UseDocker, Is.False);
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("EnforcedLocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("EnforcedLocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageValue"));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_ExecutionRuntimeWithDocker_ExposesAdditionalDockerImage ()
+    {
+      var factory = CreateTestConfigurationFactory (supportedExecutionRuntimes: new Dictionary<string, string> { { "Win_NET48", "DockerImageWinNet48" } });
+
+      var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET48+release+net45" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageWinNet48"));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_LocalMachine_ExposesEmptyDockerImage ()
+    {
+      var factory = CreateTestConfigurationFactory (supportedExecutionRuntimes: new Dictionary<string, string> { { "LocalMachine", "LocalMachine" } });
+
+      var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+LocalMachine+release+net45" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo (""));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_EnforcedLocalMachine_ExposesEmptyDockerImage ()
+    {
+      var factory = CreateTestConfigurationFactory (supportedExecutionRuntimes: new Dictionary<string, string> { { "EnforcedLocalMachine", "EnforcedLocalMachine" } });
+
+      var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+EnforcedLocalMachine+release+net45" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo (""));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_MultipleExecutionRuntimes_ThrowsException ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { "Win_NET472", "DockerNet472" },
+                                          { "Win_NET48", "DockerNet48" }
+                                      });
+
+      Assert.That (
+          () => factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET472+Win_NET48+release+net45" }),
+          Throws.InvalidOperationException.With.Message.EqualTo ("Found multiple execution runtimes: Win_NET472,Win_NET48")
+          );
+    }
+
+    [Test]
+    public void CreateTestConfigurations_MultipleLocalExecutionRuntimes_ThrowsException ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine },
+                                          { MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine }
+                                      });
+
+      Assert.That (
+          () => factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+LocalMachine+EnforcedLocalMachine+release+net45" }),
+          Throws.InvalidOperationException.With.Message.EqualTo ("Found multiple execution runtimes: LocalMachine,EnforcedLocalMachine")
+          );
+    }
+
     private TestConfigurationsFactory CreateTestConfigurationFactory (
         IReadOnlyCollection<string> supportedPlatforms = null,
         IReadOnlyCollection<string> supportedDatabaseSystems = null,
