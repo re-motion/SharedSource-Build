@@ -137,7 +137,7 @@
       <_splitCategoriesToInclude Include="$(_mergedTestCategoriesToInclude.Split(','))"/>
 
       <_exludeFilters Remove="@(_exludeFilters)"/>
-      <_exludeFilters Include="cat != %(_splitCategoriesToExclude.Identity) "/>
+      <_exludeFilters Include="cat == %(_splitCategoriesToExclude.Identity) "/>
 
       <_inludeFilters Remove="@(_inludeFilters)"/>
       <_inludeFilters Include="cat == %(_splitCategoriesToInclude.Identity) "/>
@@ -145,13 +145,14 @@
 
     <PropertyGroup>
       <_excludeCategoriesCallArgumentString>@(_exludeFilters)</_excludeCategoriesCallArgumentString>
-      <_excludeCategoriesCallArgumentString>$(_excludeCategoriesCallArgumentString.Replace(";", " &amp;&amp; "))</_excludeCategoriesCallArgumentString>
+      <_excludeCategoriesCallArgumentString>$(_excludeCategoriesCallArgumentString.Replace(";", " || "))</_excludeCategoriesCallArgumentString>
+      <_excludeCategoriesCallArgumentString>!($(_excludeCategoriesCallArgumentString))</_excludeCategoriesCallArgumentString>
 
       <_includeCategoriesCallArgumentString>@(_inludeFilters)</_includeCategoriesCallArgumentString>
       <_includeCategoriesCallArgumentString>$(_includeCategoriesCallArgumentString.Replace(";", " &amp;&amp; "))</_includeCategoriesCallArgumentString>
     </PropertyGroup>
 
-    <!--  Output example: where "cat != ExcludeMe1 && cat != ExcludeMe2 && cat == IncludeMe"  -->
+    <!--  Output example: where "!(cat == ExcludeMe1 || cat == ExcludeMe2) && cat == IncludeMe"  -->
     <PropertyGroup>
       <_nunitTestFilter></_nunitTestFilter>
       <_nunitTestFilter Condition="$(_mergedTestCategoriesToExclude)!='' And $(_mergedTestCategoriesToInclude)!=''">$(_excludeCategoriesCallArgumentString) &amp;&amp; $(_includeCategoriesCallArgumentString)</_nunitTestFilter>
