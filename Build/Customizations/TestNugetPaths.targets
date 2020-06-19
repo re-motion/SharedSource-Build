@@ -15,7 +15,7 @@
  ! License for the specific language governing permissions and limitations
  ! under the License.
 -->
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <NuGetPathVariable Include="$(MSBuildExtensionPackPath)"></NuGetPathVariable>
     <NuGetPathVariable Include="$(DependDBBuildProcessorToolPath)"></NuGetPathVariable>
