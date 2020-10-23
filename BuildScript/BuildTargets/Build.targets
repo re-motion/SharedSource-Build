@@ -33,8 +33,6 @@
         <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
         <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(FileName)</AssemblyName>
-        <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' == ''">False</CreateNuGetPackageWithSymbolServerSupport>
-        <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' != ''">%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == ''">False</CreateDocumentationFile>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' != ''">%(ReleaseOutputFiles.CreateDocumentationFile)</CreateDocumentationFile>
         <ExcludeFromDocumentation Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' == ''">False</ExcludeFromDocumentation>
@@ -50,7 +48,6 @@
         <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
         <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(AssemblyName)</AssemblyName>
-        <CreateNuGetPackageWithSymbolServerSupport>%(CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile>%(CreateDocumentationFile)</CreateDocumentationFile>
         <ExcludeFromDocumentation>%(ExcludeFromDocumentation)</ExcludeFromDocumentation>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
