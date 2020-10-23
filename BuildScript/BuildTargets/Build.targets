@@ -351,15 +351,26 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PrepareCommonBuildProperties">
+  <Target Name="PrepareCommonBuildProperties"
+      DependsOnTargets="CheckVersion;PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion;PrepareAssemblyNuGetVersion;">
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
     <Error Text="The property 'SolutionKeyFile' is not set." Condition="'$(SolutionKeyFile)' == ''" />
+    <Error Text="The property 'Version' is not set." Condition="'$(Version)' == ''" />
+    <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
+    <Error Text="The property 'AssemblyFileVersion' is not set." Condition="'$(AssemblyFileVersion)' == ''" />
+    <Error Text="The property 'AssemblyInformationalVersion' is not set." Condition="'$(AssemblyInformationalVersion)' == ''" />
+    <Error Text="The property 'AssemblyNuGetVersion' is not set." Condition="'$(AssemblyNuGetVersion)' == ''" />
 
     <PropertyGroup>
       <CommonBuildProperties>
         Configuration=$(ConfigurationID);
         AssemblyOriginatorKeyFile=$(SolutionKeyFile);
+        Version=$(Version);
+        AssemblyVersion=$(AssemblyVersion);
+        FileVersion=$(AssemblyFileVersion);
+        InformationalVersion=$(AssemblyInformationalVersion);
+        PackageVersion=$(AssemblyNuGetVersion)
       </CommonBuildProperties>
     </PropertyGroup>
 

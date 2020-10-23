@@ -21,7 +21,7 @@
 
   <Target Name="UpdateAssemblyInfos" 
           DependsOnTargets="PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion" 
-          Condition="$(Version) != ''">
+          Condition="'$(HasCustomVersion)' == 'True'">
     <Message Text="Updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
