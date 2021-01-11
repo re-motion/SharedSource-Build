@@ -1,6 +1,6 @@
 function Parse-Version-From-ReleaseBranch ($Branchname)
 {
-  $SplitBranchname = $Branchname.Split("/v")
+  $SplitBranchname = $Branchname.Split(@("/v"), [System.StringSplitOptions]::None)
 
   if ($SplitBranchname.Length -ne 2)
   {
