@@ -227,7 +227,7 @@ function Release-On-Master ()
   git checkout "develop" 2>&1 | Write-Host
 
 
-  #develop should be prepared with the NextVersion, as the develop code should now be filled with the next Version number
+  #develop should be prepared with the NextVersion, as the develop code should now be filled with the next version number
   Invoke-MsBuild-And-Commit -Version $NextVersion -MsBuildMode "developmentForNextRelease"
      
   git checkout $ReleaseBranchname --quiet
@@ -461,7 +461,12 @@ function Continue-Patch-Release ()
   git tag -a $Tagname -m $Tagname 2>&1
 
   $NextPatchVersion = Get-Next-Patch $CurrentVersion
-  git branch "hotfix/v$($NextPatchVersion)"
+  git checkout -b "hotfix/v$($NextPatchVersion)" 2>&1 | Write-Host
+
+  #hotfix branch should be prepared with the NextPatchVersion, as the hotfix branch code should now be filled with the next version number
+  Invoke-MsBuild-And-Commit -Version $NextPatchVersion -MsBuildMode "developmentForNextRelease"
+
+  git checkout $MergeTargetBranchName --quiet
 
   if ($DoNotPush)
   {
