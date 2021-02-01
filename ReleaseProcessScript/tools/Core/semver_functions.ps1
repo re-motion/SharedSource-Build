@@ -107,7 +107,7 @@ function Get-Possible-Versions-Hotfix ($Version, $MeantForCurrentVersion = $fals
     $NextPossibleReleaseVersion = "$($CurrentMajor).$($CurrentMinor).$($NextPatch)"  
 
     $NextPreReleaseNumber = [string](1 + $CurrentPreReleaseNumber)
-    $NextPossiblePreReleaseVersion = "$($CurrentMajor).$($CurrentMinor).$($NextPatch)-$($CurrentPreReleaseType).$($NextPreReleaseNumber)" 
+    $NextPossiblePreReleaseVersion = "$($CurrentMajor).$($CurrentMinor).$($CurrentPatch)-$($CurrentPreReleaseType).$($NextPreReleaseNumber)" 
 
     if ($CurrentPreReleaseType -eq "alpha")
     {
