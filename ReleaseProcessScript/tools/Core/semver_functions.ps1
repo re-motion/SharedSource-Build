@@ -85,44 +85,48 @@ function Get-Possible-Versions-Hotfix ($Version, $MeantForCurrentVersion = $fals
 {
   $Match = Parse-Semver $Version
 
-  $Major = $Match.Groups["major"].ToString()
-  $Minor = $Match.Groups["minor"].ToString()
-  $Patch = $Match.Groups["patch"].ToString()
+  $CurrentMajor = $Match.Groups["major"].ToString()
+  $CurrentMinor = $Match.Groups["minor"].ToString()
+  $CurrentPatch = $Match.Groups["patch"].ToString()
 
   if (-not $MeantForCurrentVersion)
   {
-    $Patch = [string](1 + $Patch)
+    $NextPatch = [string](1 + $CurrentPatch)
   }
-  $NextPossiblePatch = "$($Major).$($Minor).$($Patch)"
+  else 
+  {
+    $NextPatch = $CurrentPatch
+  }
+  $NextPossiblePatchVersion = "$($CurrentMajor).$($CurrentMinor).$($NextPatch)"
 
   #Compute 1.2.3-alpha.4
   if ($Match.Groups["pre"].Success)
   {
-    $Pre = $Match.Groups["pre"].ToString()
-    $PreVersion = $Match.Groups["preversion"].ToString()
-    $NextPossibleFullVersion = "$($Major).$($Minor).$($Patch)"  
+    $CurrentPreReleaseType = $Match.Groups["pre"].ToString()
+    $CurrentPreReleaseNumber = $Match.Groups["preversion"].ToString()
+    $NextPossibleReleaseVersion = "$($CurrentMajor).$($CurrentMinor).$($NextPatch)"  
 
-    $NextPreVersion = [string](1 + $PreVersion)
-    $NextPossiblePreVersion = "$($Major).$($Minor).$($Patch)-$($Pre).$($NextPreVersion)" 
+    $NextPreReleaseNumber = [string](1 + $CurrentPreReleaseNumber)
+    $NextPossiblePreReleaseVersion = "$($CurrentMajor).$($CurrentMinor).$($CurrentPatch)-$($CurrentPreReleaseType).$($NextPreReleaseNumber)" 
 
-    if ($Pre -eq "alpha")
+    if ($CurrentPreReleaseType -eq "alpha")
     {
-      $NextPossiblePre = "$($Major).$($Minor).$($Patch)-beta.1"
+      $NextPossibleBetaVersion = "$($CurrentMajor).$($CurrentMinor).$($CurrentPatch)-beta.1"
 
-      return $NextPossiblePreVersion, $NextPossiblePre, $NextPossibleFullVersion
+      return $NextPossiblePreReleaseVersion, $NextPossibleBetaVersion, $NextPossibleReleaseVersion
     }
-    elseif ($Pre -eq "beta")
+    elseif ($CurrentPreReleaseType -eq "beta")
     {
-      return $NextPossiblePreVersion, $NextPossibleFullVersion
+      return $NextPossiblePreReleaseVersion, $NextPossibleReleaseVersion
     }
-    elseif ($Pre -eq "rc")
+    elseif ($CurrentPreReleaseType -eq "rc")
     {
-      return $NextPossiblePreVersion, $NextPossibleFullVersion
+      return $NextPossiblePreReleaseVersion, $NextPossibleReleaseVersion
     }
   }
   else
   {
-    return $NextPossiblePatch, "$($NextPossiblePatch)-alpha.1", "$($NextPossiblePatch)-beta.1"
+    return $NextPossiblePatchVersion, "$($NextPossiblePatchVersion)-alpha.1", "$($NextPossiblePatchVersion)-beta.1"
   } 
 }
 

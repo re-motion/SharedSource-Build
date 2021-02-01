@@ -95,6 +95,34 @@ Describe "semver_functions" {
 
       Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
     }
+
+    It "Get-Possible-Next-Versions-Hotfix_WithAlpha_NotMeantForCurrentVersion_ShouldReturnArray" {
+      $Version = "2.28.0-alpha.1"
+      $NextVersions = "2.28.0-alpha.2", "2.28.0-beta.1", "2.28.1"
+
+      Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
+    }
+
+    It "Get-Possible-Next-Versions-Hotfix_WithBeta_NotMeantForCurrentVersion_ShouldReturnArray" {
+      $Version = "2.28.0-beta.2"
+      $NextVersions = "2.28.0-beta.3", "2.28.1"
+
+      Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
+    }
+
+    It "Get-Possible-Next-Versions-Hotfix_WithRc_NotMeantForCurrentVersion_ShouldReturnArray" {
+      $Version = "2.28.0-rc.6"
+      $NextVersions = "2.28.0-rc.7", "2.28.1"
+
+      Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
+    }
+
+    It "Get-Possible-Next-Versions-Hotfix_WithoutPre_NotMeantForCurrentVersion_ShouldReturnArray" {
+      $Version = "2.28.0"
+      $NextVersions = "2.28.1", "2.28.1-alpha.1", "2.28.1-beta.1"
+
+      Get-Possible-Versions-Hotfix $Version | Should Be $NextVersions
+    }
   }
 
   Context "Get-Most-Recent-Version" {
