@@ -22,14 +22,48 @@ function Get-Current-Branchname ()
   return $(git symbolic-ref --short -q HEAD)
 }
 
-function Get-Last-Version-Of-Branch-From-Tag-Exists ($Branchname)
+function Get-Last-Version-Of-Branch-From-Tag-Exists
+(
+  $From, #A commit-ish from which to start looking for version tags (backwards in history). Can be a tag name, a branch name, a commit hash, HEAD etc. Default: HEAD
+  $To #A commit-ish until which version tag are looked for. Can be a tag name, a branch name, a commit hash, HEAD etc. Default: "unbounded"
+)
 {
-  return (git describe $Branchname --match "v[0-9]*" --abbrev=0 2>&1) -and $?
+  $params = Get-Parameters-To-Retrieve-Last-Version-From-Tag $From $To
+  return (git $params[0] for-each-ref $params[1] 2>&1) -and $?
 }
 
-function Get-Last-Version-Of-Branch-From-Tag ($Branchname)
+function Get-Last-Version-Of-Branch-From-Tag
+(
+  $From, #A commit-ish from which to start looking for version tags (backwards in history). Can be a tag name, a branch name, a commit hash, HEAD etc. Default: HEAD
+  $To #A commit-ish until which version tag are looked for. Can be a tag name, a branch name, a commit hash, HEAD etc. Default: "unbounded"
+)
 {
-  return git describe $Branchname --match "v[0-9]*" --abbrev=0
+  $params = Get-Parameters-To-Retrieve-Last-Version-From-Tag $From $To
+  return git $params[0] for-each-ref $params[1]
+}
+
+function Get-Parameters-To-Retrieve-Last-Version-From-Tag
+(
+  $From, #A commit-ish from which to start looking for version tags (backwards in history). Can be a tag name, a branch name, a commit hash, HEAD etc. Default: HEAD
+  $To #A commit-ish until which version tag are looked for. Can be a tag name, a branch name, a commit hash, HEAD etc. Default: "unbounded"
+)
+{
+  #The latest tag is determined by gathering all tags reachable from $From to $To. The tags are sorted
+  #decreasingly according to semver rules, which is why the the latest version comes out on top of the output.
+
+  #pre-release versions are sorted in order of the specification of the suffixes below
+  #more information at: https://git-scm.com/docs/git-config/2.19.2#Documentation/git-config.txt-versionsortsuffix
+  $gitParams = @("-c", "versionsort.suffix=-alpha", "-c", "versionsort.suffix=-beta", "-c", "versionsort.suffix=-rc")
+
+  #--sort=-version:refname makes git treat tag names as versions and sort in reverse order (hence the "-")
+  #so that the latest version is on top of the result list; see also parameter descriptions at https://git-scm.com/docs/git-for-each-ref
+  $refParams = @("refs/tags", "--sort=-version:refname", "--format=`"%(refname:short)`"", "--count=1")
+
+  #version tags are looked for starting from revision $From (backwards in history) until $To (empty string is equivalent to "unbounded")
+  $refParams += If ([string]::IsNullOrEmpty($From)) {"--merged=HEAD"} Else {"--merged=`"$From`""}
+  $refParams += If ([string]::IsNullOrEmpty($To)) {""} Else {"--contains=`"$To`""}
+
+  return @($gitParams, $refParams)
 }
 
 function Is-On-Branch ($Branchname)

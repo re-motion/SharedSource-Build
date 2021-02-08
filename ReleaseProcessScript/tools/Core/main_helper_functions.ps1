@@ -1,4 +1,4 @@
-function Parse-Version-From-ReleaseBranch ($Branchname)
+function Parse-Version-From-BranchName ($Branchname)
 {
   $SplitBranchname = $Branchname.Split(@("/v"), [System.StringSplitOptions]::None)
 
@@ -49,6 +49,37 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     return Read-Current-Version
   }
 
+  $MostRecentVersion = Get-Develop-Most-Recent-Version
+
+  $PossibleVersions = Get-Possible-Next-Versions-Develop $MostRecentVersion $WithoutPrerelease
+  Write-Host "Please choose Release Version:"
+  $CurrentVersion = Read-Version-Choice $PossibleVersions
+
+  return $CurrentVersion
+}
+
+function Get-Hotfix-Current-Version ($StartReleasePhase)
+{
+  if ($StartReleasePhase)
+  {
+    #Get version from name of current branch
+    $CurrentBranchname = Get-Current-Branchname
+    $CurrentVersion = Parse-Version-From-BranchName $CurrentBranchname
+  }
+  else
+  {
+    $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+
+    $PossibleVersions = Get-Possible-Versions-Hotfix $MostRecentVersion $true
+    Write-Host "Please choose Release Version:"
+    $CurrentVersion = Read-Version-Choice $PossibleVersions
+  }
+
+  return $CurrentVersion
+}
+
+function Get-Develop-Most-Recent-Version ()
+{
   #Get last Tag from develop
   $DevelopVersion = Get-Last-Version-Of-Branch-From-Tag
 
@@ -57,7 +88,7 @@ function Get-Develop-Current-Version ($StartReleasebranch)
     #Get last Tag from master (because Get-Last-Version-Of-Branch-From-Tag does not reach master, so the master commit could be the most recent)
     $MasterVersion = Get-Last-Version-Of-Branch-From-Tag "master"
 
-      if (-not (Is-Semver $DevelopVersion))
+    if (-not (Is-Semver $DevelopVersion))
     {
       $MostRecentVersion = $MasterVersion.Substring(1)
     }
@@ -69,27 +100,28 @@ function Get-Develop-Current-Version ($StartReleasebranch)
   {
     $MostRecentVersion = $DevelopVersion.Substring(1)
   }
-    
-  $PossibleVersions = Get-Possible-Next-Versions-Develop $MostRecentVersion $WithoutPrerelease
-  Write-Host "Please choose Release Version:"
-  $CurrentVersion = Read-Version-Choice $PossibleVersions
 
-  return $CurrentVersion
+  return $MostRecentVersion
 }
 
-function Get-Hotfix-Current-Version ($LastVersion, $StartReleasePhase)
+function Get-Hotfix-Most-Recent-Version ()
 {
-  if ($StartReleasePhase)
+  #Get current support branch from name and version of current branch
+  $CurrentBranchName = Get-Current-Branchname
+  $CurrentBranchFullVersion = Parse-Version-From-BranchName $CurrentBranchName
+  $CurrentBranchMajorMinorVersion = Get-Major-Minor-From-Version $CurrentBranchFullVersion
+  $CurrentSupportBranchName = "support/v$($CurrentBranchMajorMinorVersion)"
+
+  if (Get-Last-Version-Of-Branch-From-Tag-Exists "HEAD" $CurrentSupportBranchName)
   {
-    $CurrentVersion = $LastVersion
+    #Get version from tag of current branch with highest version
+    $MostRecentVersion = Get-Last-Version-Of-Branch-From-Tag "HEAD" $CurrentSupportBranchName
+    return $MostRecentVersion.Substring(1)
   }
   else
   {
-    $PossibleVersions = Get-Possible-Versions-Hotfix $LastVersion $true
-    $CurrentVersion = Read-Version-Choice $PossibleVersions
+    return $CurrentBranchFullVersion
   }
-
-  return $CurrentVersion
 }
 
 function Reset-Items-Of-Ignore-List ()
@@ -152,7 +184,7 @@ function Create-Tag-And-Merge ()
   Check-Is-On-Branch "release/"
     
   $CurrentBranchname = Get-Current-Branchname
-  $CurrentVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
+  $CurrentVersion = Parse-Version-From-BranchName $CurrentBranchname
 
   Check-Branch-Up-To-Date $CurrentBranchname
   Check-Branch-Exists-And-Up-To-Date "master"
