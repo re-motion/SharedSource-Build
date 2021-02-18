@@ -197,4 +197,102 @@ Describe "git_base_functions" {
       Assert-MockCalled Write-Host 1
     }
   }
+
+  Context "Push-To-Repos" {
+    It "should push branch and given tag to remote" {
+      #allow convenient synchronization of working directories between local and "remote" repo (no 'pull' required)
+      #more infos: https://git-scm.com/docs/git-config#Documentation/git-config.txt-receivedenyCurrentBranch (default is 'refuse')
+      git config receive.denyCurrentBranch updateInstead
+      Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+
+      cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
+      git remote rename "origin" $TestRemoteName
+
+      #add commits and tag
+      git checkout -b "release/v1.2.3" --quiet
+      Test-Add-Commit
+      git commit --amend -m "Release with Tag"
+      git tag -a "v1.2.3" -m "v1.2.3"
+
+      #push changes and assert branch, commit and tag got created
+      Push-To-Repos "release/v1.2.3" "v1.2.3" *>$NULL
+      cd "$($TestBaseDir)\$($TestDirName)"
+
+      Get-Branch-Exists "release/v1.2.3" | Should Be $TRUE
+      Get-Tag-Exists "v1.2.3" | Should Be $TRUE
+      git show --no-patch "release/v1.2.3" --format="%s" | Should Be "Release with Tag"
+    }
+
+    It "should push branch and no tags other than the one specified" {
+      #allow convenient synchronization of working directories between local and "remote" repo (no 'pull' required)
+      #more infos: https://git-scm.com/docs/git-config#Documentation/git-config.txt-receivedenyCurrentBranch (default is 'refuse')
+      git config receive.denyCurrentBranch updateInstead
+      Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+
+      cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
+      git remote rename "origin" $TestRemoteName
+
+      #add commits and tags
+      git checkout -b "release/v1.2.3" --quiet
+      Test-Add-Commit
+      git tag -a "v1.2.3-rc" -m "v1.2.3-rc"
+
+      Test-Add-Commit
+      git commit --amend -m "Actual Release with correct Tag"
+      git tag -a "v1.2.3" -m "v1.2.3"
+
+      #push changes and assert branch, commit and correct tag got created
+      Push-To-Repos "release/v1.2.3" "v1.2.3" *>$NULL
+      cd "$($TestBaseDir)\$($TestDirName)"
+
+      Get-Branch-Exists "release/v1.2.3" | Should Be $TRUE
+      Get-Tag-Exists "v1.2.3-rc" | Should Be $FALSE
+      Get-Tag-Exists "v1.2.3" | Should Be $TRUE
+      git show --no-patch "release/v1.2.3" --format="%s" | Should Be "Actual Release with correct Tag"
+    }
+
+    It "should push branch and no tag to remote if unspecified" {
+      #allow convenient synchronization of working directories between local and "remote" repo (no 'pull' required)
+      #more infos: https://git-scm.com/docs/git-config#Documentation/git-config.txt-receivedenyCurrentBranch (default is 'refuse')
+      git config receive.denyCurrentBranch updateInstead
+      Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+
+      cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
+      git remote rename "origin" $TestRemoteName
+
+      #add commits and tag
+      git checkout -b "release/v1.2.3" --quiet
+      Test-Add-Commit
+      git commit --amend -m "Release with Tag"
+      git tag -a "v1.2.3" -m "v1.2.3"
+
+      #push changes and assert branch, commit and no tag got created
+      Push-To-Repos "release/v1.2.3" *>$NULL
+      cd "$($TestBaseDir)\$($TestDirName)"
+
+      Get-Branch-Exists "release/v1.2.3" | Should Be $TRUE
+      Get-Tag-Exists "v1.2.3" | Should Be $FALSE
+      git show --no-patch "release/v1.2.3" --format="%s" | Should Be "Release with Tag"
+    }
+
+    It "should throw if given tag does not exist" {
+      #allow convenient synchronization of working directories between local and "remote" repo (no 'pull' required)
+      #more infos: https://git-scm.com/docs/git-config#Documentation/git-config.txt-receivedenyCurrentBranch (default is 'refuse')
+      git config receive.denyCurrentBranch updateInstead
+      Test-Create-And-Add-Remote $TestBaseDir $TestDirName $PseudoRemoteTestDir
+
+      cd "$($TestBaseDir)\$($PseudoRemoteTestDir)"
+      git remote rename "origin" $TestRemoteName
+
+      #add commits and tags
+      git checkout -b "release/v1.2.3" --quiet
+
+      #try to push changes and assert exception is thrown
+      Test-Add-Commit
+      git commit --amend -m "Release with Tag"
+      git tag -a "v1.2.3" -m "v1.2.3"
+
+      { Push-To-Repos "release/v1.2.3" "v1.2.4" *>$NULL } | Should Throw "Tag with name 'v1.2.4' does not exist, abort pushing branch and tag."
+    }
+  }
 }
