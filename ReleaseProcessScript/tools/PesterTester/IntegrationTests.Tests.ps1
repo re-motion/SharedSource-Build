@@ -42,12 +42,12 @@ Describe "IntegrationTests" {
   AfterEach {
     Set-Location $ScriptRoot
 
-    # # Show repository in GitExtensions
+    # Show repository in GitExtensions
     # Set-Location $TestDir
     # gitex
     # Set-Location $ScriptRoot
 
-    # # Show press key prompt
+    # Show press key prompt
     # Write-Host -NoNewLine 'Press any key to continue...';
     # $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 
@@ -67,6 +67,30 @@ Describe "IntegrationTests" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "determines least recently released alpha version correctly from tags" {
+      Initialize-Test "Hotfix-PreRelease-Alpha"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+
+      $MostRecentVersion | Should Be "2.28.1-alpha.2"
+    }
+
+    It "determines least recently released beta version correctly from tags" {
+      Initialize-Test "Hotfix-PreRelease-Beta"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+
+      $MostRecentVersion | Should Be "2.28.1-beta.1"
+    }
+
+    It "falls back to version based on hotfix branch name if no tags are found" {
+      Initialize-Test "Hotfix-PatchRelease-NoTags"
+      
+      $CurrentVersion = Get-Hotfix-Most-Recent-Version
+
+      $CurrentVersion | Should Be "2.28.1"
     }
   }
 
@@ -214,6 +238,14 @@ Describe "IntegrationTests" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "determines least recently released rc version correctly from tags" {
+      Initialize-Test "Release-RC-WithAlpha"
+    
+      $MostRecentVersion = Get-Last-Version-Of-Branch-From-Tag
+    
+      $MostRecentVersion | Should Be "v2.28.1-rc.1"
     }
   }
 }

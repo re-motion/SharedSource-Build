@@ -31,8 +31,7 @@ function Release-Version ()
 
   if (Is-On-Branch "hotfix/")
   {
-    $HotfixVersion = $CurrentBranchname.Split("/")[1].Substring(1)
-    $CurrentVersion = Get-Hotfix-Current-Version $HotfixVersion $StartReleasePhase
+    $CurrentVersion = Get-Hotfix-Current-Version $StartReleasePhase
     $PreVersion = Get-PreReleaseStage $CurrentVersion
 
     if ([string]::IsNullOrEmpty($PreVersion))
@@ -60,7 +59,7 @@ function Release-Version ()
   }
   elseif (Is-On-Branch "release/")
   {
-    $CurrentVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
+    $CurrentVersion = Parse-Version-From-BranchName $CurrentBranchname
     $RcVersion = Find-Next-Rc $CurrentVersion
 
     Write-Host "Do you want to release '$($RcVersion)' [1] or current version '$($CurrentVersion)' [2] ?"
@@ -106,7 +105,7 @@ function Continue-Release()
   }
 
   $CurrentBranchname = Get-Current-Branchname
-  $CurrentVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
+  $CurrentVersion = Parse-Version-From-BranchName $CurrentBranchname
 
   if ( Is-On-Branch "prerelease/" )
   {
@@ -320,7 +319,7 @@ function Release-RC ()
   }
     
   $CurrentBranchname = Get-Current-Branchname
-  $LastVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
+  $LastVersion = Parse-Version-From-BranchName $CurrentBranchname
 
   $CurrentVersion = Find-Next-Rc $LastVersion
 
@@ -376,7 +375,7 @@ function Release-With-RC ()
   }
 
   $CurrentBranchname = Get-Current-Branchname
-  $CurrentVersion = Parse-Version-From-ReleaseBranch $CurrentBranchname
+  $CurrentVersion = Parse-Version-From-BranchName $CurrentBranchname
     
   if (Get-Tag-Exists "v$($CurrentVersion)")
   {
