@@ -472,7 +472,7 @@ function Continue-Patch-Release ()
     return
   }
 
-  Push-To-Repos $MergeTargetBranchName $TRUE
+  Push-To-Repos $MergeTargetBranchName $Tagname
   Push-To-Repos "release/v$($CurrentVersion)"
 }
 
@@ -551,5 +551,5 @@ function Continue-Pre-Release ()
   }
 
   Push-To-Repos $PrereleaseBranchname
-  Push-To-Repos $CurrentBranchname $TRUE
+  Push-To-Repos $CurrentBranchname $Tagname
 }

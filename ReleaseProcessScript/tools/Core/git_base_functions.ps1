@@ -83,7 +83,7 @@ function Is-On-Branch ($Branchname)
 	return $FALSE
 }
 
-function Push-To-Repos ($Branchname, $WithTags)
+function Push-To-Repos ($Branchname, $Tagname)
 {
   $ConfigFile = Get-Config-File
 
@@ -97,9 +97,9 @@ function Push-To-Repos ($Branchname, $WithTags)
   $BeforeBranchname = Get-Current-Branchname
   git checkout $Branchname 2>&1 --quiet
 
-  if ($WithTags)
+  if ( (-not [string]::IsNullOrEmpty($Tagname)) -and (-not (Get-Tag-Exists $Tagname)))
   {
-    $PostFix = "--follow-tags"
+    throw "Tag with name '$($Tagname)' does not exist, abort pushing branch and tag."
   }
 
   $RemoteNames = $ConfigFile.settings.remoteRepositories.remoteName
@@ -141,7 +141,7 @@ function Push-To-Repos ($Branchname, $WithTags)
         }
       } 
 
-      & git push $SetUpstream $RemoteName $Branchname $PostFix 2>&1 | Write-Host
+      & git push $SetUpstream $RemoteName $Branchname $Tagname 2>&1 | Write-Host
     }
   }
     

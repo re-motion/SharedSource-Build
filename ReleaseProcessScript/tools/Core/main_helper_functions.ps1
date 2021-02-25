@@ -214,6 +214,7 @@ function Create-Tag-And-Merge ()
 function Push-Master-Release ($Version)
 {
   $Branchname = "release/v$($Version)"
+  $Tagname = "v$($Version)"
 
   if (-not (Get-Branch-Exists $Branchname) )
   {
@@ -226,6 +227,6 @@ function Push-Master-Release ($Version)
   Check-Branch-Up-To-Date "master"
 
   Check-Branch-Up-To-Date "develop"
-  Push-To-Repos "master" $TRUE
+  Push-To-Repos "master" $Tagname
   Push-To-Repos "develop"
 }
