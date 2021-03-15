@@ -64,6 +64,7 @@ function Jira-Create-Version ($Version)
   catch 
   {
     [System.InvalidOperationException]
+    # Rethrow C# exception because the PS script does not terminate otherwise
     throw $_.Exception.Message
   }
 
@@ -84,7 +85,15 @@ function Jira-Get-Current-Version ()
 
   Add-Authentication $JiraGetVersion
 
-  $JiraGetVersion.Execute()
+  try
+  {
+    $JiraGetVersion.Execute()
+  }
+  catch
+  {
+    # Rethrow C# exception because the PS script does not terminate otherwise
+    throw $_.Exception.Message
+  }
 
   $Version = New-Object -TypeName PSObject
   $Version |Add-Member -MemberType NoteProperty -Name VersionName -Value $JiraGetVersion.VersionName
@@ -119,7 +128,15 @@ function Jira-Release-Version ($CurrentVersionID, $NextVersionID, $SquashUnrelea
     
   Add-Authentication $JiraReleaseVersion
 
-  $JiraReleaseVersion.Execute()
+  try
+  {
+    $JiraReleaseVersion.Execute()
+  }
+  catch
+  {
+    # Rethrow C# exception because the PS script does not terminate otherwise
+    throw $_.Exception.Message
+  }
 }
 
 function Jira-Check-Credentials ($Username, $Password)
@@ -142,6 +159,7 @@ function Jira-Check-Credentials ($Username, $Password)
   }
   catch
   {
+    # Rethrow C# exception because the PS script does not terminate otherwise
     $ErrorMessage = $_.Exception.Message
     throw "Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '$($ConfigFile.settings.jira.jiraProjectKey)' " +
 	    "\nJira Url: '$($JiraUrl)'. \nException Message: $($_.Exception.Message)"
