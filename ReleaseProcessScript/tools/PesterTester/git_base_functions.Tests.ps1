@@ -76,6 +76,115 @@ Describe "git_base_functions" {
     }
   }
 
+  Context "Get-Last-Version-Of-Branch-From-Tag" {
+    It "determines latest version correctly with only valid tags" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4" "master"
+      Test-Release-Version "v1.2.5" "master"
+
+      $LatestVersion = Get-Last-Version-Of-Branch-From-Tag
+
+      $LatestVersion | Should Be "v1.2.5"
+    }
+
+    It "determines latest version correctly with only valid tags, including prereleases" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha.1" "master"
+      Test-Release-Version "v1.2.4-beta.1" "master"
+      Test-Release-Version "v1.2.4-beta.2" "master"
+      Test-Release-Version "v1.2.4-rc.1" "master"
+
+      $LatestVersion = Get-Last-Version-Of-Branch-From-Tag
+
+      $LatestVersion | Should Be "v1.2.4-rc.1"
+    }
+
+    It "determines latest version correctly, ignoring invalid tags" {
+      Test-Release-Version "v1.2.2" "master"
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "vv1.2.4" "master" # invalid
+      Test-Release-Version "v1.3" "master" # invalid
+      Test-Release-Version "1.2.4" "master" # invalid
+      Test-Release-Version "1.2.3.4" "master" # invalid
+      Test-Release-Version "v1.2.3.4" "master" # invalid
+
+      $LatestVersion = Get-Last-Version-Of-Branch-From-Tag
+
+      $LatestVersion | Should Be "v1.2.3"
+    }
+
+    It "determines latest version correctly, including prereleases, ignoring invalid tags" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha1" "master" # invalid
+      Test-Release-Version "v1.2.4-beta.1" "master"
+      Test-Release-Version "v1.2.4-beta.2" "master"
+      Test-Release-Version "1.2.4-beta.3" "master" # invalid
+      Test-Release-Version "v1.2.4-foobar.1" "master" # invalid
+
+      $LatestVersion = Get-Last-Version-Of-Branch-From-Tag
+
+      $LatestVersion | Should Be "v1.2.4-beta.2"
+    }
+  }
+
+  Context "Get-Last-Version-Of-Branch-From-Tag-Exists" {
+    It "determines that there is no latest version without prior release" {
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $FALSE
+    }
+
+    It "determines that there is a latest version with prior release" {
+      Test-Release-Version "v1.2.3" "master"
+
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $TRUE
+    }
+
+    It "determines that there is no latest version with only invalid tags" {
+      Test-Release-Version "v1.3" "master" # invalid
+      Test-Release-Version "1.2.4" "master" # invalid
+      Test-Release-Version "1.2.3.4" "master" # invalid
+      Test-Release-Version "v1.2.3.4" "master" # invalid
+      Test-Release-Version "vv1.2.3" "master" # invalid
+
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $FALSE
+    }
+
+    It "determines that there is a latest version despite invalid tags" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.3" "master" # invalid
+      Test-Release-Version "1.2.4" "master" # invalid
+
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $TRUE
+    }
+
+    It "determines that there is no latest version with only invalid prerelease tags" {
+      Test-Release-Version "v1.2.4-alpha1" "master" # invalid
+      Test-Release-Version "1.2.4-beta.1" "master" # invalid
+      Test-Release-Version "v1.2.4-foobar.1" "master" # invalid
+
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $FALSE
+    }
+
+    It "determines that there is a latest version despite invalid prerelease tags" {
+      Test-Release-Version "v1.2.4-alpha1" "master" # invalid
+      Test-Release-Version "1.2.4-beta.1" "master" # invalid
+      Test-Release-Version "v1.2.4-rc.1" "master"
+
+      $LatestVersionExists = Get-Last-Version-Of-Branch-From-Tag-Exists
+
+      $LatestVersionExists | Should Be $TRUE
+    }
+  }
+
   Context "Get-Tag-Exists" {
     It "Get-Tag-Exists_TagExists_ReturnTrue" {
       git tag -a "newTag" -m "newTag" 2>&1 > $NULL

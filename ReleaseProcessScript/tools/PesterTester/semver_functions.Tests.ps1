@@ -150,4 +150,37 @@ Describe "semver_functions" {
       Get-Most-Recent-Version $BeforeVersion $RecentVersion | Should Be $RecentVersion
     }
   }
+
+  Context "Is-Semver" {
+    It "Recognizes valid versions correctly" {
+      Is-Semver "1.2.3" | Should Be $TRUE
+      Is-Semver "1.2.3-alpha.23" | Should Be $TRUE
+      Is-Semver "1.2.3-beta.1" | Should Be $TRUE
+      Is-Semver "1.2.3-rc.0" | Should Be $TRUE
+    }
+
+    It "Classifies a version with a 'v' prefix as invalid" {
+      Is-Semver "v1.2.3" | Should Be $FALSE
+    }
+
+    It "Classifies a version without patch part as invalid" {
+      Is-Semver "1.2" | Should Be $FALSE
+    }
+
+    It "Classifies a version with only major part as invalid" {
+      Is-Semver "1" | Should Be $FALSE
+    }
+
+    It "Classifies a version with unknown pre-release identifier as invalid" {
+      Is-Semver "1.2.3-foobar.2" | Should Be $FALSE
+    }
+
+    It "Classifies a version with a fourth group as invalid" {
+      Is-Semver "1.2.3.4" | Should Be $FALSE
+    }
+
+    It "Classifies a version without a dot separating pre-release identifier from pre-release number as invalid" {
+      Is-Semver "1.2.3-alpha4" | Should Be $FALSE
+    }
+  }
 }
