@@ -17,6 +17,21 @@ function Test-Add-Commit ($Amend)
   git commit -m $RandomValue $Amend
 }
 
+function Test-Release-Version ($Version, $MergeReleaseBranchInto)
+{
+  $ReleaseBranchName = "release/$($Version)"
+  git checkout -b $ReleaseBranchName --quiet
+  Test-Add-Commit
+  git commit --amend -m "Release Version '$($Version)'"
+  git tag -a $Version -m $Version
+
+  if ($MergeReleaseBranchInto)
+  {
+    git checkout $MergeReleaseBranchInto --quiet
+    git merge $ReleaseBranchName --no-ff
+  }
+}
+
 function Test-Create-And-Add-Remote ($TestBaseDir, $TestDirName, $PseudoRemoteTestDir)
 {
   cd $TestBaseDir

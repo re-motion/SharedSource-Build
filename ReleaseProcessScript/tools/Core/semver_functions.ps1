@@ -14,14 +14,13 @@ function Is-Semver ($Semver)
 {
   try
   {
-    Parse-Semver $Semver
+    Parse-Semver $Semver *>$NULL
+    return $TRUE
   }
   catch
   {
     return $FALSE
   }
-
-  return 
 }
 
 function Get-Possible-Next-Versions-Develop ($Version, $WithoutPrerelease)

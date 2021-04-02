@@ -85,9 +85,25 @@ Describe "IntegrationTests" {
       $MostRecentVersion | Should Be "2.28.1-beta.1"
     }
 
+    It "determines least recently released version correctly from tags, ignoring invalid tags" {
+      Initialize-Test "Hotfix-PreRelease-Alpha-WithInvalidTags"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+
+      $MostRecentVersion | Should Be "2.28.1-alpha.1"
+    }
+
     It "falls back to version based on hotfix branch name if no tags are found" {
       Initialize-Test "Hotfix-PatchRelease-NoTags"
       
+      $CurrentVersion = Get-Hotfix-Most-Recent-Version
+
+      $CurrentVersion | Should Be "2.28.1"
+    }
+
+    It "falls back to version based on hotfix branch name if no valid tags are found" {
+      Initialize-Test "Hotfix-PatchRelease-NoValidTags"
+
       $CurrentVersion = Get-Hotfix-Most-Recent-Version
 
       $CurrentVersion | Should Be "2.28.1"
@@ -153,6 +169,22 @@ Describe "IntegrationTests" {
       $ReferenceDirGitLogs = Get-Git-Logs $ReferenceDir
 
       $TestDirGitLogs | Should Be $ReferenceDirGitLogs
+    }
+
+    It "determines least recently released version correctly from tags" {
+      Initialize-Test "Develop-PreRelease-Beta"
+
+      $MostRecentVersion = Get-Develop-Most-Recent-Version
+
+      $MostRecentVersion | Should Be "2.28.1-beta.1"
+    }
+
+    It "determines least recently released version correctly from tags, ignoring invalid tags" {
+      Initialize-Test "Develop-PreRelease-Beta-WithInvalidTags"
+
+      $MostRecentVersion = Get-Develop-Most-Recent-Version
+
+      $MostRecentVersion | Should Be "2.28.1-beta.2"
     }
   }
 
