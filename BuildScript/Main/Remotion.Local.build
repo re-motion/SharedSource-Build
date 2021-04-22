@@ -28,57 +28,75 @@
     <VcsUrlTemplate Condition="'$(VcsUrlTemplate)' == ''">http://localhost/{0}</VcsUrlTemplate>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SkipTests>True</SkipTests>
-    <SkipDocumentation>True</SkipDocumentation>
-    <SkipNuGetOrg>True</SkipNuGetOrg>
-    <SkipSourceLinks>True</SkipSourceLinks>
-    <SkipNuGet>True</SkipNuGet>
-    <SkipDependDB>True</SkipDependDB>
-  </PropertyGroup>
-  
   <Target Name="TestBuild_Configuration">
     <PropertyGroup>
-      <Platforms>x86</Platforms>
-      <DatabaseSystems>NoDB+SqlServerDefault</DatabaseSystems>
-      <Browsers>NoBrowser</Browsers>
-      <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
-      <TargetRuntimes>NET48</TargetRuntimes>
-      <TestCategoriesToExclude></TestCategoriesToExclude>
-      <SkipTests>False</SkipTests>
+      <Configurations Condition="'$(Configurations)' == ''">Debug</Configurations>
+      <Platforms Condition="'$(Platforms)' == ''">x86</Platforms>
+      <DatabaseSystems Condition="'$(DatabaseSystems)' == ''">NoDB</DatabaseSystems>
+      <Browsers Condition="'$(Browsers)' == ''">NoBrowser</Browsers>
+      <ExecutionRuntimes Condition="'$(ExecutionRuntimes)' == ''">LocalMachine</ExecutionRuntimes>
+      <TargetRuntimes Condition="'$(TargetRuntimes)' == ''">NET48</TargetRuntimes>
+      <TestCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''"></TestCategoriesToExclude>      
+      <SkipCleanProjects Condition="'$(SkipCleanProjects)' == ''">False</SkipCleanProjects>
+      <SkipTests Condition="'$(SkipTests)' == ''">False</SkipTests>
+      <SkipDocumentation Condition="'$(SkipDocumentation)' == ''">True</SkipDocumentation>
+      <SkipNuGetOrg Condition="'$(SkipNuGetOrg)' == ''">True</SkipNuGetOrg>
+      <SkipSourceLinks Condition="'$(SkipSourceLinks)' == ''">True</SkipSourceLinks>
+      <SkipNuGet Condition="'$(SkipNuGet)' == ''">True</SkipNuGet>
+      <SkipDependDB Condition="'$(SkipDependDB)' == ''">True</SkipDependDB>
     </PropertyGroup>
   </Target>
   
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
-      <Platforms>x64</Platforms>
-      <DatabaseSystems>NoDB+SqlServerDefault</DatabaseSystems>
-      <Browsers>NoBrowser+Chrome</Browsers>
-      <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
-      <TargetRuntimes>NET48</TargetRuntimes>
-      <TestCategoriesToExclude></TestCategoriesToExclude>
+      <Configurations Condition="'$(Configurations)' == ''">Debug+Release</Configurations>
+      <Platforms Condition="'$(Platforms)' == ''">x64</Platforms>
+      <DatabaseSystems Condition="'$(DatabaseSystems)' == ''">NoDB</DatabaseSystems>
+      <Browsers Condition="'$(Browsers)' == ''">NoBrowser</Browsers>
+      <ExecutionRuntimes Condition="'$(ExecutionRuntimes)' == ''">LocalMachine</ExecutionRuntimes>
+      <TargetRuntimes Condition="'$(TargetRuntimes)' == ''">NET48</TargetRuntimes>
+      <TestCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''"></TestCategoriesToExclude>
+      <SkipCleanProjects>False</SkipCleanProjects>
       <SkipTests>False</SkipTests>
+      <SkipDocumentation>True</SkipDocumentation>
+      <SkipNuGetOrg>True</SkipNuGetOrg>
+      <SkipSourceLinks>True</SkipSourceLinks>
       <SkipNuGet>False</SkipNuGet>
       <SkipDependDB>False</SkipDependDB>
     </PropertyGroup>
   </Target>
   
-  <Target Name="DocumentationBuild_Configuration">
+  <Target Name="DocumentationBuild_Configuration" DependsOnTargets="Configuration_Defaults">
     <PropertyGroup>
+      <Configurations>Debug</Configurations>
       <SkipDocumentation>False</SkipDocumentation>
     </PropertyGroup>
   </Target>
 
-  <Target Name="PackageBuild_Configuration">
+  <Target Name="PackageBuild_Configuration" DependsOnTargets="Configuration_Defaults">
     <PropertyGroup>
+      <Configurations>Debug+Release</Configurations>
       <SkipNuGet>False</SkipNuGet>
     </PropertyGroup>
   </Target>
 
-  <Target Name="DependDBBuild_Configuration">
+  <Target Name="DependDBBuild_Configuration" DependsOnTargets="Configuration_Defaults">
     <PropertyGroup>
+      <Configurations>Debug</Configurations>
       <SkipNuGet>False</SkipNuGet>
       <SkipDependDB>False</SkipDependDB>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="Configuration_Defaults">
+    <PropertyGroup>
+      <SkipCleanProjects>False</SkipCleanProjects>
+      <SkipTests>True</SkipTests>
+      <SkipDocumentation>True</SkipDocumentation>
+      <SkipNuGetOrg>True</SkipNuGetOrg>
+      <SkipSourceLinks>True</SkipSourceLinks>
+      <SkipNuGet>True</SkipNuGet>
+      <SkipDependDB>True</SkipDependDB>
     </PropertyGroup>
   </Target>
 
@@ -101,7 +119,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="TestBuild" DependsOnTargets="TestBuild_Configuration;SetVersionTestBuild;TestBuildDebugOnly;" />
+  <Target Name="TestBuild" DependsOnTargets="TestBuild_Configuration;SetVersionTestBuild;BuildAll;" />
   <Target Name="FullBuildWithoutDocumentation" DependsOnTargets="FullBuild_Configuration;SetVersion;BuildAll;" />
   <Target Name="DocumentationBuild" DependsOnTargets="DocumentationBuild_Configuration;SetVersion;BuildAll;" />
   <Target Name="PackageBuild" DependsOnTargets="PackageBuild_Configuration;SetVersion;BuildAll;" />
