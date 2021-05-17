@@ -124,7 +124,7 @@ function Continue-Release()
     } 
     elseif ($Ancestor.StartsWith("hotfix/") )
     {
-      Continue-Hotfix-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
+      Continue-Patch-Release -CurrentVersion $CurrentVersion -DoNotPush:$DoNotPush
     }
     else
     {
