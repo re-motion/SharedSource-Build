@@ -39,14 +39,15 @@
 
   <PropertyGroup>
     <!-- Define settings that can be overridden in Customizations.build script. -->
-    <Version></Version>
-    <AdditionalBuildMetadata></AdditionalBuildMetadata>
-    <SkipTests>False</SkipTests>
-    <SkipDocumentation>False</SkipDocumentation>
-    <SkipNuGetOrg>False</SkipNuGetOrg>
-    <SkipSourceLinks>False</SkipSourceLinks>
-    <SkipNuGet>False</SkipNuGet>
-    <SkipDependDB>False</SkipDependDB>
+    <Version Condition="'$(Version)' == ''"></Version>
+    <AdditionalBuildMetadata Condition="'$(AdditionalBuildMetadata)' == ''"></AdditionalBuildMetadata>
+    <SkipCleanProjects Condition="'$(SkipCleanProjects)' == ''"></SkipCleanProjects>
+    <SkipTests Condition="'$(SkipTests)' == ''"></SkipTests>
+    <SkipDocumentation Condition="'$(SkipDocumentation)' == ''"></SkipDocumentation>
+    <SkipNuGetOrg Condition="'$(SkipNuGetOrg)' == ''"></SkipNuGetOrg>
+    <SkipSourceLinks Condition="'$(SkipSourceLinks)' == ''"></SkipSourceLinks>
+    <SkipNuGet Condition="'$(SkipNuGet)' == ''"></SkipNuGet>
+    <SkipDependDB Condition="'$(SkipDependDB)' == ''"></SkipDependDB>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -95,6 +96,8 @@
   <Target Name="PrepareBuildTargets">
     <PropertyGroup>
 
+      <CleanProjectsTarget Condition="'$(SkipCleanProjects)' != 'True'">CleanProjects</CleanProjectsTarget>
+
       <RunTestsTarget Condition="'$(SkipTests)' != 'True'">RunTests</RunTestsTarget>
 
       <GenerateDocumentationTarget Condition="'$(SkipDocumentation)' != 'True'">GenerateDocumentation</GenerateDocumentationTarget>
@@ -107,55 +110,42 @@
 
       <DependDBTarget Condition="'$(SkipDependDB)' != 'True'">ProcessForDependDB</DependDBTarget>
 
-      <TestBuildTargets>
-          BuildReleaseProjects;
-          BuildTestProjects;
-          $(RunTestsTarget);
-          RestoreBackupFiles;
-      </TestBuildTargets>
-
       <!-- TODO: include RunMixinXRefTest with the targets -->
 
-      <FullBuildTargets>
-          LogConfiguration;
-          CleanProjects;
-          BuildReleaseProjects;
-          BuildTestProjects;
-          $(RunTestsTarget);
-          $(GenerateDocumentationTarget);
-          $(PackageNuGetOrgTarget);
-          $(SourceLinkTarget);
-          $(PackageNuGetTarget);
-          $(DependDBTarget);
-          RestoreBackupFiles;
-      </FullBuildTargets>
+      <BuildTargets>
+        LogConfiguration;
+        $(CleanProjectsTarget);
+        BuildReleaseProjects;
+        BuildTestProjects;
+        $(RunTestsTarget);
+        $(GenerateDocumentationTarget);
+        $(PackageNuGetOrgTarget);
+        $(SourceLinkTarget);
+        $(PackageNuGetTarget);
+        $(DependDBTarget);
+        RestoreBackupFiles;
+      </BuildTargets>
 
     </PropertyGroup>
     
-    <Message Text="Selected build targets for test builds: $(TestBuildTargets)" />
-    <Message Text="Selected build targets for full builds: $(FullBuildTargets)" />
+    <Message Text="Selected build targets: $(BuildTargets)" />
   </Target>
 
   <Target Name="BuildAll" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">
+    <PropertyGroup>
+      <!-- Property function replaces semi-colum with escape-sequence. -->
+      <_configurations>$([MSBuild]::Unescape($(Configurations.Replace('+',';'))))</_configurations>
+    </PropertyGroup>
 
     <ItemGroup>
-      <_configurationIDs Remove="@(_allConfigurations)" />
-      <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
-      <_configurationIDs Include="Debug" />
-      <_configurationIDs Include="Release" />
+      <_configurationIDs Remove="@(_configurationIDs)" />
+      <_configurationIDs Include="$(_configurations)" />
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFile)"
              BuildInParallel="false"
-             Targets="$(FullBuildTargets)"
+             Targets="$(BuildTargets)"
              Properties="ConfigurationID=%(_configurationIDs.Identity);$(BuildProperties);"/>
-  </Target>
-  
-  <Target Name="TestBuildDebugOnly" DependsOnTargets="CleanFolders;PrepareBuildProperties;PrepareBuildTargets;">
-    <MSBuild Projects="$(MSBuildProjectFile)"
-             BuildInParallel="false"
-             Targets="$(TestBuildTargets)"
-             Properties="ConfigurationID=Debug;$(BuildProperties);"/>
   </Target>
 
   <Target Name="UpdateAssemblyInfosForDevelopment" DependsOnTargets="CheckVersion;PrepareBuildProperties;UpdateVersionProps;PrepareVersionWithoutPrerelease">
