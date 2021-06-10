@@ -73,16 +73,20 @@ Describe "IntegrationTests" {
       Initialize-Test "Hotfix-PreRelease-Alpha"
 
       $MostRecentVersion = Get-Hotfix-Most-Recent-Version
-
       $MostRecentVersion | Should Be "2.28.1-alpha.2"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.28.1-alpha.2" $TRUE
+      $VersionsToRelease | Should Be "2.28.1-alpha.3", "2.28.1-beta.1", "2.28.1"
     }
 
     It "determines least recently released beta version correctly from tags" {
       Initialize-Test "Hotfix-PreRelease-Beta"
 
       $MostRecentVersion = Get-Hotfix-Most-Recent-Version
-
       $MostRecentVersion | Should Be "2.28.1-beta.1"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.28.1-beta.1" $TRUE
+      $VersionsToRelease | Should Be "2.28.1-beta.2", "2.28.1"
     }
 
     It "determines least recently released version correctly from tags, ignoring invalid tags" {
@@ -95,10 +99,12 @@ Describe "IntegrationTests" {
 
     It "falls back to version based on hotfix branch name if no tags are found" {
       Initialize-Test "Hotfix-PatchRelease-NoTags"
-      
-      $CurrentVersion = Get-Hotfix-Most-Recent-Version
 
-      $CurrentVersion | Should Be "2.28.1"
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.28.1"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.28.1" $TRUE
+      $VersionsToRelease | Should Be "2.28.1", "2.28.1-alpha.1", "2.28.1-beta.1"
     }
 
     It "falls back to version based on hotfix branch name if no valid tags are found" {
@@ -107,6 +113,56 @@ Describe "IntegrationTests" {
       $CurrentVersion = Get-Hotfix-Most-Recent-Version
 
       $CurrentVersion | Should Be "2.28.1"
+    }
+
+    It "determines versions to be released correctly if no previous prerelease exists" {
+      Initialize-Test "Hotfix-PatchRelease-WithoutPriorPreRelease"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.27.4"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.27.4" $TRUE
+      $VersionsToRelease | Should Be "2.27.4", "2.27.4-alpha.1", "2.27.4-beta.1"
+    }
+
+    It "falls back to version based on hotfix branch name and ignores minor tag from common support branch fork point" {
+      Initialize-Test "Hotfix-PatchRelease-NoPriorRelease-TaggedCommonAncestor"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.29.0"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.29.0" $TRUE
+      $VersionsToRelease | Should Be "2.29.0", "2.29.0-alpha.1", "2.29.0-beta.1"
+    }
+
+    It "falls back to version based on hotfix branch name and ignores minor tag on support branch" {
+      Initialize-Test "Hotfix-PatchRelease-NoPriorRelease-NoTagOnCommonAncestor"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.29.0"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.29.0" $TRUE
+      $VersionsToRelease | Should Be "2.29.0", "2.29.0-alpha.1", "2.29.0-beta.1"
+    }
+
+    It "falls back to version based on hotfix branch name and ignores minor tag on support branch" {
+      Initialize-Test "Hotfix-PatchRelease-NoPriorRelease-MinorTag"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.29.0"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.29.0" $TRUE
+      $VersionsToRelease | Should Be "2.29.0", "2.29.0-alpha.1", "2.29.0-beta.1"
+    }
+
+    It "determines least recently released alpha version correctly from tags and ignores minor tag from common support branch fork point" {
+      Initialize-Test "Hotfix-PreRelease-Alpha-TaggedCommonAncestor"
+
+      $MostRecentVersion = Get-Hotfix-Most-Recent-Version
+      $MostRecentVersion | Should Be "2.29.1-alpha.2"
+
+      $VersionsToRelease = Get-Possible-Versions-Hotfix "2.29.1-alpha.2" $TRUE
+      $VersionsToRelease | Should Be "2.29.1-alpha.3", "2.29.1-beta.1", "2.29.1"
     }
   }
 

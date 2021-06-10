@@ -112,11 +112,21 @@ function Get-Hotfix-Most-Recent-Version ()
   $CurrentBranchMajorMinorVersion = Get-Major-Minor-From-Version $CurrentBranchFullVersion
   $CurrentSupportBranchName = "support/v$($CurrentBranchMajorMinorVersion)"
 
+  # fall back to hotfix branch name if no previous release is found on hotfix branch
   if (Get-Last-Version-Of-Branch-From-Tag-Exists "HEAD" $CurrentSupportBranchName)
   {
     #Get version from tag of current branch with highest version
-    $MostRecentVersion = Get-Last-Version-Of-Branch-From-Tag "HEAD" $CurrentSupportBranchName
-    return $MostRecentVersion.Substring(1)
+    $MostRecentVersion = (Get-Last-Version-Of-Branch-From-Tag "HEAD" $CurrentSupportBranchName).Substring(1)
+
+    # also fall back to hotfix branch if the found tag is not a pre-release tag (i.e. minor on support branch)
+    if ($NULL -ne (Get-PreReleaseStage $MostRecentVersion))
+    {
+      return $MostRecentVersion
+    }
+    else
+    {
+      return $CurrentBranchFullVersion
+    }
   }
   else
   {

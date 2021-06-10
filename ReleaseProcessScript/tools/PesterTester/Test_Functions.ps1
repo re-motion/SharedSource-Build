@@ -20,16 +20,19 @@ function Test-Add-Commit ($Amend)
 function Test-Release-Version ($Version, $MergeReleaseBranchInto)
 {
   $ReleaseBranchName = "release/$($Version)"
-  git checkout -b $ReleaseBranchName --quiet
-  Test-Add-Commit
-  git commit --amend -m "Release Version '$($Version)'"
-  git tag -a $Version -m $Version
+  git checkout -b $ReleaseBranchName --quiet >$NULL
+  Test-Add-Commit >$NULL
+  git commit --amend -m "Release Version '$($Version)'" >$NULL
+  git tag -a $Version -m $Version >$NULL
 
   if ($MergeReleaseBranchInto)
   {
-    git checkout $MergeReleaseBranchInto --quiet
-    git merge $ReleaseBranchName --no-ff
+    git checkout $MergeReleaseBranchInto --quiet >$NULL
+    git merge $ReleaseBranchName --no-ff >$NULL
   }
+
+  $CurrentRevision = (git rev-parse HEAD)
+  return $CurrentRevision
 }
 
 function Test-Create-And-Add-Remote ($TestBaseDir, $TestDirName, $PseudoRemoteTestDir)
