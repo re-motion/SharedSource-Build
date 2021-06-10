@@ -68,9 +68,29 @@ function Get-Hotfix-Current-Version ($StartReleasePhase)
   }
   else
   {
+    $HotfixBranchName = Get-Current-Branchname
     $MostRecentVersion = Get-Hotfix-Most-Recent-Version
 
-    $PossibleVersions = Get-Possible-Versions-Hotfix $MostRecentVersion $true
+    #Get current support branch from name and version of current branch
+    $CurrentBranchFullVersion = Parse-Version-From-BranchName $HotfixBranchName
+    $CurrentBranchMajorMinorVersion = Get-Major-Minor-From-Version $CurrentBranchFullVersion
+    $CurrentSupportBranchName = "support/v$($CurrentBranchMajorMinorVersion)"
+
+    # We want the following behaviour for the MeantForCurrentVersion flag of Get-Possible-Verions-Hotfix:
+    #
+    #   PreReleaseExists | NoReleaseExists |   MeantForCurrentVersion
+    #  ------------------|-----------------|-----------------------------
+    #   False            | False           | False
+    #   False            | True            | True
+    #   True             | False           | True
+    #   True             | True            | Impossible (fallback False)
+    #
+    # => this is equivalent to PreReleaseExists XOR NoReleaseExists
+    $PreReleaseExists = Pre-Release-Version-Exists "HEAD" $CurrentSupportBranchName
+    $NoReleaseExists = -not (Get-Last-Version-Of-Branch-From-Tag-Exists "HEAD" $CurrentSupportBranchName)
+    $MeantForCurrentVersion = $PreReleaseExists -xor $NoReleaseExists
+
+    $PossibleVersions = Get-Possible-Versions-Hotfix $MostRecentVersion $MeantForCurrentVersion
     Write-Host "Please choose Release Version:"
     $CurrentVersion = Read-Version-Choice $PossibleVersions
   }

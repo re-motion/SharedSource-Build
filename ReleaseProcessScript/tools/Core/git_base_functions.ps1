@@ -70,6 +70,29 @@ function Get-Valid-Versions-From-Tags-Sorted
   return $ValidVersions
 }
 
+function Pre-Release-Version-Exists
+(
+  $From, #A commit-ish from which to start looking for version tags (backwards in history). Can be a tag name, a branch name, a commit hash, HEAD etc. Default: HEAD
+  $To #A commit-ish until which version tag are looked for. Can be a tag name, a branch name, a commit hash, HEAD etc. Default: "unbounded"
+)
+{
+  $ValidVersions = @(Get-Valid-Versions-From-Tags-Sorted $From $To)
+
+  if ($NULL -ne $ValidVersions)
+  {
+    foreach ($Version in $ValidVersions)
+    {
+      $PreReleaseStage = Get-PreReleaseStage $Version.Substring(1)
+      if ($NULL -ne $PreReleaseStage)
+      {
+        return $TRUE
+      }
+    }
+  }
+
+  return $FALSE
+}
+
 function Is-On-Branch ($Branchname)
 {
 	$SymbolicRef = $(git symbolic-ref --short -q HEAD)

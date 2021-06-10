@@ -185,6 +185,163 @@ Describe "git_base_functions" {
     }
   }
 
+  Context "Get-Valid-Versions-From-Tags-Sorted" {
+    It "determines that there are no released versions without prior release" {
+      $ValidReleaseTags = Get-Valid-Versions-From-Tags-Sorted
+
+      $ValidReleaseTags | Should BeNullOrEmpty
+    }
+
+    It "determines release tags after alpha and hotfix release" {
+      Test-Release-Version "v1.2.3-alpha.1" "master"
+      Test-Release-Version "v1.2.3.0-alpha.2" "master" # invalid, ignored
+      Test-Release-Version "v1.2.3" "master"
+
+      $ValidReleaseTags = Get-Valid-Versions-From-Tags-Sorted
+
+      $ValidReleaseTags | Should Be "v1.2.3", "v1.2.3-alpha.1"
+    }
+
+    It "determines released versions in correct semver order" {
+      Test-Release-Version "v1.0.0-alpha.-1" "master" # invalid, ignored
+      Test-Release-Version "v1.0.0-alpha.0" "master"
+      Test-Release-Version "v1.0.0-alpha.2" "master"
+      Test-Release-Version "v1.0.0-beta.1" "master"
+      Test-Release-Version "v1.0.0-beta.11" "master"
+      Test-Release-Version "v1.0.0-rc.1" "master"
+      Test-Release-Version "v1.0.0" "master"
+
+      $ValidReleaseTags = Get-Valid-Versions-From-Tags-Sorted
+
+      $ValidReleaseTags | Should Be "v1.0.0", "v1.0.0-rc.1", "v1.0.0-beta.11", "v1.0.0-beta.1", "v1.0.0-alpha.2", "v1.0.0-alpha.0"
+    }
+
+    It "determines that versions with invalid tags in between are still recognized" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha1" "master" # invalid
+      Test-Release-Version "1.2.4-beta.1" "master" # invalid
+      Test-Release-Version "v1.2.4-rc.1" "master"
+
+      $ValidReleaseTags = Get-Valid-Versions-From-Tags-Sorted
+
+      $ValidReleaseTags | Should Be "v1.2.4-rc.1", "v1.2.3"
+    }
+
+    It "respects the lower boundary of version tags to consider correctly" {
+      Test-Release-Version "v1.2.3" "master"
+      $LowerBound = Test-Release-Version "v1.2.4-alpha.1" "master"
+      Test-Release-Version "v1.2.4-alpha.2" "master"
+      Test-Release-Version "v1.2.4" "master"
+
+      # look for tags from tip of master (HEAD would be equivalent) backwards in the commit history until revision $LowerBound (exclusive)
+      $ValidReleaseTagsInRange = Get-Valid-Versions-From-Tags-Sorted "master" $LowerBound
+
+      $ValidReleaseTagsInRange | Should Be "v1.2.4", "v1.2.4-alpha.2"
+    }
+
+    It "respects the upper boundary of version tags to consider correctly" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha.1" "master"
+      $UpperBound = Test-Release-Version "v1.2.4-alpha.2" "master"
+      Test-Release-Version "v1.2.4" "master"
+
+      # look for tags from $UpperBound backwards in the commit history without lower bound
+      $ValidReleaseTagsInRange = Get-Valid-Versions-From-Tags-Sorted $UpperBound
+
+      $ValidReleaseTagsInRange | Should Be "v1.2.4-alpha.2", "v1.2.4-alpha.1", "v1.2.3"
+    }
+
+    It "respects the lower and upper boundary of version tags to consider correctly" {
+      $LowerBound = Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha.1" "master"
+      $UpperBound = Test-Release-Version "v1.2.4-alpha.2" "master"
+      Test-Release-Version "v1.2.4" "master"
+
+      # look for tags between $UpperBound and $LowerBound (exlusive)
+      $ValidReleaseTagsInRange = Get-Valid-Versions-From-Tags-Sorted $UpperBound $LowerBound
+
+      $ValidReleaseTagsInRange | Should Be "v1.2.4-alpha.2", "v1.2.4-alpha.1"
+    }
+  }
+
+  Context "Pre-Release-Version-Exists" {
+    It "determines that there are no pre-release versions without any prior release" {
+      $PreReleaseExists = Pre-Release-Version-Exists
+
+      $PreReleaseExists | Should Be $FALSE
+    }
+
+    It "determines there is a prerelease after alpha and hotfix release" {
+      Test-Release-Version "v1.2.3-alpha.1" "master"
+      Test-Release-Version "v1.2.3.0-alpha.2" "master" # invalid, ignored
+      Test-Release-Version "v1.2.3" "master"
+
+      $PreReleaseExists = Pre-Release-Version-Exists
+
+      $PreReleaseExists | Should Be $TRUE
+    }
+
+    It "determines there is a prerelease after RC release" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.3.0-alpha.2" "master" # invalid, ignored
+      Test-Release-Version "v1.2.4-rc.1" "master"
+
+      $PreReleaseExists = Pre-Release-Version-Exists
+
+      $PreReleaseExists | Should Be $TRUE
+    }
+
+    It "determines there is a prerelease after beta release" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.3.0-alpha.2" "master" # invalid, ignored
+      Test-Release-Version "v1.2.4-beta.5" "master"
+
+      $PreReleaseExists = Pre-Release-Version-Exists
+
+      $PreReleaseExists | Should Be $TRUE
+    }
+
+    It "determines there is no prerelease version after only patch releases" {
+      Test-Release-Version "v1.0.0" "master"
+      Test-Release-Version "v1.0.1" "master"
+      Test-Release-Version "v1.0.2" "master"
+      Test-Release-Version "v1.1.1" "master"
+      Test-Release-Version "v1.1.2" "master"
+
+      $PreReleaseExists = Pre-Release-Version-Exists
+
+      $PreReleaseExists | Should Be $FALSE
+    }
+
+    It "determines there is no prerelease version when having set lower and upper bounds to exlude prereleases" {
+      Test-Release-Version "v1.2.3-alpha.1" "master"
+      $LowerBound = Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4" "master"
+      $UpperBound = Test-Release-Version "v1.2.5" "master"
+      Test-Release-Version "v1.2.6-beta.1" "master"
+      Test-Release-Version "v1.2.6" "master"
+
+      # look for tags between $UpperBound and $LowerBound
+      $PreReleaseExists = Pre-Release-Version-Exists $UpperBound $LowerBound
+
+      $PreReleaseExists | Should Be $FALSE
+    }
+
+    It "determines there is a prerelease version when having set lower and upper bounds to exlude all but one prereleases" {
+      Test-Release-Version "v1.2.3" "master"
+      Test-Release-Version "v1.2.4-alpha.1" "master"
+      $LowerBound = Test-Release-Version "v1.2.4" "master"
+      Test-Release-Version "v1.2.5" "master"
+      Test-Release-Version "v1.2.6-beta.1" "master"
+      $UpperBound = Test-Release-Version "v1.2.6" "master"
+
+      # look for tags between $UpperBound and $LowerBound
+      $PreReleaseExists = Pre-Release-Version-Exists $UpperBound $LowerBound
+
+      $PreReleaseExists | Should Be $TRUE
+    }
+  }
+
   Context "Get-Tag-Exists" {
     It "Get-Tag-Exists_TagExists_ReturnTrue" {
       git tag -a "newTag" -m "newTag" 2>&1 > $NULL
