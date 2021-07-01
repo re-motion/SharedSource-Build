@@ -154,6 +154,7 @@
     </PropertyGroup>
 
     <MSBuild Projects="@(ReleaseProjectFiles)"
+             Targets="DispatchToInnerBuilds"
              ContinueOnError="false"
              ToolsVersion="%(ReleaseProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="ReleaseOutputFiles" TaskParameter="TargetOutputs"/>
@@ -177,12 +178,14 @@
     </PropertyGroup>
 
     <MSBuild Projects="@(UnitTestProjectFiles)"
+             Targets="DispatchToInnerBuilds"
              ContinueOnError="false"
              ToolsVersion="%(UnitTestProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
 
     <MSBuild Projects="@(IntegrationTestProjectFiles)"
+             Targets="DispatchToInnerBuilds"
              ContinueOnError="false"
              ToolsVersion="%(IntegrationTestProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>

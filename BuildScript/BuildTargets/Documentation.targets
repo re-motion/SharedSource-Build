@@ -52,11 +52,11 @@
       <_documentationRootAssemblies Include="%(ReleaseOutputFiles.FileName)%(ReleaseOutputFiles.Extension)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
     </ItemGroup>
 
-    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' &gt; 1" />
+    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Distinct()->Count())' &gt; 1" />
 
     <PropertyGroup>
       <HasDocumentation>False</HasDocumentation>
-      <HasDocumentation Condition="'@(_documentationRootAssemblies->Count())' == 1">True</HasDocumentation>
+      <HasDocumentation Condition="'@(_documentationRootAssemblies->Count())' &gt; 0">True</HasDocumentation>
     </PropertyGroup>
 
     <Message Text="No documentation will be generated because no item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'."
@@ -75,6 +75,28 @@
       <DocumentationAssemblyVersion>$(AssemblyVersion)</DocumentationAssemblyVersion>
       <DocumentationVersion>$(Version)</DocumentationVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Sandcastle Helpfile Builder v1.9 only supports .NET Framework assemblies. -->
+      <_filterSpec Remove="@(_filterSpec)"/>
+      <_filterSpec Include="TargetFramework=net45" />
+      <_filterSpec Include="TargetFramework=net451" />
+      <_filterSpec Include="TargetFramework=net452" />
+      <_filterSpec Include="TargetFramework=net46" />
+      <_filterSpec Include="TargetFramework=net461" />
+      <_filterSpec Include="TargetFramework=net462" />
+      <_filterSpec Include="TargetFramework=net47" />
+      <_filterSpec Include="TargetFramework=net471" />
+      <_filterSpec Include="TargetFramework=net472" />
+      <_filterSpec Include="TargetFramework=net48" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <DocumentationAssemblies Remove="@(DocumentationAssemblies)"/>
+    </ItemGroup>
+    <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="FilterItemsOnMetadata" InputItems1="@(ReleaseOutputFiles)" InputItems2="@(_filterSpec)" Separator=";" Metadata="AdditionalProperties">
+      <Output TaskParameter="OutputItems" ItemName="DocumentationAssemblies"/>
+    </MSBuild.ExtensionPack.Framework.MsBuildHelper>
   </Target>
 
   <Target Name="CreateSandcastleProjectFile" DependsOnTargets="CreateDocumentationProperties;">
@@ -177,14 +199,9 @@
                                        Value="false"
                                        Namespaces="@(_namespaces)"/>
 
-    <ItemGroup>
-      <_documentationAssemblies Remove="@(_documentationAssemblies)"/>
-      <_documentationAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != 'True'" />
-    </ItemGroup>
-
     <Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder
         File="$(DocumentationSandcastleProjectFile)"
-        Assemblies="@(_documentationAssemblies)"
+        Assemblies="@(DocumentationAssemblies)"
         NamespaceSummaryFiles="@(_namespaceSummaryFiles)" />
   </Target>
 
