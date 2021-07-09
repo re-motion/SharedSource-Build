@@ -19,6 +19,8 @@
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.InsertSourceLinks"/>
+
   <Target Name="CheckDebugSymbolsProperties" >
     <Error Text="The property 'VcsUrlTemplate' is not set." Condition="'$(VcsUrlTemplate)' == ''" />
     <Error Text="The property 'VcsUrlRequiresWindowsCredentials' is not set." Condition="'$(VcsUrlRequiresWindowsCredentials)' == ''" />
@@ -44,7 +46,7 @@
       <_filesWithPdbs Remove="@(_filesWithPdbs)" Condition="!Exists (%(Pdb))" />
     </ItemGroup>
 
-    <Remotion.BuildTools.MSBuildTasks.InsertSourceLinks
+    <Remotion.BuildScript.BuildTasks.InsertSourceLinks
         BuildOutputFile="%(_filesWithPdbs.Identity)"
         ProjectBaseDirectory="$(SolutionDirectory)"
         VcsUrlTemplate="$(VcsUrlTemplate)"
