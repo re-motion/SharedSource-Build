@@ -5,18 +5,18 @@ $Location = $PSScriptRoot
 
 $jiraInvalidCredentialsExceptionString = "JIRA response: invalid credentials. Please try again."
 
-function Save-Credential ($Username, $Password)
+function Save-Credential ($UserName, $Password)
 {
   Delete-Credentials
 
-  $PasswordCredential = Create-Password-Credential $Username $Password
+  $PasswordCredential = Create-Password-Credential $UserName $Password
 
   [Windows.Security.Credentials.PasswordVault,Windows.Security.Credentials,ContentType=WindowsRuntime] > $NULL
   $PasswordVault = New-Object Windows.Security.Credentials.PasswordVault
   $PasswordVault.Add($PasswordCredential)
 }
 
-function Create-Password-Credential ($Username, $Password)
+function Create-Password-Credential ($UserName, $Password)
 {
   $ConfigFile = Get-Config-File
   $JiraCredentialResourceString = "$($ConfigFile.settings.jira.jiraUrl)"
@@ -24,7 +24,7 @@ function Create-Password-Credential ($Username, $Password)
   [Windows.Security.Credentials.PasswordVault,Windows.Security.Credentials,ContentType=WindowsRuntime] > $NULL
   $PasswordCredential = New-Object Windows.Security.Credentials.PasswordCredential
 
-  $PasswordCredential.UserName = $Username    
+  $PasswordCredential.UserName = $UserName    
   $PasswordCredential.Password = $Password
   $PasswordCredential.Resource = $JiraCredentialResourceString
 
@@ -46,7 +46,7 @@ function Get-Credential ()
 
     try
     {
-      Check-Jira-Authentication $Credential.Username $Credential.Password
+      Check-Jira-Authentication $Credential.UserName $Credential.Password
     }
     catch
     {
@@ -66,7 +66,8 @@ function Get-Credential ()
     return Ask-For-Credential
   }
 
-  return $Credential
+  #Repackaging the properties is required to work around some weird Powershell issue where the credential object's values are emptied out on the callsite.
+  return New-Object psobject -Property @{ UserName = $Credential.UserName; Password = $Credential.Password }
 }
 
 function Delete-Credentials ()
@@ -96,32 +97,32 @@ function Delete-Credentials ()
 function Ask-For-Credential ()
 {
   Write-Host "Please enter your Jira Authentication Details"
-  $Username = Read-Host "Username"
+  $UserName = Read-Host "Username"
   $PasswordSecure = Read-Host "Password" -AsSecureString
 
   $Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
   [Runtime.InteropServices.Marshal]::SecureStringToBSTR($PasswordSecure))
 
-  Check-Jira-Authentication $Username $Password
+  Check-Jira-Authentication $UserName $Password
 
   $savePassword = Read-Host "Do you want to save the password? (Y/N)"
 
   if ($savePassword.ToUpper() -eq "Y")
   {
-    Save-Credential $Username $Password
+    Save-Credential $UserName $Password
     Write-Host "Saved password"
   }
 
-  return Create-Password-Credential $Username $Password
+  return Create-Password-Credential $UserName $Password
 }
 
-function Check-Jira-Authentication ($Username, $Password)
+function Check-Jira-Authentication ($UserName, $Password)
 {
   try 
   {
-    Jira-Check-Credentials $Username $Password
+    Jira-Check-Credentials $UserName $Password
   }
-  catch [Remotion.BuildTools.MSBuildTasks.Jira.ServiceFacadeImplementations.JiraException] 
+  catch [Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations.JiraException] 
   {
     $StatusCode = $_.Exception.HttpStatusCode
 
