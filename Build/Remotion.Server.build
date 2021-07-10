@@ -52,7 +52,7 @@
       <Platforms>x86</Platforms>
       <DatabaseSystems>NoDB</DatabaseSystems>
       <Browsers>NoBrowser</Browsers>
-      <ExecutionRuntimes>Win_NET48</ExecutionRuntimes>
+      <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
       <TargetRuntimes>NET45</TargetRuntimes>
       <TestCategoriesToExclude></TestCategoriesToExclude>
     </PropertyGroup>
@@ -63,7 +63,7 @@
       <Platforms>x86+x64</Platforms>
       <DatabaseSystems>NoDB</DatabaseSystems>
       <Browsers>NoBrowser</Browsers>
-      <ExecutionRuntimes>Win_NET48</ExecutionRuntimes>
+      <ExecutionRuntimes>LocalMachine</ExecutionRuntimes>
       <TargetRuntimes>NET45</TargetRuntimes>
       <TestCategoriesToExclude></TestCategoriesToExclude>
     </PropertyGroup>
