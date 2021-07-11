@@ -19,13 +19,7 @@
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup>
-    <_thisFileParentDirectory>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))</_thisFileParentDirectory>
-    <_thisFileGrandParentDirectory>$([System.IO.Directory]::GetParent($(_thisFileParentDirectory)))</_thisFileGrandParentDirectory>
-    <_taskAssemblyPath>$(_thisFileGrandParentDirectory)\lib\net461\Remotion.BuildScript.dll</_taskAssemblyPath>
-  </PropertyGroup>
-
-  <UsingTask AssemblyFile="$(_taskAssemblyPath)" TaskName="CreateTestConfigurations"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.CreateTestConfigurations"/>
 
   <!-- Constants -->
   <PropertyGroup>
@@ -324,7 +318,7 @@ $(_dockerImageName) $(_nunitCallArgumentString)
       <EnabledConfigurationIDs Include="$(ConfigurationID)"/>
     </ItemGroup>
 
-    <CreateTestConfigurations
+    <Remotion.BuildScript.BuildTasks.CreateTestConfigurations
         Input="@(TestOutputFiles)"
 
         EnabledPlatforms="@(EnabledPlatforms)"
@@ -345,6 +339,6 @@ $(_dockerImageName) $(_nunitCallArgumentString)
         EnabledConfigurationIDs="@(EnabledConfigurationIDs)">
 
       <Output TaskParameter="Output" ItemName="_testOutputFiles"/>
-    </CreateTestConfigurations>
+    </Remotion.BuildScript.BuildTasks.CreateTestConfigurations>
   </Target>
 </Project>

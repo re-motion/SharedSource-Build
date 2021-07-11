@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder"/>
+
   <Target Name="GenerateDocumentation" DependsOnTargets="CreateDocumentationProperties;GenerateDocumentationInternal;" />
 
   <Target Name="GenerateDocumentationInternal" DependsOnTargets="CreateSandcastleProjectFile" Condition="'$(HasDocumentation)' == 'True'">
@@ -186,9 +188,10 @@
       <_documentationAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != 'True'" />
     </ItemGroup>
 
-    <Remotion.BuildTools.MSBuildTasks.SandcastleProjectBuilder File="$(DocumentationSandcastleProjectFile)"
-                                                               Assemblies="@(_documentationAssemblies)"
-                                                               NamespaceSummaryFiles="@(_namespaceSummaryFiles)" />
+    <Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder
+        File="$(DocumentationSandcastleProjectFile)"
+        Assemblies="@(_documentationAssemblies)"
+        NamespaceSummaryFiles="@(_namespaceSummaryFiles)" />
   </Target>
 
 </Project>

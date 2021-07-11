@@ -112,6 +112,8 @@
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
     <Compile Include="BuildTasks\CreateTestConfigurations.cs" />
+    <Compile Include="BuildTasks\InsertSourceLinks.cs" />
+    <Compile Include="BuildTasks\SandcastleProjectBuilder.cs" />
     <Compile Include="BuildTasks\StringEnumerableExtensions.cs" />
     <Compile Include="BuildTasks\ExecutionRuntime.cs" />
     <Compile Include="BuildTasks\MetadataValueCollection.cs" />
@@ -133,6 +135,8 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

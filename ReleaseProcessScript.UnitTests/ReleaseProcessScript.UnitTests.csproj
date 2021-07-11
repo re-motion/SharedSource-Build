@@ -5,11 +5,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{59E2D5E4-44A6-4C38-8966-9E4F022E0682}</ProjectGuid>
+    <ProjectGuid>{9C20F1BE-A7BA-4B4F-8C55-59D91606AA56}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Remotion.BuildScript.UnitTests</RootNamespace>
-    <AssemblyName>Remotion.BuildScript.UnitTests</AssemblyName>
+    <RootNamespace>Remotion.ReleaseProcessScript.UnitTests</RootNamespace>
+    <AssemblyName>Remotion.ReleaseProcessScript.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,33 +33,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
       <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=104.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.104.1\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="Rhino.Mocks, Version=3.6.0.0, Culture=neutral, PublicKeyToken=0b3305902db7183f">
       <HintPath>..\packages\RhinoMocks.3.6.1\lib\net\Rhino.Mocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CreateTestConfigurationsTest.cs" />
-    <Compile Include="InsertSourceLinksTest.cs" />
-    <Compile Include="MetadataValueCollectionTest.cs" />
-    <Compile Include="MetadataValueDictionaryTest.cs" />
-    <Compile Include="TargetRuntimeConverterTest.cs" />
-    <Compile Include="TestConfigurationsFilterTest.cs" />
-    <Compile Include="TestConfigurationsFactoryTest.cs" />
+    <Compile Include="Jira\JiraProjectVersionRepairerTest.cs" />
+    <Compile Include="Jira\JiraProjectVersionServiceTest.cs" />
+    <Compile Include="Jira\JiraVersionMovePositionerTest.cs" />
+    <Compile Include="Jira\SemanticVersioning\SemVerUnitTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BuildScript\BuildScript.csproj">
-      <Project>{3a916206-feec-4968-8e07-13607275637b}</Project>
-      <Name>BuildScript</Name>
+    <ProjectReference Include="..\ReleaseProcessScript\ReleaseProcessScript.csproj">
+      <Project>{12329089-3113-4AE3-9F86-F5F4273628CC}</Project>
+      <Name>ReleaseProcessScript</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

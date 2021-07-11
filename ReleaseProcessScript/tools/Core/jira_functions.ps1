@@ -24,7 +24,7 @@ function Add-Authentication ($JiraObject)
   if (-not (Config-Use-NTLM) )
   {
     $Credential = Get-Credential
-    $JiraObject.JiraUsername = $Credential.Username
+    $JiraObject.JiraUsername = $Credential.UserName
     $JiraObject.JiraPassword = $Credential.Password
   }
 }
@@ -46,7 +46,7 @@ function Check-For-Empty-Config ($ConfigFile)
 function Jira-Create-Version ($Version)
 {
   Confirm-Class-Loaded
-  $JiraCreateVersion = New-Object Remotion.BuildTools.MSBuildTasks.Jira.JiraCreateNewVersionWithVersionNumber
+  $JiraCreateVersion = New-Object Remotion.ReleaseProcessScript.Jira.JiraCreateNewVersionWithVersionNumber
   $ConfigFile = Get-Config-File
 
   Check-For-Empty-Config $ConfigFile
@@ -59,7 +59,7 @@ function Jira-Create-Version ($Version)
 
   try 
   {
-    $JiraCreateVersion.Execute() > $NULL
+    $JiraCreateVersion.Execute()
   } 
   catch 
   {
@@ -74,7 +74,7 @@ function Jira-Create-Version ($Version)
 function Jira-Get-Current-Version ()
 {
   Confirm-Class-Loaded
-  $JiraGetVersion = New-Object Remotion.BuildTools.MSBuildTasks.Jira.JiraGetEarliestUnreleasedVersion 
+  $JiraGetVersion = New-Object Remotion.ReleaseProcessScript.Jira.JiraGetEarliestUnreleasedVersion 
 
   $ConfigFile = Get-Config-File
   Check-For-Empty-Config $ConfigFile
@@ -112,13 +112,13 @@ function Jira-Release-Version ($CurrentVersionID, $NextVersionID, $SquashUnrelea
 
   if ($SquashUnreleased)
   {
-    $JiraReleaseVersion = New-Object Remotion.BuildTools.MSBuildTasks.Jira.JiraReleaseVersionAndSquashUnreleased
+    $JiraReleaseVersion = New-Object Remotion.ReleaseProcessScript.Jira.JiraReleaseVersionAndSquashUnreleased
     $JiraReleaseVersion.ProjectKey = $ConfigFile.settings.jira.jiraProjectKey
 
   }
   else
   {
-    $JiraReleaseVersion = New-Object Remotion.BuildTools.MSBuildTasks.Jira.JiraReleaseVersion
+    $JiraReleaseVersion = New-Object Remotion.ReleaseProcessScript.Jira.JiraReleaseVersion
   }
     
     
@@ -139,17 +139,17 @@ function Jira-Release-Version ($CurrentVersionID, $NextVersionID, $SquashUnrelea
   }
 }
 
-function Jira-Check-Credentials ($Username, $Password)
+function Jira-Check-Credentials ($UserName, $Password)
 {
   Confirm-Class-Loaded
-  $JiraCheckAuthentication = New-Object Remotion.BuildTools.MSBuildTasks.Jira.JiraCheckAuthentication
+  $JiraCheckAuthentication = New-Object Remotion.ReleaseProcessScript.Jira.JiraCheckAuthentication
 
   $ConfigFile = Get-Config-File
   Check-For-Empty-Config $ConfigFile
   $JiraUrl = Add-JiraUrlPostfix-To-Config-Url $ConfigFile.settings.jira.jiraUrl
 
   $JiraCheckAuthentication.JiraUrl = $JiraUrl
-  $JiraCheckAuthentication.JiraUsername = $Username
+  $JiraCheckAuthentication.JiraUsername = $UserName
   $JiraCheckAuthentication.JiraPassword = $Password
   $JiraCheckAuthentication.JiraProject = $ConfigFile.settings.jira.jiraProjectKey
     
@@ -171,7 +171,7 @@ function Confirm-Class-Loaded ()
   try
   {
     #We just use a random Classname to check if it is loaded
-    if (-not ([Remotion.BuildTools.MSBuildTasks.Jira]'JiraCheckAuthentication').Type)
+    if (-not ([Remotion.ReleaseProcessScript.Jira]'JiraCheckAuthentication').Type)
     {
       Load-Dependency-Dll
     }
