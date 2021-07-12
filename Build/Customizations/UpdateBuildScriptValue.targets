@@ -21,7 +21,7 @@
     <AssemblyNuGetVersion></AssemblyNuGetVersion>
   </PropertyGroup>
 
-  <Target Name="After_UpdateAssemblyInfosForDevelopment" AfterTargets="UpdateAssemblyInfosLocalBuild" DependsOnTargets="PrepareAssemblyNuGetVersion">
+  <Target Name="After_UpdateAssemblyInfosForRelease" AfterTargets="UpdateAssemblyInfosForRelease" DependsOnTargets="PrepareAssemblyNuGetVersion">
     <Error Text="The property 'AssemblyNuGetVersion' is not set." Condition="'$(AssemblyNuGetVersion)' == ''" />
 
     <ItemGroup>
@@ -47,15 +47,8 @@
       -->
       <RegexForOldVersion>(?&lt;=Remotion\.BuildScript\.)(.*?)(?=\\)</RegexForOldVersion>
 
-      <!-- Regex to match the second "-" (as we have to transform the VersionNumber from "2.0.0-alpha-015" to "2.0.0-alpha015")
-        (?<=\-.*)  === positive lookbehind for "-" followed by anything
-        (\-)       === Match second "-"
-      -->
-      <RegexForRemovingSecondDash>(?&lt;=\-.*)\-</RegexForRemovingSecondDash>
-
       <OldVersion>$([System.Text.RegularExpressions.Regex]::Match($(OldRemotionBuildScriptPathValue), $(RegexForOldVersion)))</OldVersion>
-      <VersionWithOldStylePrereleaseTag>$([System.Text.RegularExpressions.Regex]::Replace ($(AssemblyNuGetVersion), $(RegexForRemovingSecondDash), ""))</VersionWithOldStylePrereleaseTag>
-      <NewRemotionBuildScriptPathValue>$( OldRemotionBuildScriptPathValue.Replace( $(OldVersion), $(VersionWithOldStylePrereleaseTag) ) )</NewRemotionBuildScriptPathValue>
+      <NewRemotionBuildScriptPathValue>$( OldRemotionBuildScriptPathValue.Replace( $(OldVersion), $(AssemblyNuGetVersion) ) )</NewRemotionBuildScriptPathValue>
     </PropertyGroup>
 
     <ReplaceFileText
