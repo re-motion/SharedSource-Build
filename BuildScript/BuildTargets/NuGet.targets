@@ -258,6 +258,11 @@
       <_existingNuSpecFolder>@(_existingNuSpecFolders)</_existingNuSpecFolder>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <_additionalProperties></_additionalProperties>
+      <_additionalProperties Condition="Exists ($(_documentationFile))">DocumentationFile=$(_documentationFile);</_additionalProperties>
+    </PropertyGroup>
+
     <ItemGroup>
       <NuGetOutputFiles>
         <NuSpecFiles>@(_existingNuSpecFiles)</NuSpecFiles>
@@ -265,6 +270,7 @@
         <NuSpecFolder>$(_existingNuSpecFolder)\</NuSpecFolder>
         <DocumentationFile Condition="Exists ($(_documentationFile))">$(_documentationFile)</DocumentationFile>
         <DocumentationTag Condition="Exists ($(_documentationFile))">Documentation</DocumentationTag>
+        <AdditionalProperties>$(_additionalProperties)</AdditionalProperties>
       </NuGetOutputFiles>
     </ItemGroup>
 
