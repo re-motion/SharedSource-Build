@@ -65,8 +65,10 @@
       <HintPath>..\packages\Remotion.BuildScript.2.0.0\lib\net461\Remotion.BuildScript.dll</HintPath>
     </Reference>
     <Reference Include="Remotion.ReleaseProcessScript, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Remotion.ReleaseProcessScript.2.0.0-alpha-026\lib\net461\Remotion.ReleaseProcessScript.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Remotion.ReleaseProcessScript.2.0.0\lib\net461\Remotion.ReleaseProcessScript.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=104.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.ReleaseProcessScript.2.0.0\lib\net461\RestSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
