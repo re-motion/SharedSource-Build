@@ -50,15 +50,10 @@
     <Copy SourceFiles="@(_assemblyInfosWithBackup)"
           DestinationFiles="%(_assemblyInfosWithBackup.Backup)" />
 
-    <PropertyGroup>
-      <!-- Target framework is already expressed via the TargetFrameworkAttribute injected via csc.exe -->
-      <_configuration>Build type: $(ConfigurationID)</_configuration>
-    </PropertyGroup>
-    
     <MSBuild.ExtensionPack.Framework.AssemblyInfo AssemblyInfoFiles="%(_assemblyInfos.Identity)"
                                                   AssemblyVersion="$(AssemblyVersion)"
                                                   AssemblyFileVersion="$(AssemblyFileVersion)"
-                                                  AssemblyConfiguration="$(_configuration)"
+                                                  AssemblyConfiguration="$(ConfigurationID)"
                                                   AssemblyCopyright="$(Copyright)"
                                                   AssemblyCompany="$(CompanyName)"
                                                   AssemblyProduct="$(ProductName)"
