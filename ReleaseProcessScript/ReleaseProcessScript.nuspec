@@ -17,5 +17,6 @@
     <file src="tools\*.*" target="tools"/>
     <file src="tools\Core\*.*" target="tools\Core"/>
     <file src="Customizations\**\*.*" target="content\Customizations" />
+    <file src="bin\$configuration$\RestSharp.dll" target="lib\net461" />
   </files>
 </package>
