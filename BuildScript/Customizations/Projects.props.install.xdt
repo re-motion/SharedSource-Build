@@ -26,9 +26,6 @@
       <CreateNuGetPackageWithSymbolServerSupport>True</CreateNuGetPackageWithSymbolServerSupport>
       <!-- May occur only once. If no ReleaseProjectFiles-item specifies the documentation file, no documentation will be created. -->
       <CreateDocumentationFile>True</CreateDocumentationFile>
-      <!-- Optional. May occur only once together with CreateDocumentationFile. If DocumentationFileName is not specified, 
-           the documentation file is named after the assembly where the CreateDocumentationFile metadata has been applied. -->
-      <DocumentationFileName>###PRODUCT.NAME###</DocumentationFileName>
     </ReleaseProjectFiles>
 
     <ReleaseProjectFiles Include="$(SolutionDirectory)Development\Development.csproj">
