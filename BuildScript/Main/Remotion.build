@@ -80,21 +80,21 @@
   <Target Name="PrepareBuildProperties">
     <PropertyGroup>
       <BuildProperties>
-          SolutionKeyFile=$(SolutionKeyFile);
-          SolutionDirectory=$(SolutionDirectory);
-          OutputDirectory=$(OutputDirectory);
-          TempDirectory=$(TempDirectory);
-          LogDirectory=$(LogDirectory);
-          Version=$(Version);
-          AdditionalBuildMetadata=$(AdditionalBuildMetadata);
-          VcsUrlTemplate=$(VcsUrlTemplate);
-          VcsUrlRequiresWindowsCredentials=$(VcsUrlRequiresWindowsCredentials);
-          Platforms=$(Platforms);
-          DatabaseSystems=$(DatabaseSystems);
-          Browsers=$(Browsers);
-          ExecutionRuntimes=$(ExecutionRuntimes);
-          TargetRuntimes=$(TargetRuntimes);
-          TestCategoriesToExclude=$(TestCategoriesToExclude);
+        SolutionKeyFile=$(SolutionKeyFile);
+        SolutionDirectory=$(SolutionDirectory);
+        OutputDirectory=$(OutputDirectory);
+        TempDirectory=$(TempDirectory);
+        LogDirectory=$(LogDirectory);
+        Version=$(Version);
+        AdditionalBuildMetadata=$(AdditionalBuildMetadata);
+        VcsUrlTemplate=$(VcsUrlTemplate);
+        VcsUrlRequiresWindowsCredentials=$(VcsUrlRequiresWindowsCredentials);
+        Platforms=$(Platforms);
+        DatabaseSystems=$(DatabaseSystems);
+        Browsers=$(Browsers);
+        ExecutionRuntimes=$(ExecutionRuntimes);
+        TargetRuntimes=$(TargetRuntimes);
+        TestCategoriesToExclude=$(TestCategoriesToExclude);
       </BuildProperties>
     </PropertyGroup>
 
@@ -135,7 +135,7 @@
       </BuildTargets>
 
     </PropertyGroup>
-    
+
     <Message Text="Selected build targets: $(BuildTargets)" />
   </Target>
 

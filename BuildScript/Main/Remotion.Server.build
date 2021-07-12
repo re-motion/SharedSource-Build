@@ -18,7 +18,7 @@
 -->
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  
+
   <Import Project="Remotion.build" />
 
   <Import Project="$(CustomizationsDirectory)Server\*.props" />
@@ -46,7 +46,7 @@
       <AdditionalBuildMetadata>Commit-$(CommitID)</AdditionalBuildMetadata>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="TestBuild_Configuration">
     <PropertyGroup>
       <Configurations Condition="'$(Configurations)' == ''">Debug</Configurations>
@@ -65,7 +65,7 @@
       <SkipDependDB Condition="'$(SkipDependDB)' == ''">True</SkipDependDB>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
       <!-- By listing the debug-build first, the documentation will be generated based on the debug output. -->
@@ -85,19 +85,19 @@
       <SkipDependDB Condition="'$(SkipDependDB)' == ''">False</SkipDependDB>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="TestBuild" DependsOnTargets="TestBuild_Configuration;CreateAdditionalBuildMetadata;BuildAll;" />
 
   <Target Name="FullBuild" DependsOnTargets="FullBuild_Configuration;CreateAdditionalBuildMetadata;BuildAll;" />
 
   <!-- Check properties -->
-  
+
   <Target Name="CheckProperties" DependsOnTargets="
           CheckBuildConfigurationProperties;
           CheckBuildLocationProperties;" />
 
   <!-- Versioning -->
-    
+
   <Target Name="SetVersionCiAndNightlyBuild" DependsOnTargets="PrepareVersionCiAndNightlyBuild;CheckVersion">
     <Message Text="##teamcity[buildNumber '$(Version)']" />
   </Target>
@@ -114,7 +114,7 @@
     <Message Text="##teamcity[buildNumber '$(Version)']" />
   </Target>
 
-  <!-- Main Build Targets -->  
+  <!-- Main Build Targets -->
 
   <Target Name="Server_CIBuild" DependsOnTargets="CheckProperties;SetVersionCiAndNightlyBuild;TestBuild" />
   <Target Name="Server_NightlyBuild" DependsOnTargets="CheckProperties;SetVersionCiAndNightlyBuild;FullBuild" />

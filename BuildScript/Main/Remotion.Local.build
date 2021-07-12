@@ -18,7 +18,7 @@
 -->
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  
+
   <Import Project="Remotion.build" />
 
   <Import Project="$(CustomizationsDirectory)Local\*.props" />
@@ -40,7 +40,7 @@
       <Browsers Condition="'$(Browsers)' == ''">NoBrowser</Browsers>
       <ExecutionRuntimes Condition="'$(ExecutionRuntimes)' == ''">LocalMachine</ExecutionRuntimes>
       <TargetRuntimes Condition="'$(TargetRuntimes)' == ''">NET48</TargetRuntimes>
-      <TestCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''"></TestCategoriesToExclude>      
+      <TestCategoriesToExclude Condition="'$(TestCategoriesToExclude)' == ''"></TestCategoriesToExclude>
       <SkipCleanProjects Condition="'$(SkipCleanProjects)' == ''">False</SkipCleanProjects>
       <SkipTests Condition="'$(SkipTests)' == ''">False</SkipTests>
       <SkipDocumentation Condition="'$(SkipDocumentation)' == ''">True</SkipDocumentation>
@@ -50,7 +50,7 @@
       <SkipDependDB Condition="'$(SkipDependDB)' == ''">True</SkipDependDB>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="FullBuild_Configuration">
     <PropertyGroup>
       <Configurations Condition="'$(Configurations)' == ''">Debug+Release</Configurations>
@@ -69,7 +69,7 @@
       <SkipDependDB>False</SkipDependDB>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="DocumentationBuild_Configuration" DependsOnTargets="Configuration_Defaults">
     <PropertyGroup>
       <Configurations>Debug</Configurations>
@@ -107,10 +107,10 @@
   <Target Name="SetVersion" DependsOnTargets="PrepareVersion;CheckVersion" />
 
   <Target Name="PrepareVersion" Condition="'$(Version)' != ''">
-    <MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="yyMMdd-HHmmss"> 
-      <Output TaskParameter="Result" PropertyName="_formattedDateTime"/> 
+    <MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="yyMMdd-HHmmss">
+      <Output TaskParameter="Result" PropertyName="_formattedDateTime"/>
     </MSBuild.ExtensionPack.Framework.DateAndTime>
-    
+
     <PropertyGroup>
       <Version>$(Version)-x.9.$(_formattedDateTime)</Version>
     </PropertyGroup>
