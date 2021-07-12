@@ -32,6 +32,15 @@
     <RemotionBuildScriptTasksPath Condition="'$(RemotionBuildScriptTasksPath)' == ''">$(RemotionBuildScriptTasksPath)..\lib\net461\</RemotionBuildScriptTasksPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <SupportedBrowsers Remove="@(SupportedBrowsers)"/>
+    <SupportedPlatforms Include="x86;x64"/>
+    <SupportedDatabaseSystems Remove="@(SupportedDatabaseSystems)"/>
+    <SupportedExecutionRuntimes Include="Win_NET48=$(DockerImageDotNetFrameworkRuntime4_8)"/>
+    <SupportedTargetRuntimes Include="NET48"/>
+    <SupportedConfigurationIDs Include="Debug;Release"/>
+  </ItemGroup>
+
   <Import Project="$(RemotionBuildScriptPath)*.targets" />
   <Import Project="$(MSBuildExtensionPackPath)MSBuild.ExtensionPack.tasks" />
   <Import Project="$(NuGetForMSBuildPath)NuGet.For.MSBuild.tasks" />

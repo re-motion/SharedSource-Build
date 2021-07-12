@@ -28,6 +28,10 @@
     <VcsUrlTemplate Condition="'$(VcsUrlTemplate)' == ''">http://localhost/{0}</VcsUrlTemplate>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DockerImageDotNetFrameworkRuntime4_8 Condition="'$(DockerImageDotNetFrameworkRuntime4_8)' == ''">Unavailable</DockerImageDotNetFrameworkRuntime4_8>
+  </PropertyGroup>
+
   <Target Name="TestBuild_Configuration">
     <PropertyGroup>
       <Configurations Condition="'$(Configurations)' == ''">Debug</Configurations>
