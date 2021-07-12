@@ -35,5 +35,6 @@
     <DependDBProjectImportNotificationMailAddressCc></DependDBProjectImportNotificationMailAddressCc>
     <DependDBTrackedReferences>Remotion;Remotion.*</DependDBTrackedReferences>
     <DependDBNuGetSources>$(SolutionDirectory)packages</DependDBNuGetSources>
+    <DependDBTargetFramework>net45</DependDBTargetFramework>
   </PropertyGroup>
 </Project>
