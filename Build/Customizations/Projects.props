@@ -7,10 +7,9 @@
       LocalMachine + NET45 + NoBrowser + NoDB + Debug     + x86;
     </NormalTestConfiguration>
   </PropertyGroup>
-
   <ItemGroup>
-    <ReleaseProjectFiles Include="$(SolutionDirectory)\BuildScript\Buildscript.csproj"/>
-    <ReleaseProjectFiles Include="$(SolutionDirectory)\ReleaseProcessScript\ReleaseProcessScript.csproj"/>
+    <ReleaseProjectFiles Include="$(SolutionDirectory)\BuildScript\Buildscript.csproj" />
+    <ReleaseProjectFiles Include="$(SolutionDirectory)\ReleaseProcessScript\ReleaseProcessScript.csproj" />
     <UnitTestProjectFiles Include="$(SolutionDirectory)\BuildScript.UnitTests\BuildScript.UnitTests.csproj">
       <TestConfiguration>$(NormalTestConfiguration)</TestConfiguration>
     </UnitTestProjectFiles>
