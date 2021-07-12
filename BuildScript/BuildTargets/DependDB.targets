@@ -34,6 +34,7 @@
     <Error Text="The property 'DependDBTrackedReferences' is not set." Condition="'$(DependDBTrackedReferences)' == ''" />
     <Error Text="The property 'NuGetWithDebugSymbolsOutputDirectory' is not set." Condition="'$(NuGetWithDebugSymbolsOutputDirectory)' == ''" />
     <Error Text="The property 'VcsUrlTemplate' is not set." Condition="'$(VcsUrlTemplate)' == ''" />
+    <Error Text="The property 'DependDBTargetFramework' is not set." Condition="'$(DependDBTargetFramework)' == ''" />
 
     <Message Text="The property 'DependDBNuGetPreProcessorToolPath' is set to '$(DependDBNuGetPreProcessorToolPath)'." />
     <Message Text="The property 'DependDBProjectName' is set to '$(DependDBProjectName)'." />
@@ -44,6 +45,7 @@
     <Message Text="The property 'DependDBOutputDirectory' is set to '$(DependDBOutputDirectory)'." />
     <Message Text="The property 'DependDBTrackedReferences' is set to '$(DependDBTrackedReferences)'." />
     <Message Text="The property 'DependDBNuGetSources' is set to '$(DependDBNuGetSources)'." />
+    <Message Text="The property 'DependDBTargetFramework' is set to '$(DependDBTargetFramework)'." />
     <Message Text="The property 'VcsUrlTemplate' is set to '$(VcsUrlTemplate)'." />
   </Target>
 
@@ -88,6 +90,7 @@
       <_preProcessorParameters>$(_preProcessorParameters) --own-packages-directory="$(NuGetWithDebugSymbolsOutputDirectory.TrimEnd('\'))"</_preProcessorParameters>
       <_preProcessorParameters>$(_preProcessorParameters)@(_dependDBTrackedReferences->' --analzyer-tracked-reference="%(Identity)"', '')</_preProcessorParameters>
       <_preProcessorParameters Condition="'@(_dependDBNuGetSources)' != ''">$(_preProcessorParameters)@(_dependDBNuGetSources->' --additional-nuget-source="%(Identity)"', '')</_preProcessorParameters>
+      <_preProcessorParameters>$(_preProcessorParameters) --target-framework="$(DependDBTargetFramework)"</_preProcessorParameters>
     </PropertyGroup>
     
     <Exec Command="&quot;$(DependDBNuGetPreProcessorToolPath)DependDB.BuildProcessor.NuGetPreProcessor.exe&quot;$(_preProcessorParameters)" />
