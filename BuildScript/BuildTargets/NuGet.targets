@@ -96,7 +96,7 @@
         ToolPath="$(NuGetToolPath)"
         Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
         BasePath="%(NuGetOutputFiles.ProjectDirectory)"
-        OutputDirectory="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"
+        OutputDirectory="$(_nuGetTempDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)"
         IncludeReferencedProjects="True"
         Symbols="False"
         Configuration="$(ConfigurationID)"
