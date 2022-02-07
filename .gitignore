@@ -190,3 +190,6 @@ remotion.snk
 
 # Named
 GitExtensions.settings.backup
+
+.idea/
+execution-plan.html
