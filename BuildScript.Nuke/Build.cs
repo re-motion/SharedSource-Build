@@ -10,7 +10,6 @@ internal partial class Build : NukeBuild
 {
   [GitRepository]
   private readonly GitRepository GitRepository = null!;
-
 #pragma warning disable CS0414
   [Solution]
   private readonly Solution Solution = null!;
@@ -22,6 +21,8 @@ internal partial class Build : NukeBuild
 
   private IReadOnlyCollection<ProjectMetadata> ReleaseProjectFiles { get; set; } = Array.Empty<ProjectMetadata>();
   private IReadOnlyCollection<TestProjectMetadata> UnitTestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();
+  private IReadOnlyCollection<TestProjectMetadata> IntegrationTestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();
+  private IReadOnlyCollection<TestProjectMetadata> TestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();
 
   [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
   private string[] Configuration { get; set; } = { "Debug", "Release" };

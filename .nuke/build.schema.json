@@ -6,6 +6,10 @@
     "build": {
       "type": "object",
       "properties": {
+        "AdditionalBuildMetadata": {
+          "type": "string",
+          "description": "Added to the AssemblyInformationalVersion"
+        },
         "Configuration": {
           "type": "array",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
@@ -71,6 +75,7 @@
             "type": "string",
             "enum": [
               "CompileReleaseBuild",
+              "CompileTestBuild",
               "ImportDefinitions"
             ]
           }
@@ -86,6 +91,7 @@
             "type": "string",
             "enum": [
               "CompileReleaseBuild",
+              "CompileTestBuild",
               "ImportDefinitions"
             ]
           }

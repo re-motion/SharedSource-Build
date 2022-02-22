@@ -6,7 +6,6 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Project = Microsoft.Build.Evaluation.Project;
 
-
 internal partial class Build : NukeBuild
 {
   private const string c_projectsFileName = "Projects.props";
@@ -15,6 +14,7 @@ internal partial class Build : NukeBuild
   private const string c_normalTestConfigurationProperty = "NormalTestConfiguration";
   private const string c_releaseProjectFilesItem = "ReleaseProjectFiles";
   private const string c_unitTestProjectFilesItem = "UnitTestProjectFiles";
+  private const string c_integrationTestProjectFilesItem = "IntegrationTestProjectFiles";
   private const string c_assemblyInfoFileProperty = "AssemblyInfoFile";
   private const string c_companyNameProperty = "CompanyName";
   private const string c_companyUrlProperty = "CompanyUrl";
@@ -22,6 +22,9 @@ internal partial class Build : NukeBuild
   private const string c_productNameProperty = "ProductName";
   private const string c_supportedTargetRuntimesProperty = "SupportedTargetRuntimes";
   private const string c_supportedExecutionRuntimesProperty = "SupportedExecutionRuntimes";
+  private const string c_supportedBrowsersProperty = "SupportedBrowsers";
+  private const string c_supportedDatabaseSystemsProperty = "SupportedDatabaseSystems";
+  private const string c_supportedPlatformsProperty = "SupportedPlatforms";
   private const string c_versionFileName = "Version.props";
   private const string c_versionProperty = "Version";
   private const string c_testConfigurationMetaData = "TestConfiguration";
@@ -34,8 +37,11 @@ internal partial class Build : NukeBuild
 
   private IReadOnlyCollection<string> SupportedTargetRuntimes { get; set; } = Array.Empty<string>();
   private IReadOnlyCollection<string> SupportedExecutionRuntimes { get; set; } = Array.Empty<string>();
+  private IReadOnlyCollection<string> SupportedBrowsers { get; set; } = Array.Empty<string>();
+  private IReadOnlyCollection<string> SupportedDatabaseSystems { get; set; } = Array.Empty<string>();
+  private IReadOnlyCollection<string> SupportedPlatforms { get; set; } = Array.Empty<string>();
 
-  public Target ImportDefinitions => _ => _
+  private Target ImportDefinitions => _ => _
       .Executes(() =>
       {
         ImportProjectDefinition();
@@ -50,6 +56,7 @@ internal partial class Build : NukeBuild
     var normalTestConfiguration = xmlProperties.Properties.Single(prop => prop.Name == c_normalTestConfigurationProperty);
     var releaseProjectFiles = xmlProperties.Items.Where(prop => prop.ItemType == c_releaseProjectFilesItem);
     var unitTestProjectFiles = xmlProperties.Items.Where(prop => prop.ItemType == c_unitTestProjectFilesItem);
+    var integrationTestProjectFiles = xmlProperties.Items.Where(prop => prop.ItemType == c_integrationTestProjectFilesItem);
 
     NormalTestConfiguration = normalTestConfiguration.EvaluatedValue;
     ReleaseProjectFiles = releaseProjectFiles.Select(
@@ -58,6 +65,12 @@ internal partial class Build : NukeBuild
         x => SetupTestProjectMetadata(
             x.EvaluatedInclude,
             x.GetMetadataValue(c_testConfigurationMetaData))).ToList();
+
+    IntegrationTestProjectFiles = integrationTestProjectFiles.Select(
+        x => SetupTestProjectMetadata(
+            x.EvaluatedInclude,
+            x.GetMetadataValue(c_testConfigurationMetaData))).ToList();
+    TestProjectFiles = UnitTestProjectFiles.Concat(IntegrationTestProjectFiles).ToList();
   }
 
   private ProjectMetadata SetupReleaseProjectMetadata (string path)
@@ -115,9 +128,15 @@ internal partial class Build : NukeBuild
     var xmlProperties = LoadProjectWithSolutionDirectoryPropertySet(c_buildConfigFileName);
     var supportedTargetRuntimes = xmlProperties.Items.Where(prop => prop.ItemType == c_supportedTargetRuntimesProperty);
     var supportedExecutionRuntimes = xmlProperties.Items.Where(prop => prop.ItemType == c_supportedExecutionRuntimesProperty);
+    var supportedBrowsers = xmlProperties.Items.Where(prop => prop.ItemType == c_supportedBrowsersProperty);
+    var supportedPlatforms = xmlProperties.Items.Where(prop => prop.ItemType == c_supportedPlatformsProperty);
+    var supportedDatabaseSystems = xmlProperties.Items.Where(prop => prop.ItemType == c_supportedDatabaseSystemsProperty);
 
     SupportedTargetRuntimes = supportedTargetRuntimes.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
     SupportedExecutionRuntimes = supportedExecutionRuntimes.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
+    SupportedBrowsers = supportedBrowsers.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
+    SupportedPlatforms = supportedPlatforms.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
+    SupportedDatabaseSystems = supportedDatabaseSystems.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
   }
 
   private void ImportVersion ()
