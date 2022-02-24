@@ -55,7 +55,7 @@ public class VersionHelperTest
       string additionalBuildMetadata)
   {
     var versionHelper = new VersionHelper(version);
-    var assemblyInformationVersion = versionHelper.GetAssemblyInformationVersion(configurationId, additionalBuildMetadata);
+    var assemblyInformationVersion = versionHelper.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
     Assert.That(assemblyInformationVersion, Is.EqualTo(expectedAssemblyInformationVersion));
   }
 

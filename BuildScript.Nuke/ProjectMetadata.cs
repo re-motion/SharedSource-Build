@@ -8,6 +8,7 @@ internal class ProjectMetadata
   public AbsolutePath Path { get; init; }
   public string ToolsVersion { get; init; }
   public bool IsMultiTargetFramework { get; init; }
+  public bool IsSdkProject { get; init; }
 }
 
 #pragma warning restore CS8618

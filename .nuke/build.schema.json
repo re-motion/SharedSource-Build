@@ -74,11 +74,28 @@
           "items": {
             "type": "string",
             "enum": [
+              "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
-              "ImportDefinitions"
+              "GenerateNuGetPackagesWithDebugSymbols",
+              "GenerateNuGetPackagesWithSymbolServerSupport",
+              "ImportDefinitions",
+              "RestoreReleaseBuild",
+              "RestoreTestBuild"
             ]
           }
+        },
+        "SkipNuGet": {
+          "type": "boolean",
+          "description": "Skip generation of nuget package with debug symbols - true / false"
+        },
+        "SkipNuGetOrg": {
+          "type": "boolean",
+          "description": "Skip generation of nuget package with symbol server support - true / false"
+        },
+        "SkipTests": {
+          "type": "boolean",
+          "description": "Skip compiling and running of tests - true / false"
         },
         "Solution": {
           "type": "string",
@@ -90,9 +107,14 @@
           "items": {
             "type": "string",
             "enum": [
+              "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
-              "ImportDefinitions"
+              "GenerateNuGetPackagesWithDebugSymbols",
+              "GenerateNuGetPackagesWithSymbolServerSupport",
+              "ImportDefinitions",
+              "RestoreReleaseBuild",
+              "RestoreTestBuild"
             ]
           }
         },
