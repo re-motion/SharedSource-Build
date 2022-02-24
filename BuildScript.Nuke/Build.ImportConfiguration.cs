@@ -4,6 +4,7 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Utilities;
 using Project = Microsoft.Build.Evaluation.Project;
 
 internal partial class Build : NukeBuild
@@ -30,6 +31,7 @@ internal partial class Build : NukeBuild
   private const string c_testConfigurationMetaData = "TestConfiguration";
   private const string c_solutionDirectoryProperty = "SolutionDirectory";
   private const string c_targetFrameworksProperty = "TargetFrameworks";
+
   private string NormalTestConfiguration { get; set; } = "";
 
   [Parameter("Added to the AssemblyInformationalVersion")]
@@ -80,11 +82,13 @@ internal partial class Build : NukeBuild
         .Where(x => x.Name == c_targetFrameworksProperty)
         .SelectMany(x => x.EvaluatedValue.Split(";"))
         .Count();
+
     return new ProjectMetadata
            {
                Path = (AbsolutePath) path,
                ToolsVersion = xmlProperties.ToolsVersion,
-               IsMultiTargetFramework = targetFrameworks > 1
+               IsMultiTargetFramework = targetFrameworks > 1,
+               IsSdkProject = !xmlProperties.Xml.Sdk.IsNullOrEmpty()
            };
   }
 
