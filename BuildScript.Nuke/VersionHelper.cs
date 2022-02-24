@@ -66,7 +66,7 @@ public class VersionHelper
     VersionWithoutPreRelease = $"{_major}.{_minor}.{_patch}";
   }
 
-  public string GetAssemblyInformationVersion (string configurationId, string additionalBuildMetadata) =>
+  public string GetAssemblyInformationalVersion (string configurationId, string additionalBuildMetadata) =>
       $"{Version}+{configurationId}{(additionalBuildMetadata != "" ? $".{additionalBuildMetadata}" : "")}";
 
   private string CreateAssemblyFileVersion ()
