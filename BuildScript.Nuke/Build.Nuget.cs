@@ -7,7 +7,7 @@ using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
 
-internal partial class Build : NukeBuild
+public partial class Build : NukeBuild
 {
   private const string c_symbolTmpZipFolderName = "symbolTmp";
   private const string c_symbolsNupkgFileExtensionFilter = "*.symbols.nupkg";
@@ -123,7 +123,7 @@ internal partial class Build : NukeBuild
       AbsolutePath nugetOutputDirectoryPath,
       DotNetPackSettings settings) =>
       settings
-          .SetProject(projectFile.Path)
+          .SetProject(projectFile.ProjectPath)
           .SetConfiguration(config)
           .SetVersion(VersionHelper.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
@@ -139,7 +139,7 @@ internal partial class Build : NukeBuild
       AbsolutePath nugetOutputDirectoryPath,
       NuGetPackSettings settings) =>
       settings
-          .SetTargetPath(projectFile.Path)
+          .SetTargetPath(projectFile.ProjectPath)
           .SetConfiguration(config)
           .SetVersion(VersionHelper.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
@@ -156,10 +156,10 @@ internal partial class Build : NukeBuild
   {
     var zipTempFolderPath = nugetOutputDirectoryPath / c_symbolTmpZipFolderName;
     var symbolFile = Glob.Files(nugetOutputDirectoryPath, c_symbolsNupkgFileExtensionFilter)
-        .Single(x => x.ToLower().Contains(projectFile.Path.NameWithoutExtension.ToLower()));
+        .Single(x => x.ToLower().Contains(projectFile.ProjectPath.NameWithoutExtension.ToLower()));
     var nugetPackFile = Glob.Files(nugetOutputDirectoryPath, c_nupkgFileExtensionFilter).Single(
         x =>
-            !x.Contains(c_symbolsNupkgFileExtension) && x.ToLower().Contains(projectFile.Path.NameWithoutExtension.ToLower()));
+            !x.Contains(c_symbolsNupkgFileExtension) && x.ToLower().Contains(projectFile.ProjectPath.NameWithoutExtension.ToLower()));
     CompressionTasks.UncompressZip(nugetOutputDirectoryPath / symbolFile, zipTempFolderPath);
     FileSystemTasks.DeleteDirectory(zipTempFolderPath / c_srcFolderName);
     FileSystemTasks.DeleteFile(nugetOutputDirectoryPath / symbolFile);
