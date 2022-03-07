@@ -7,7 +7,7 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities;
 using Project = Microsoft.Build.Evaluation.Project;
 
-internal partial class Build : NukeBuild
+public partial class Build : NukeBuild
 {
   private const string c_projectsFileName = "Projects.props";
   private const string c_propertiesFileName = "Properties.props";
@@ -31,6 +31,8 @@ internal partial class Build : NukeBuild
   private const string c_testConfigurationMetaData = "TestConfiguration";
   private const string c_solutionDirectoryProperty = "SolutionDirectory";
   private const string c_targetFrameworksProperty = "TargetFrameworks";
+  private const string c_testSetupBuildFileMetaData = "TestSetupBuildFile";
+  private const string c_assemblyName = "AssemblyName";
 
   private string NormalTestConfiguration { get; set; } = "";
 
@@ -61,51 +63,75 @@ internal partial class Build : NukeBuild
     var integrationTestProjectFiles = xmlProperties.Items.Where(prop => prop.ItemType == c_integrationTestProjectFilesItem);
 
     NormalTestConfiguration = normalTestConfiguration.EvaluatedValue;
-    ReleaseProjectFiles = releaseProjectFiles.Select(
-        x => SetupReleaseProjectMetadata(x.EvaluatedInclude)).ToList();
-    UnitTestProjectFiles = unitTestProjectFiles.Select(
+    ReleaseProjectFiles = Configuration.SelectMany(config =>
+        releaseProjectFiles.Select(
+            x => SetupProjectMetadata(x.EvaluatedInclude, config))).ToList();
+    UnitTestProjectFiles = Configuration.SelectMany(config => unitTestProjectFiles.Select(
         x => SetupTestProjectMetadata(
             x.EvaluatedInclude,
-            x.GetMetadataValue(c_testConfigurationMetaData))).ToList();
+            x.GetMetadataValue(c_testConfigurationMetaData),
+            x.GetMetadataValue(c_testSetupBuildFileMetaData),
+            config
+        ))).ToList();
 
-    IntegrationTestProjectFiles = integrationTestProjectFiles.Select(
-        x => SetupTestProjectMetadata(
-            x.EvaluatedInclude,
-            x.GetMetadataValue(c_testConfigurationMetaData))).ToList();
+    IntegrationTestProjectFiles = Configuration.SelectMany(config =>
+        integrationTestProjectFiles.Select(
+            x => SetupTestProjectMetadata(
+                x.EvaluatedInclude,
+                x.GetMetadataValue(c_testConfigurationMetaData),
+                x.GetMetadataValue(c_testSetupBuildFileMetaData),
+                config
+            ))).ToList();
     TestProjectFiles = UnitTestProjectFiles.Concat(IntegrationTestProjectFiles).ToList();
   }
 
-  private ProjectMetadata SetupReleaseProjectMetadata (string path)
+  private ProjectMetadata SetupProjectMetadata (string path, string configuration)
   {
-    var xmlProperties = ProjectModelTasks.ParseProject(path);
-    var targetFrameworks = xmlProperties.Properties
-        .Where(x => x.Name == c_targetFrameworksProperty)
-        .SelectMany(x => x.EvaluatedValue.Split(";"))
-        .Count();
+    var project = Solution.GetProject(path);
+    if (project == null)
+      Assert.Fail($"Error project cannot be found under: {path}");
+    var msBuildProject = project.GetMSBuildProject();
+    var targetFrameworkList = ExtractTargetFrameworkList(msBuildProject);
+    var targetFrameworkListTmp = project.GetTargetFrameworks();
+    var assemblyName = project.GetProperty(c_assemblyName);
+    var assemblyPaths = new[] { $"{project!.Directory}\\bin\\{configuration}\\{assemblyName}.dll" };
+    if (targetFrameworkListTmp != null)
+    {
+      assemblyPaths = targetFrameworkListTmp.Select(targetFramework =>
+          $"{project!.Directory}\\bin\\{configuration}\\{targetFramework}\\{assemblyName}.dll").ToArray();
+      targetFrameworkList = targetFrameworkListTmp;
+    }        
 
     return new ProjectMetadata
            {
-               Path = (AbsolutePath) path,
-               ToolsVersion = xmlProperties.ToolsVersion,
-               IsMultiTargetFramework = targetFrameworks > 1,
-               IsSdkProject = !xmlProperties.Xml.Sdk.IsNullOrEmpty()
+               Project = project!,
+               ProjectPath = (AbsolutePath) path,
+               ToolsVersion = msBuildProject.ToolsVersion,
+               IsMultiTargetFramework = targetFrameworkList.Count > 1,
+               IsSdkProject = !msBuildProject.Xml.Sdk.IsNullOrEmpty(),
+               Configuration = configuration,
+               TargetFrameworks = targetFrameworkList,
+               AssemblyPaths = assemblyPaths
            };
   }
 
-  private TestProjectMetadata SetupTestProjectMetadata (string path, string testConfiguration)
+  private TestProjectMetadata SetupTestProjectMetadata (string path, string testConfiguration, string testsSetupBuildFile, string configuration)
   {
-    var xmlProperties = ProjectModelTasks.ParseProject(path);
-    var targetFrameworks = xmlProperties.Properties
-        .Where(x => x.Name == c_targetFrameworksProperty)
-        .SelectMany(x => x.EvaluatedValue.Split(";"))
-        .Count();
+    var projectMetadata = SetupProjectMetadata(path, configuration);
+    
     return new TestProjectMetadata
            {
-               Path = (AbsolutePath) path,
-               ToolsVersion = xmlProperties.ToolsVersion,
-               IsMultiTargetFramework = targetFrameworks > 1,
-               TestConfiguration = testConfiguration
-           };
+               Project = projectMetadata.Project!,
+               ProjectPath = (AbsolutePath) path,
+               ToolsVersion = projectMetadata.ToolsVersion,
+               IsMultiTargetFramework = projectMetadata.IsMultiTargetFramework,
+               TestConfiguration = testConfiguration,
+               TestSetupBuildFile = testsSetupBuildFile,
+               IsSdkProject = projectMetadata.IsSdkProject,
+               Configuration = configuration,
+               TargetFrameworks = projectMetadata.TargetFrameworks,
+               AssemblyPaths = projectMetadata.AssemblyPaths
+    };
   }
 
   private void ImportPropertiesDefinition ()
@@ -140,6 +166,8 @@ internal partial class Build : NukeBuild
     SupportedExecutionRuntimes = supportedExecutionRuntimes.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
     SupportedBrowsers = supportedBrowsers.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
     SupportedPlatforms = supportedPlatforms.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
+    if (!SupportedPlatforms.Any())
+      SupportedPlatforms = new List<string> { "x64", "x86" };
     SupportedDatabaseSystems = supportedDatabaseSystems.SelectMany(x => x.EvaluatedInclude.Split(";")).ToList();
   }
 
@@ -156,5 +184,22 @@ internal partial class Build : NukeBuild
     project.SetGlobalProperty(c_solutionDirectoryProperty, RootDirectory);
     project.ReevaluateIfNecessary();
     return project;
+  }
+
+  private IReadOnlyCollection<string> ExtractTargetFrameworkList (Project xmlProperties)
+  {
+    var targetFrameworks = xmlProperties.Properties
+        .Where(x => x.Name == c_targetFrameworksProperty)
+        .SelectMany(x => x.EvaluatedValue.Split(";"));
+    var targetFramework = xmlProperties.Properties
+        .Where(x => x.Name == "TargetFramework")
+        .SelectMany(x => x.EvaluatedValue.Split(";"));
+    var targetFrameworkVersion = xmlProperties.Properties
+        .Where(x => x.Name == "TargetFrameworkVersion")
+        .SelectMany(x => x.EvaluatedValue.Split(";"))
+        .Select(oldVersion => "net" + oldVersion.Replace("v", "").Replace(".", ""));
+
+    var targetFrameworkList = targetFrameworks.Concat(targetFramework).Concat(targetFrameworkVersion).ToList();
+    return targetFrameworkList;
   }
 }

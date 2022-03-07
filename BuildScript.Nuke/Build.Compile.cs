@@ -4,7 +4,7 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 
-internal partial class Build : NukeBuild
+public partial class Build : NukeBuild
 {
   private const string c_packageVersionPropertyKey = "PackageVersion";
 
@@ -44,7 +44,7 @@ internal partial class Build : NukeBuild
         config =>
         {
           MSBuild(s => s
-              .SetTargetPath(projectFile.Path)
+              .SetTargetPath(projectFile.ProjectPath)
               .SetTargets(targets)
               .SetConfiguration(config)
               .SetAssemblyVersion(VersionHelper.AssemblyVersion)
@@ -65,7 +65,7 @@ internal partial class Build : NukeBuild
   private void RestoreProject (ProjectMetadata projectFile)
   {
     MSBuild(s => s
-        .SetTargetPath(projectFile.Path)
+        .SetTargetPath(projectFile.ProjectPath)
         .SetTargets("Restore")
     );
   }

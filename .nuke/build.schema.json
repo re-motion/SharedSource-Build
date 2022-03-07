@@ -10,6 +10,13 @@
           "type": "string",
           "description": "Added to the AssemblyInformationalVersion"
         },
+        "Browsers": {
+          "type": "array",
+          "description": "Browser available for the build to use for test running",
+          "items": {
+            "type": "string"
+          }
+        },
         "Configuration": {
           "type": "array",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
@@ -20,6 +27,20 @@
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
+        },
+        "DatabaseSystems": {
+          "type": "array",
+          "description": "Database runtimes available for the build to use for test running",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ExecutionRuntimes": {
+          "type": "array",
+          "description": "Execution runtimes available for the build to use for test running",
+          "items": {
+            "type": "string"
+          }
         },
         "Help": {
           "type": "boolean",
@@ -45,6 +66,10 @@
             "VSCode"
           ]
         },
+        "MSBuildExtensionPackPath": {
+          "type": "string",
+          "description": "Path to MSBuildExtensionPack for running the TestSetupBuildFile"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
@@ -56,6 +81,13 @@
         "Plan": {
           "type": "boolean",
           "description": "Shows the execution plan (HTML)"
+        },
+        "Platforms": {
+          "type": "array",
+          "description": "Platforms available for the build to use for test running",
+          "items": {
+            "type": "string"
+          }
         },
         "Profile": {
           "type": "array",
@@ -81,7 +113,8 @@
               "GenerateNuGetPackagesWithSymbolServerSupport",
               "ImportDefinitions",
               "RestoreReleaseBuild",
-              "RestoreTestBuild"
+              "RestoreTestBuild",
+              "RunTests"
             ]
           }
         },
@@ -114,8 +147,30 @@
               "GenerateNuGetPackagesWithSymbolServerSupport",
               "ImportDefinitions",
               "RestoreReleaseBuild",
-              "RestoreTestBuild"
+              "RestoreTestBuild",
+              "RunTests"
             ]
+          }
+        },
+        "TargetRuntimes": {
+          "type": "array",
+          "description": "Target runtimes available for the build to use for test running",
+          "items": {
+            "type": "string"
+          }
+        },
+        "TestCategoriesToExclude": {
+          "type": "array",
+          "description": "Test Categories to exclude for test running",
+          "items": {
+            "type": "string"
+          }
+        },
+        "TestCategoriesToInclude": {
+          "type": "array",
+          "description": "Test Categories to include for test running",
+          "items": {
+            "type": "string"
           }
         },
         "Verbosity": {

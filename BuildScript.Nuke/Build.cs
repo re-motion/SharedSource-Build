@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using Nuke.Common;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
-using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 
 [CheckBuildProjectConfigurations]
-internal partial class Build : NukeBuild
+public partial class Build : NukeBuild
 {
   private const string c_companyNamePropertyKey = "CompanyName";
   private const string c_productNamePropertyKey = "ProductName";
@@ -30,9 +29,6 @@ internal partial class Build : NukeBuild
   private IReadOnlyCollection<TestProjectMetadata> IntegrationTestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();
   private IReadOnlyCollection<TestProjectMetadata> TestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();
 
-  [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-  private string[] Configuration { get; set; } = { "Debug", "Release" };
-
   [Parameter("Skip generation of nuget package with debug symbols - true / false")]
   private bool SkipNuGet { get; set; }
 
@@ -42,14 +38,29 @@ internal partial class Build : NukeBuild
   [Parameter("Skip compiling and running of tests - true / false")]
   private bool SkipTests { get; set; }
 
-  private Target CleanFolders => _ => _
-      .Before(ImportDefinitions)
-      .Executes(() =>
-      {
-        FileSystemTasks.DeleteDirectory(DirectoryHelper.OutputDirectory);
-        FileSystemTasks.DeleteDirectory(DirectoryHelper.LogDirectory);
-        FileSystemTasks.DeleteDirectory(DirectoryHelper.TempDirectory);
-      });
+  [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+  private string[] Configuration { get; set; } = { "Debug", "Release" };
 
-  public static int Main () => Execute<Build>(x => x.GenerateNuGetPackagesWithDebugSymbols);
+  [Parameter("Browser available for the build to use for test running")]
+  private string[] Browsers { get; set; } = { "NoBrowser" };
+
+  [Parameter("Target runtimes available for the build to use for test running")]
+  private string[] TargetRuntimes { get; set; } = { "NET48", "NET45", "NET50", "NET461" };
+
+  [Parameter("Execution runtimes available for the build to use for test running")]
+  private string[] ExecutionRuntimes { get; set; } = { "LocalMachine" };
+
+  [Parameter("Database runtimes available for the build to use for test running")]
+  private string[] DatabaseSystems { get; set; } = { "NoDB" };
+
+  [Parameter("Platforms available for the build to use for test running")]
+  private string[] Platforms { get; set; } = { "x86", "x64" };
+
+  [Parameter("Test Categories to exclude for test running")]
+  private string[] TestCategoriesToExclude { get; set; } = { };
+
+  [Parameter("Test Categories to include for test running")]
+  private string[] TestCategoriesToInclude { get; set; } = { };
+
+  public static int Main () => Execute<Build>(x => x.RunTests);
 }
