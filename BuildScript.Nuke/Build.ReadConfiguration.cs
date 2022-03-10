@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Nuke.Common;
 
@@ -22,7 +23,7 @@ public partial class Build : NukeBuild
       {
         try
         {
-          var projectProps = ProjectPropsReader.Read(Solution, Configuration, RootDirectory, DirectoryHelper.CustomizationPath);
+          var projectProps = ProjectPropsReader.Read(Solution, Configuration, RootDirectory, Directories.CustomizationPath);
           ReleaseProjectFiles = projectProps.ReleaseProjectMetadata;
           UnitTestProjectFiles = projectProps.UnitTestProjectMetadata;
           IntegrationTestProjectFiles = projectProps.IntegrationTestProjectMetadata;
@@ -34,14 +35,14 @@ public partial class Build : NukeBuild
           Assert.Fail(exception.Message, exception);
         }
 
-        var buildConfigurationProps = BuildConfigurationPropsReader.Read(RootDirectory, DirectoryHelper.CustomizationPath);
+        var buildConfigurationProps = BuildConfigurationPropsReader.Read(RootDirectory, Directories.CustomizationPath);
         SupportedTargetRuntimes = buildConfigurationProps.SupportedTargetRuntimes;
         SupportedBrowsers = buildConfigurationProps.SupportedBrowsers;
         SupportedPlatforms = buildConfigurationProps.SupportedPlatforms;
         SupportedDatabaseSystems = buildConfigurationProps.SupportedDatabaseSystems;
         SupportedExecutionRuntimes = buildConfigurationProps.SupportedExecutionRuntimes;
 
-        SemanticVersion = VersionPropsReader.Read(RootDirectory, DirectoryHelper.CustomizationPath);
-        AssemblyMetadata = PropertiesPropsReader.Read(RootDirectory, DirectoryHelper.CustomizationPath);
+        SemanticVersion = VersionPropsReader.Read(RootDirectory, Directories.CustomizationPath);
+        AssemblyMetadata = PropertiesPropsReader.Read(RootDirectory, Directories.CustomizationPath);
       });
 }

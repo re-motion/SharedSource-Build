@@ -24,10 +24,9 @@ public partial class Build : NukeBuild
       .Description("Remove build output, log and temp folders")
       .Executes(() =>
       {
-        var directoryCollection = new DirectoryHelper(RootDirectory);
-        FileSystemTasks.DeleteDirectory(directoryCollection.OutputDirectory);
-        FileSystemTasks.DeleteDirectory(directoryCollection.LogDirectory);
-        FileSystemTasks.DeleteDirectory(directoryCollection.TempDirectory);
+        FileSystemTasks.DeleteDirectory(Directories.Output);
+        FileSystemTasks.DeleteDirectory(Directories.Log);
+        FileSystemTasks.DeleteDirectory(Directories.Temp);
       });
 
   private Target RunTests => _ => _
@@ -63,7 +62,7 @@ public partial class Build : NukeBuild
             var dockerTestConfigs = output.Where(config => config.ExecutionRuntime.UseDocker).ToList();
             PrepareDockerImages(dockerTestConfigs);
 
-            FileSystemTasks.EnsureExistingDirectory(DirectoryHelper.LogDirectory);
+            FileSystemTasks.EnsureExistingDirectory(Directories.Log);
             Log.Information("Start running tests");
             var beforeTestTime = DateTime.Now;
             var outputResult = output.Select(RunTest).ToList();
@@ -108,7 +107,7 @@ public partial class Build : NukeBuild
           .SetTargetPath(testConfig.TestSetupBuildFile)
           .SetProperty("MSBuildExtensionPackPath", MSBuildExtensionPackPath)
           .SetProperty("BuildInParallel", false)
-          .SetProperty("LogDirectory", DirectoryHelper.LogDirectory)
+          .SetProperty("LogDirectory", Directories.Log)
           .SetTargetPlatform(testConfig.Platform)
           .SetProperty("AppConfigFile", $"{testConfig.TestAssemblyFullPath}.config")
           .SetProperty("DatabaseSystem", testConfig.DatabaseSystem)
@@ -120,7 +119,7 @@ public partial class Build : NukeBuild
     var mergedTestCategoriesToInclude = testConfig.IncludeCategories;
     var testFilter = _testArgumentHelper.CreateDotNetTestFilter(mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
     var testName = _testArgumentHelper.CreateTestName(testConfig, mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
-    var testResultOutputPath = $"{DirectoryHelper.LogDirectory / testName}.xml";
+    var testResultOutputPath = $"{Directories.Log / testName}.xml";
 
     var teamCityLoggerPath = GetTeamCityLoggerPath();
 
@@ -187,7 +186,7 @@ public partial class Build : NukeBuild
         .EnableRm()
         .AddVolume($"{runnerFolderPath}:{runnerFolderPath}")
         .AddVolume($"{testConfig.TestAssemblyDirectoryPath}:{testConfig.TestAssemblyDirectoryPath}")
-        .AddVolume($"{DirectoryHelper.LogDirectory}:{DirectoryHelper.LogDirectory}")
+        .AddVolume($"{Directories.Log}:{Directories.Log}")
         .SetEntrypoint(runnerPath)
         .SetImage(testConfig.ExecutionRuntime.DockerImage)
         .SetArgs(arguments.Split(" ")
