@@ -15,10 +15,8 @@ public partial class Build : NukeBuild
 
   [GitRepository]
   private readonly GitRepository GitRepository = null!;
-#pragma warning disable CS0414
   [Solution]
   private readonly Solution Solution = null!;
-#pragma warning disable CS0414
 
   private Directories Directories { get; } = new(RootDirectory, BuildProjectDirectory);
   private AssemblyMetadata AssemblyMetadata { get; set; } = null!;
