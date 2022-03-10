@@ -17,6 +17,7 @@ public partial class Build : NukeBuild
   private IReadOnlyCollection<string> SupportedPlatforms { get; set; } = Array.Empty<string>();
 
   private Target ReadConfiguration => _ => _
+      .Unlisted()
       .Executes(() =>
       {
         try

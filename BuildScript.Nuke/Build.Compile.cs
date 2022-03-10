@@ -31,6 +31,7 @@ public partial class Build : NukeBuild
 
   private Target RestoreReleaseBuild => _ => _
       .DependsOn(ReadConfiguration)
+      .Unlisted()
       .Executes(() =>
       {
         ReleaseProjectFiles.ForEach(RestoreProject);
@@ -38,6 +39,7 @@ public partial class Build : NukeBuild
 
   private Target RestoreTestBuild => _ => _
       .DependsOn(ReadConfiguration)
+      .Unlisted()
       .Executes(() =>
       {
         TestProjectFiles.ForEach(RestoreProject);
