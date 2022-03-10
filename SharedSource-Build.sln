@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildScript.Nuke", "BuildSc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildScript.Nuke.UnitTests", "BuildScript.Nuke.UnitTests\BuildScript.Nuke.UnitTests.csproj", "{104261A0-74C4-4B41-BDFF-E82070AEEF91}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildScript.Nuke.IntegrationTests", "BuildScript.Nuke.IntegrationTests\BuildScript.Nuke.IntegrationTests.csproj", "{A86BAD1B-860E-4AB8-A813-46E37572549E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,14 @@ Global
 		{104261A0-74C4-4B41-BDFF-E82070AEEF91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{104261A0-74C4-4B41-BDFF-E82070AEEF91}.Release|x86.ActiveCfg = Release|Any CPU
 		{104261A0-74C4-4B41-BDFF-E82070AEEF91}.Release|x86.Build.0 = Release|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Debug|x86.Build.0 = Debug|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A86BAD1B-860E-4AB8-A813-46E37572549E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

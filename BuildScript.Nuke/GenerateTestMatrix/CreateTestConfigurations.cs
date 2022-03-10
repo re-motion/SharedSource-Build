@@ -153,7 +153,7 @@ public class CreateTestConfigurations
     var unfilteredTestConfigurations = testConfigurationsFactory.CreateTestConfigurations(testProjectMetadata, rawTestConfigurations);
     var tmpUnfilteredTestConfigurations = unfilteredTestConfigurations.Where(testConfig =>
         testConfig.ConfigurationID == testProjectMetadata.Configuration.ToLower() &&
-        testConfig.IsNetCoreExecutable ^ testConfig.IsNetFramework
+        testConfig.IsNetCoreFramework ^ testConfig.IsNetFramework ^ testConfig.IsNetStandardFramework
     ).ToArray();
     var filteredTestConfigurations = testConfigurationsFilter.GetFilteredTestConfigurations(
         tmpUnfilteredTestConfigurations);

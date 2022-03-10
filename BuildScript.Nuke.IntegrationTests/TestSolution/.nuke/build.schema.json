@@ -6,10 +6,6 @@
     "build": {
       "type": "object",
       "properties": {
-        "AdditionalBuildMetadata": {
-          "type": "string",
-          "description": "Added to the AssemblyInformationalVersion"
-        },
         "Browsers": {
           "type": "array",
           "description": "Browser available for the build to use for test running",

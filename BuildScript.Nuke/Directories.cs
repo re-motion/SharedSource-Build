@@ -19,6 +19,7 @@ using System;
 using Nuke.Common.IO;
 
 namespace Remotion.BuildScript;
+
 public class Directories
 {
   /// <summary>
@@ -53,15 +54,13 @@ public class Directories
   public AbsolutePath SolutionKeyFile { get; }
 
   /// <summary>
-  ///   <see cref="Solution" />/BuildScript.Nuke/Customizations
-  ///   Contains configuration files for the build
-  ///   Which are loaded in the <see cref="Remotion.BuildScript.BaseBuild.ReadConfiguration" />
+  ///   Path to the build customizations folder
   /// </summary>
   public AbsolutePath CustomizationPath { get; }
 
-  public Directories (AbsolutePath root, AbsolutePath buildProjectDirectory)
+  public Directories (AbsolutePath rootDirectory, AbsolutePath buildProjectDirectory)
   {
-    Solution = root;
+    Solution = rootDirectory;
     Output = Solution / "BuildOutput/";
     Temp = Output / "temp/";
     Log = Output / "log/";

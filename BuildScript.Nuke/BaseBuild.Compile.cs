@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Nuke.Common;
@@ -35,7 +36,7 @@ public partial class BaseBuild : NukeBuild
       .Description("Compile release projects")
       .Executes(() =>
       {
-        ReleaseProjectFiles.ForEach(CompileProject);
+        CompileProject(ReleaseProjectFiles);
       });
 
   [PublicAPI]
@@ -45,7 +46,7 @@ public partial class BaseBuild : NukeBuild
       .OnlyWhenStatic(() => !SkipTests)
       .Executes(() =>
       {
-        TestProjectFiles.ForEach(CompileProject);
+        CompileProject(TestProjectFiles);
       });
 
   [PublicAPI]
@@ -70,15 +71,12 @@ public partial class BaseBuild : NukeBuild
         TestProjectFiles.ForEach(RestoreProject);
       });
 
-  private void CompileProject (ProjectMetadata projectFile)
+  private void CompileProject (IReadOnlyCollection<ProjectMetadata> projectFiles)
   {
-    var targets = GetCompileTargets(projectFile);
     Configuration.ForEach(
         config =>
         {
           MSBuild(s => s
-              .SetTargetPath(projectFile.ProjectPath)
-              .SetTargets(targets)
               .SetConfiguration(config)
               .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
               .SetFileVersion(SemanticVersion.AssemblyFileVersion)
@@ -90,7 +88,10 @@ public partial class BaseBuild : NukeBuild
               .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
               .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
               .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
-              .SetToolsVersion(projectFile.ToolsVersion)
+              .CombineWith(projectFiles, (settings, projectFile) =>
+                  settings.SetToolsVersion(projectFile.ToolsVersion)
+                      .SetTargetPath(projectFile.ProjectPath)
+                      .SetTargets(GetCompileTargets(projectFile)))
           );
         });
   }
