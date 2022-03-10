@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace BuildScript.Nuke.UnitTests;
 
 [TestFixture]
-public class VersionHelperTest
+public class SemanticVersionTest
 {
   [Test]
   [TestCase("3.0.0")]
@@ -13,8 +13,8 @@ public class VersionHelperTest
   [TestCase("1.21.8-beta.102")]
   public void Version_WithValidVersion_ReturnsOriginalVersion (string version)
   {
-    var versionHelper = new VersionHelper(version);
-    var actualVersion = versionHelper.Version;
+    var semanticVersion = new SemanticVersion(version);
+    var actualVersion = semanticVersion.Version;
     Assert.That(actualVersion, Is.EqualTo(version));
   }
 
@@ -25,8 +25,8 @@ public class VersionHelperTest
   [TestCase("1.21.8-beta.102", "1.21.0.0")]
   public void AssemblyVersion_WithValidVersion_ReturnsAssemblyVersion (string version, string expectedAssemblyVersion)
   {
-    var versionHelper = new VersionHelper(version);
-    var assemblyVersion = versionHelper.AssemblyVersion;
+    var semanticVersion = new SemanticVersion(version);
+    var assemblyVersion = semanticVersion.AssemblyVersion;
     Assert.That(assemblyVersion, Is.EqualTo(expectedAssemblyVersion));
   }
 
@@ -37,8 +37,8 @@ public class VersionHelperTest
   [TestCase("1.21.8-beta.102", "1.21.8.02102")]
   public void AssemblyFileVersion_WithValidVersion_ReturnsAssemblyFileVersion (string version, string expectedAssemblyFileVersion)
   {
-    var versionHelper = new VersionHelper(version);
-    var assemblyFileVersion = versionHelper.AssemblyFileVersion;
+    var semanticVersion = new SemanticVersion(version);
+    var assemblyFileVersion = semanticVersion.AssemblyFileVersion;
     Assert.That(assemblyFileVersion, Is.EqualTo(expectedAssemblyFileVersion));
   }
 
@@ -54,8 +54,8 @@ public class VersionHelperTest
       string configurationId,
       string additionalBuildMetadata)
   {
-    var versionHelper = new VersionHelper(version);
-    var assemblyInformationVersion = versionHelper.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
+    var semanticVersion = new SemanticVersion(version);
+    var assemblyInformationVersion = semanticVersion.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
     Assert.That(assemblyInformationVersion, Is.EqualTo(expectedAssemblyInformationVersion));
   }
 
@@ -66,8 +66,8 @@ public class VersionHelperTest
   [TestCase("1.21.8-beta.102", "1.21.8-beta.102")]
   public void AssemblyNuGetVersion_WithValidVersion_ReturnsAssemblyNugetVersion (string version, string expectedAssemblyNuGetVersion)
   {
-    var versionHelper = new VersionHelper(version);
-    var assemblyNuGetVersion = versionHelper.AssemblyNuGetVersion;
+    var semanticVersion = new SemanticVersion(version);
+    var assemblyNuGetVersion = semanticVersion.AssemblyNuGetVersion;
     Assert.That(assemblyNuGetVersion, Is.EqualTo(expectedAssemblyNuGetVersion));
   }
 
@@ -78,8 +78,8 @@ public class VersionHelperTest
   [TestCase("1.21.8-beta.102", "1.21.0.0")]
   public void DependDBProjectVersion_WithValidVersion_ReturnsDepenDBProjectVersion (string version, string expectedDefineDependDBProjectVersion)
   {
-    var versionHelper = new VersionHelper(version);
-    var dependDBProjectVersion = versionHelper.DependDBProjectVersion;
+    var semanticVersion = new SemanticVersion(version);
+    var dependDBProjectVersion = semanticVersion.DependDBProjectVersion;
     Assert.That(dependDBProjectVersion, Is.EqualTo(expectedDefineDependDBProjectVersion));
   }
 
@@ -91,6 +91,6 @@ public class VersionHelperTest
   [TestCase("wrong")]
   public void Version_WithInvalidVersion_ThrowsNukeBuildException (string version)
   {
-    Assert.That(() => new VersionHelper(version), Throws.InstanceOf<ApplicationException>());
+    Assert.That(() => new SemanticVersion(version), Throws.InstanceOf<ApplicationException>());
   }
 }

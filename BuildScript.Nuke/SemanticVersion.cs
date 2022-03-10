@@ -6,7 +6,7 @@ using Nuke.Common;
 /// <summary>
 ///   Creates all needed versions for the build from the base version
 /// </summary>
-public class VersionHelper
+public class SemanticVersion
 {
   //language=regex
   private const string c_versionNumberPattern = @"(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)";
@@ -53,7 +53,7 @@ public class VersionHelper
   /// </remarks>
   public string VersionWithoutPreRelease { get; }
 
-  public VersionHelper (string version)
+  public SemanticVersion (string version)
   {
     Version = version;
     var versionMatch = Regex.Match(Version, c_versionPattern);

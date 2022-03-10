@@ -125,7 +125,7 @@ public partial class Build : NukeBuild
       settings
           .SetProject(projectFile.ProjectPath)
           .SetConfiguration(config)
-          .SetVersion(VersionHelper.AssemblyNuGetVersion)
+          .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
           .SetProperty(c_extraTagsPropertyKey, $"{config}Build ")
           .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
@@ -141,7 +141,7 @@ public partial class Build : NukeBuild
       settings
           .SetTargetPath(projectFile.ProjectPath)
           .SetConfiguration(config)
-          .SetVersion(VersionHelper.AssemblyNuGetVersion)
+          .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
           .SetIncludeReferencedProjects(true)
           .SetSymbols(true)
