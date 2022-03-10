@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Nuke.Common;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 
 namespace Remotion.BuildScript;
@@ -28,9 +29,9 @@ namespace Remotion.BuildScript;
 public partial class BaseBuild : NukeBuild
 {
   [GitRepository]
-  public readonly GitRepository GitRepository = null!;
+  protected readonly GitRepository GitRepository = null!;
   [Solution]
-  public readonly Solution Solution = null!;
+  protected readonly Solution Solution = null!;
 
   private Directories Directories { get; } = new(RootDirectory, BuildProjectDirectory);
   private AssemblyMetadata AssemblyMetadata { get; set; } = null!;

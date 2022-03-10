@@ -40,8 +40,9 @@ public class TestConfiguration
   public string TargetRuntimeMoniker { get; }
   public IReadOnlyCollection<string> ExcludeCategories { get; }
   public IReadOnlyCollection<string> IncludeCategories { get; }
-  public bool IsNetCoreExecutable { get; }
+  public bool IsNetCoreFramework { get; }
   public bool IsNetFramework { get; }
+  public bool IsNetStandardFramework { get; }
   public string TestAssemblyFrameworkVersion { get; }
   public TestProjectMetadata ProjectMetadata { get; }
 
@@ -89,9 +90,11 @@ public class TestConfiguration
                                        TestAssemblyFrameworkVersion.Contains('.');
     var firstVersionNumber = int.Parse(TargetRuntimeMoniker.Where(char.IsDigit).ToArray()[0] + "");
     var isTargetRuntimeCoreProject = firstVersionNumber >= 5;
-    IsNetCoreExecutable = isTargetFrameworkCoreProject &&
+    var isNetStandardProject = TestAssemblyFrameworkVersion.StartsWith("netstandard");
+    IsNetCoreFramework = isTargetFrameworkCoreProject &&
                           isTargetRuntimeCoreProject;
-    IsNetFramework = !isTargetFrameworkCoreProject && !isTargetRuntimeCoreProject;
+    IsNetFramework = !isTargetFrameworkCoreProject && !isTargetRuntimeCoreProject && !isNetStandardProject;
+    IsNetStandardFramework = isNetStandardProject;
   }
 
   public override int GetHashCode ()
@@ -114,7 +117,7 @@ public class TestConfiguration
     hashCode.Add(TargetRuntimeMoniker);
     hashCode.Add(ExcludeCategories);
     hashCode.Add(IncludeCategories);
-    hashCode.Add(IsNetCoreExecutable);
+    hashCode.Add(IsNetCoreFramework);
     hashCode.Add(IsNetFramework);
     hashCode.Add(TestAssemblyFrameworkVersion);
     hashCode.Add(ProjectMetadata);
@@ -133,7 +136,7 @@ public class TestConfiguration
   }
 
   public override string ToString () =>
-      $"{nameof(ID)}: {ID}, {nameof(Browser)}: {Browser}, {nameof(DatabaseSystem)}: {DatabaseSystem}, {nameof(ConfigurationID)}: {ConfigurationID}, {nameof(Platform)}: {Platform}, {nameof(ExecutionRuntime)}: {ExecutionRuntime}, {nameof(IsWebTest)}: {IsWebTest}, {nameof(IsDatabaseTest)}: {IsDatabaseTest}, {nameof(Use32Bit)}: {Use32Bit}, {nameof(TestAssemblyFileName)}: {TestAssemblyFileName}, {nameof(TestAssemblyFullPath)}: {TestAssemblyFullPath}, {nameof(TestAssemblyDirectoryPath)}: {TestAssemblyDirectoryPath}, {nameof(TestSetupBuildFile)}: {TestSetupBuildFile}, {nameof(TargetRuntime)}: {TargetRuntime}, {nameof(ExcludeCategories)}: {string.Join(",", ExcludeCategories)}, {nameof(IncludeCategories)}: {string.Join(",", IncludeCategories)}, {nameof(IsNetCoreExecutable)}: {IsNetCoreExecutable}, {nameof(TestAssemblyFrameworkVersion)}: {TestAssemblyFrameworkVersion}, {nameof(ProjectMetadata)}: {ProjectMetadata}";
+      $"{nameof(ID)}: {ID}, {nameof(Browser)}: {Browser}, {nameof(DatabaseSystem)}: {DatabaseSystem}, {nameof(ConfigurationID)}: {ConfigurationID}, {nameof(Platform)}: {Platform}, {nameof(ExecutionRuntime)}: {ExecutionRuntime}, {nameof(IsWebTest)}: {IsWebTest}, {nameof(IsDatabaseTest)}: {IsDatabaseTest}, {nameof(Use32Bit)}: {Use32Bit}, {nameof(TestAssemblyFileName)}: {TestAssemblyFileName}, {nameof(TestAssemblyFullPath)}: {TestAssemblyFullPath}, {nameof(TestAssemblyDirectoryPath)}: {TestAssemblyDirectoryPath}, {nameof(TestSetupBuildFile)}: {TestSetupBuildFile}, {nameof(TargetRuntime)}: {TargetRuntime}, {nameof(ExcludeCategories)}: {string.Join(",", ExcludeCategories)}, {nameof(IncludeCategories)}: {string.Join(",", IncludeCategories)}, {nameof(IsNetCoreFramework)}: {IsNetCoreFramework}, {nameof(TestAssemblyFrameworkVersion)}: {TestAssemblyFrameworkVersion}, {nameof(ProjectMetadata)}: {ProjectMetadata}";
 
   protected bool Equals (TestConfiguration other) => ID == other.ID && Browser == other.Browser && DatabaseSystem == other.DatabaseSystem
                                                      && ConfigurationID == other.ConfigurationID && Platform == other.Platform
@@ -146,7 +149,7 @@ public class TestConfiguration
                                                      && TargetRuntimeMoniker == other.TargetRuntimeMoniker
                                                      && ExcludeCategories.Equals(other.ExcludeCategories)
                                                      && IncludeCategories.Equals(other.IncludeCategories)
-                                                     && IsNetCoreExecutable == other.IsNetCoreExecutable && IsNetFramework == other.IsNetFramework
+                                                     && IsNetCoreFramework == other.IsNetCoreFramework && IsNetFramework == other.IsNetFramework
                                                      && TestAssemblyFrameworkVersion == other.TestAssemblyFrameworkVersion
                                                      && ProjectMetadata.Equals(other.ProjectMetadata);
 }
