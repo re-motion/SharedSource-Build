@@ -63,7 +63,7 @@ public partial class Build : NukeBuild
               .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
               .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
               .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-              .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, DirectoryHelper.SolutionKeyFile)
+              .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile)
               .SetPackageProjectUrl(GitRepository.HttpsUrl)
               .SetToolsVersion(projectFile.ToolsVersion)
           );

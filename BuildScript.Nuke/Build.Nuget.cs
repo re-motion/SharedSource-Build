@@ -51,7 +51,7 @@ public partial class Build : NukeBuild
     Configuration.ForEach(
         config =>
         {
-          var nugetOutputDirectory = DirectoryHelper.OutputDirectory / c_nugetWithDebugSymbolsFolderName / (config + folderSuffix);
+          var nugetOutputDirectory = Directories.Output / c_nugetWithDebugSymbolsFolderName / (config + folderSuffix);
           FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
           if (projectFile.IsSdkProject)
             GeneratePackagesForSdkProjectWithDebugSymbols(projectFile, config, nugetOutputDirectory);
@@ -67,7 +67,7 @@ public partial class Build : NukeBuild
     Configuration.ForEach(
         config =>
         {
-          var nugetOutputDirectory = DirectoryHelper.OutputDirectory / c_nugetWithSymbolServerSupportFolderName / (config + folderSuffix);
+          var nugetOutputDirectory = Directories.Output / c_nugetWithSymbolServerSupportFolderName / (config + folderSuffix);
           FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
           if (projectFile.IsSdkProject)
             GeneratePackagesForSdkProjectWithSymbolServerSupport(projectFile, config, nugetOutputDirectory);
@@ -134,7 +134,7 @@ public partial class Build : NukeBuild
           .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
           .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
           .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, DirectoryHelper.SolutionKeyFile);
+          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile);
 
   private NuGetPackSettings SetBaseNuGetPackSettings (
       ProjectMetadata projectFile,
@@ -153,7 +153,7 @@ public partial class Build : NukeBuild
           .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
           .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
           .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, DirectoryHelper.SolutionKeyFile);
+          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile);
 
   private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
   {
