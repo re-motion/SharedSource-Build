@@ -17,9 +17,6 @@ public partial class Build : NukeBuild
   private const string c_nugetWithSymbolServerSupportFolderName = "NuGetWithSymbolServerSupport";
   private const string c_nugetWithDebugSymbolsFolderName = "NuGetWithDebugSymbols";
   private const string c_testFolderSuffix = "-Test";
-  private const string c_extraTagsPropertyKey = "ExtraTags";
-  private const string c_includeReferencedProjectsPropertyKey = "IncludeReferencedProjects";
-  private const string c_copyrightPropertyKey = "Copyright";
 
 
   private Target GenerateNuGetPackagesWithDebugSymbols => _ => _
@@ -82,7 +79,7 @@ public partial class Build : NukeBuild
         settings => SetBaseDotNetPackSettings(projectFile, config, nugetOutputDirectoryPath, settings)
             .DisableIncludeSource()
             .DisableIncludeSymbols()
-            .SetProperty(c_includeReferencedProjectsPropertyKey, "True")
+            .SetProperty(MSBuildProperties.IncludeReferenced, "True")
     );
   }
 
@@ -130,11 +127,11 @@ public partial class Build : NukeBuild
           .SetConfiguration(config)
           .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
-          .SetProperty(c_extraTagsPropertyKey, $"{config}Build ")
-          .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
-          .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
-          .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile);
+          .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
+          .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
+          .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
+          .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
+          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile);
 
   private NuGetPackSettings SetBaseNuGetPackSettings (
       ProjectMetadata projectFile,
@@ -148,12 +145,12 @@ public partial class Build : NukeBuild
           .SetOutputDirectory(nugetOutputDirectoryPath)
           .SetIncludeReferencedProjects(true)
           .SetSymbols(true)
-          .SetProperty(c_extraTagsPropertyKey, $"{config}Build ")
-          .SetProperty(c_copyrightPropertyKey, AssemblyMetadata.Copyright)
-          .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
-          .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
-          .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-          .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile);
+          .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
+          .SetProperty(MSBuildProperties.Copyright, AssemblyMetadata.Copyright)
+          .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
+          .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
+          .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
+          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile);
 
   private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
   {

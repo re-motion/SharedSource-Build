@@ -21,9 +21,7 @@ public class ProjectPropsReader : BasePropsReader
   private const string c_unitTestProjectFilesItem = "UnitTestProjectFiles";
   private const string c_integrationTestProjectFilesItem = "IntegrationTestProjectFiles";
   private const string c_testConfigurationMetaData = "TestConfiguration";
-  private const string c_targetFrameworksProperty = "TargetFrameworks";
   private const string c_testSetupBuildFileMetaData = "TestSetupBuildFile";
-  private const string c_assemblyName = "AssemblyName";
 
   private readonly IReadOnlyCollection<string> _configuration;
   private readonly Solution _solution;
@@ -103,7 +101,7 @@ public class ProjectPropsReader : BasePropsReader
     var msBuildProject = project.GetMSBuildProject();
     var targetFrameworkList = ExtractTargetFrameworkList(msBuildProject);
     var targetFrameworkListTmp = project.GetTargetFrameworks();
-    var assemblyName = project.GetProperty(c_assemblyName);
+    var assemblyName = project.GetProperty(MSBuildProperties.AssemblyName);
     var assemblyPaths = new[] { $"{project.Directory}\\bin\\{configuration}\\{assemblyName}.dll" };
     if (targetFrameworkListTmp != null)
     {
@@ -146,13 +144,13 @@ public class ProjectPropsReader : BasePropsReader
   private IReadOnlyCollection<string> ExtractTargetFrameworkList (Project xmlProperties)
   {
     var targetFrameworks = xmlProperties.Properties
-        .Where(x => x.Name == c_targetFrameworksProperty)
+        .Where(x => x.Name == MSBuildProperties.TargetFrameworks)
         .SelectMany(x => x.EvaluatedValue.Split(";"));
     var targetFramework = xmlProperties.Properties
-        .Where(x => x.Name == "TargetFramework")
+        .Where(x => x.Name == MSBuildProperties.TargetFramework)
         .SelectMany(x => x.EvaluatedValue.Split(";"));
     var targetFrameworkVersion = xmlProperties.Properties
-        .Where(x => x.Name == "TargetFrameworkVersion")
+        .Where(x => x.Name == MSBuildProperties.TargetFrameworkVersion)
         .SelectMany(x => x.EvaluatedValue.Split(";"))
         .Select(oldVersion => "net" + oldVersion.Replace("v", "").Replace(".", ""));
 
