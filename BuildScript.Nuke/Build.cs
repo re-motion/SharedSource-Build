@@ -22,7 +22,7 @@ public partial class Build : NukeBuild
 
   private DirectoryHelper DirectoryHelper { get; } = new(RootDirectory);
   private AssemblyMetadata AssemblyMetadata { get; set; } = null!;
-  private VersionHelper VersionHelper { get; set; } = null!;
+  private SemanticVersion SemanticVersion { get; set; } = null!;
 
   private IReadOnlyCollection<ProjectMetadata> ReleaseProjectFiles { get; set; } = Array.Empty<ProjectMetadata>();
   private IReadOnlyCollection<TestProjectMetadata> UnitTestProjectFiles { get; set; } = Array.Empty<TestProjectMetadata>();

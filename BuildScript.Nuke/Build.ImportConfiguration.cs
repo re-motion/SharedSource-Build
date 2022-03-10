@@ -175,7 +175,7 @@ public partial class Build : NukeBuild
   {
     var xmlProperties = ProjectModelTasks.ParseProject(DirectoryHelper.CustomizationPath / c_versionFileName);
     var version = xmlProperties.Properties.Single(prop => prop.Name == c_versionProperty);
-    VersionHelper = new VersionHelper(version.EvaluatedValue);
+    SemanticVersion = new SemanticVersion(version.EvaluatedValue);
   }
 
   private Project LoadProjectWithSolutionDirectoryPropertySet (string configFileName)
