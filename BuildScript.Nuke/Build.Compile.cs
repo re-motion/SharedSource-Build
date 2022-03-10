@@ -9,14 +9,14 @@ public partial class Build : NukeBuild
   private const string c_packageVersionPropertyKey = "PackageVersion";
 
   private Target CompileReleaseBuild => _ => _
-      .DependsOn(ImportDefinitions, RestoreReleaseBuild)
+      .DependsOn(ReadConfiguration, RestoreReleaseBuild)
       .Executes(() =>
       {
         ReleaseProjectFiles.ForEach(CompileProject);
       });
 
   private Target CompileTestBuild => _ => _
-      .DependsOn(ImportDefinitions, RestoreTestBuild)
+      .DependsOn(ReadConfiguration, RestoreTestBuild)
       .OnlyWhenStatic(() => !SkipTests)
       .Executes(() =>
       {
@@ -24,14 +24,14 @@ public partial class Build : NukeBuild
       });
 
   private Target RestoreReleaseBuild => _ => _
-      .DependsOn(ImportDefinitions)
+      .DependsOn(ReadConfiguration)
       .Executes(() =>
       {
         ReleaseProjectFiles.ForEach(RestoreProject);
       });
 
   private Target RestoreTestBuild => _ => _
-      .DependsOn(ImportDefinitions)
+      .DependsOn(ReadConfiguration)
       .Executes(() =>
       {
         TestProjectFiles.ForEach(RestoreProject);
