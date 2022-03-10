@@ -66,14 +66,14 @@ public partial class Build : NukeBuild
   {
     MSBuild(s => s
         .SetTargetPath(projectFile.ProjectPath)
-        .SetTargets("Restore")
+        .SetTargets(MSBuildTargets.Restore)
     );
   }
 
   private string GetCompileTargets (ProjectMetadata project)
   {
     if (project.IsMultiTargetFramework)
-      return "DispatchToInnerBuilds";
-    return "Build";
+      return MSBuildTargets.DispatchToInnerBuilds;
+    return MSBuildTargets.Build;
   }
 }
