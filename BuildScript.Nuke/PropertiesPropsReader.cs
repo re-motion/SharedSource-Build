@@ -6,11 +6,7 @@ using Nuke.Common.IO;
 public class PropertiesPropsReader : BasePropsReader
 {
   private const string c_propertiesFileName = "Properties.props";
-  private const string c_assemblyInfoFileProperty = "AssemblyInfoFile";
-  private const string c_companyNameProperty = "CompanyName";
-  private const string c_companyUrlProperty = "CompanyUrl";
-  private const string c_copyrightProperty = "Copyright";
-  private const string c_productNameProperty = "ProductName";
+
 
   private readonly Project _xmlProperties;
 
@@ -28,11 +24,11 @@ public class PropertiesPropsReader : BasePropsReader
 
   private AssemblyMetadata ReadPropertiesDefinition ()
   {
-    var assemblyInfoFile = _xmlProperties.Properties.Single(prop => prop.Name == c_assemblyInfoFileProperty);
-    var companyName = _xmlProperties.Properties.Single(prop => prop.Name == c_companyNameProperty);
-    var companyUrl = _xmlProperties.Properties.Single(prop => prop.Name == c_companyUrlProperty);
-    var copyright = _xmlProperties.Properties.Single(prop => prop.Name == c_copyrightProperty);
-    var productName = _xmlProperties.Properties.Single(prop => prop.Name == c_productNameProperty);
+    var assemblyInfoFile = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.AssemblyInfoFile);
+    var companyName = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.CompanyName);
+    var companyUrl = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.CompanyUrl);
+    var copyright = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.Copyright);
+    var productName = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.ProductName);
     return new AssemblyMetadata
            {
                AssemblyInfoFile = assemblyInfoFile.EvaluatedValue,
