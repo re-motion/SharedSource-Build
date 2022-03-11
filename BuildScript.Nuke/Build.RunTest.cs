@@ -21,6 +21,7 @@ public partial class Build : NukeBuild
   private string MSBuildExtensionPackPath { get; } = "";
 
   public Target CleanFolders => _ => _
+      .Description("Remove build output, log and temp folders")
       .Executes(() =>
       {
         var directoryCollection = new DirectoryHelper(RootDirectory);
@@ -29,8 +30,9 @@ public partial class Build : NukeBuild
         FileSystemTasks.DeleteDirectory(directoryCollection.TempDirectory);
       });
 
-    private Target RunTests => _ => _
+  private Target RunTests => _ => _
       .DependsOn(CompileTestBuild, CleanFolders)
+      .Description("Run all tests")
       .OnlyWhenStatic(() => !SkipTests)
       .Executes(() =>
           {
@@ -55,6 +57,7 @@ public partial class Build : NukeBuild
               Log.Warning("The created test matrix from the test configuration is empty!");
               return;
             }
+
             LogTestMatrix(output);
 
             var dockerTestConfigs = output.Where(config => config.ExecutionRuntime.UseDocker).ToList();

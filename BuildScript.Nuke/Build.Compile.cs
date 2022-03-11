@@ -10,6 +10,7 @@ public partial class Build : NukeBuild
 
   private Target CompileReleaseBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreReleaseBuild)
+      .Description("Compile release projects")
       .Executes(() =>
       {
         ReleaseProjectFiles.ForEach(CompileProject);
@@ -17,6 +18,7 @@ public partial class Build : NukeBuild
 
   private Target CompileTestBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreTestBuild)
+      .Description("Compile test projects")
       .OnlyWhenStatic(() => !SkipTests)
       .Executes(() =>
       {
@@ -24,6 +26,7 @@ public partial class Build : NukeBuild
       });
 
   public Target Restore => _ => _
+      .Description("Restores all projects")
       .DependsOn(RestoreReleaseBuild, RestoreTestBuild);
 
   private Target RestoreReleaseBuild => _ => _
