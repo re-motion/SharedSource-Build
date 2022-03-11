@@ -23,7 +23,7 @@ public partial class Build : NukeBuild
 
 
   private Target GenerateNuGetPackagesWithDebugSymbols => _ => _
-      .DependsOn(ImportDefinitions, CompileReleaseBuild, CompileTestBuild)
+      .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
       .OnlyWhenStatic(() => !SkipNuGet)
       .Executes(() =>
       {
@@ -34,7 +34,7 @@ public partial class Build : NukeBuild
       });
 
   private Target GenerateNuGetPackagesWithSymbolServerSupport => _ => _
-      .DependsOn(ImportDefinitions, CompileReleaseBuild, CompileTestBuild)
+      .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
       .OnlyWhenStatic(() => !SkipNuGetOrg)
       .Executes(() =>
       {
@@ -117,7 +117,8 @@ public partial class Build : NukeBuild
                 .SetSymbolPackageFormat(NuGetSymbolPackageFormat.snupkg)
     );
   }
-  private DotNetPackSettings SetBaseDotNetPackSettings(
+
+  private DotNetPackSettings SetBaseDotNetPackSettings (
       ProjectMetadata projectFile,
       string config,
       AbsolutePath nugetOutputDirectoryPath,
@@ -133,7 +134,7 @@ public partial class Build : NukeBuild
           .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
           .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, DirectoryHelper.SolutionKeyFile);
 
-    private NuGetPackSettings SetBaseNuGetPackSettings (
+  private NuGetPackSettings SetBaseNuGetPackSettings (
       ProjectMetadata projectFile,
       string config,
       AbsolutePath nugetOutputDirectoryPath,
