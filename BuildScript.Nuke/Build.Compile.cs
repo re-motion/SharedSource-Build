@@ -23,6 +23,9 @@ public partial class Build : NukeBuild
         TestProjectFiles.ForEach(CompileProject);
       });
 
+  public Target Restore => _ => _
+      .DependsOn(RestoreReleaseBuild, RestoreTestBuild);
+
   private Target RestoreReleaseBuild => _ => _
       .DependsOn(ReadConfiguration)
       .Executes(() =>
