@@ -24,6 +24,7 @@ public partial class Build : NukeBuild
 
   private Target GenerateNuGetPackagesWithDebugSymbols => _ => _
       .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
+      .Description("Generate nuget packages with debug symbols")
       .OnlyWhenStatic(() => !SkipNuGet)
       .Executes(() =>
       {
@@ -35,6 +36,7 @@ public partial class Build : NukeBuild
 
   private Target GenerateNuGetPackagesWithSymbolServerSupport => _ => _
       .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
+      .Description("Generate nuget packages with symbol server support")
       .OnlyWhenStatic(() => !SkipNuGetOrg)
       .Executes(() =>
       {
