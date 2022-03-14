@@ -6,8 +6,6 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 
 public partial class Build : NukeBuild
 {
-  private const string c_packageVersionPropertyKey = "PackageVersion";
-
   private Target CompileReleaseBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreReleaseBuild)
       .Description("Compile release projects")
@@ -59,11 +57,11 @@ public partial class Build : NukeBuild
               .SetFileVersion(SemanticVersion.AssemblyFileVersion)
               .SetInformationalVersion(SemanticVersion.GetAssemblyInformationalVersion(config, AdditionalBuildMetadata))
               .SetCopyright(AssemblyMetadata.Copyright)
-              .SetProperty(c_packageVersionPropertyKey, SemanticVersion.AssemblyNuGetVersion)
-              .SetProperty(c_companyNamePropertyKey, AssemblyMetadata.CompanyName)
-              .SetProperty(c_companyUrlPropertyKey, AssemblyMetadata.CompanyUrl)
-              .SetProperty(c_productNamePropertyKey, AssemblyMetadata.ProductName)
-              .SetProperty(c_assemblyOriginatorKeyFilePropertyKey, Directories.SolutionKeyFile)
+              .SetProperty(MSBuildProperties.PackageVersion, SemanticVersion.AssemblyNuGetVersion)
+              .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
+              .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
+              .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
+              .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
               .SetPackageProjectUrl(GitRepository.HttpsUrl)
               .SetToolsVersion(projectFile.ToolsVersion)
           );

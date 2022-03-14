@@ -8,11 +8,6 @@ using Nuke.Common.ProjectModel;
 [CheckBuildProjectConfigurations]
 public partial class Build : NukeBuild
 {
-  private const string c_companyNamePropertyKey = "CompanyName";
-  private const string c_productNamePropertyKey = "ProductName";
-  private const string c_assemblyOriginatorKeyFilePropertyKey = "AssemblyOriginatorKeyFile";
-  private const string c_companyUrlPropertyKey = "CompanyUrl";
-
   [GitRepository]
   private readonly GitRepository GitRepository = null!;
   [Solution]
