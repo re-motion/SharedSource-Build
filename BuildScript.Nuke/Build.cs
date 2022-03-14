@@ -20,7 +20,7 @@ public partial class Build : NukeBuild
   private readonly Solution Solution = null!;
 #pragma warning disable CS0414
 
-  private DirectoryHelper DirectoryHelper { get; } = new(RootDirectory);
+  private Directories Directories { get; } = new(RootDirectory, BuildProjectDirectory);
   private AssemblyMetadata AssemblyMetadata { get; set; } = null!;
   private SemanticVersion SemanticVersion { get; set; } = null!;
 
