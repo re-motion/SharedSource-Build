@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Buildscript.Nuke\BuildScript.Nuke.csproj" />
+    <ProjectReference Include="..\BuildScript.Nuke\BuildScript.Nuke.csproj" />
   </ItemGroup>
 
 </Project>
