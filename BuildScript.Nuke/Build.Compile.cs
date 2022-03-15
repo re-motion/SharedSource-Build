@@ -17,6 +17,7 @@
 
 using System;
 using Nuke.Common;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
@@ -79,7 +80,7 @@ public partial class Build : NukeBuild
               .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
               .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
               .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
-              .SetPackageProjectUrl(GitRepository.HttpsUrl)
+              .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository.HttpsUrl))
               .SetToolsVersion(projectFile.ToolsVersion)
           );
         });
