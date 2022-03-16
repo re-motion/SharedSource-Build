@@ -17,6 +17,8 @@
 
 using System;
 
+namespace Remotion.BuildScript;
+
 public class AssemblyMetadata
 {
   public string AssemblyInfoFile { get; init; } = "";

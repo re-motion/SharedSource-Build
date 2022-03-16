@@ -21,6 +21,8 @@ using System.Linq;
 using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 
+namespace Remotion.BuildScript;
+
 public record BuildConfigurationProps(
     IReadOnlyCollection<string> SupportedTargetRuntimes,
     IReadOnlyCollection<string> SupportedBrowsers,

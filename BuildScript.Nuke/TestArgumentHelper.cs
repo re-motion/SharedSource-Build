@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Nuke.Common.Utilities;
-using Remotion.BuildScript.Nuke.GenerateTestMatrix;
+using Remotion.BuildScript.GenerateTestMatrix;
+
+namespace Remotion.BuildScript;
 
 public class TestArgumentHelper
 {

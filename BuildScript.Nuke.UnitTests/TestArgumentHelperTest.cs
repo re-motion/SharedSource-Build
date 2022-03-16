@@ -19,7 +19,8 @@ using System;
 using System.Collections.Generic;
 using Nuke.Common.IO;
 using NUnit.Framework;
-using Remotion.BuildScript.Nuke.GenerateTestMatrix;
+using Remotion.BuildScript;
+using Remotion.BuildScript.GenerateTestMatrix;
 
 namespace BuildScript.Nuke.UnitTests;
 

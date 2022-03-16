@@ -20,6 +20,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Nuke.Common;
 
+namespace Remotion.BuildScript;
+
 /// <summary>
 ///   Creates all needed versions for the build from the base version
 /// </summary>

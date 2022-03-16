@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 /// <summary>
 ///   Some metadata values with special meaning.

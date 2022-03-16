@@ -17,6 +17,7 @@
 
 using System;
 using NUnit.Framework;
+using Remotion.BuildScript;
 
 namespace BuildScript.Nuke.UnitTests;
 

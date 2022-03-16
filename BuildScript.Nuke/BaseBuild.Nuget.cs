@@ -18,13 +18,16 @@
 using System;
 using System.Linq;
 using GlobExpressions;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
 
-public partial class Build : NukeBuild
+namespace Remotion.BuildScript;
+
+public partial class BaseBuild : NukeBuild
 {
   private const string c_symbolTmpZipFolderName = "symbolTmp";
   private const string c_symbolsNupkgFileExtensionFilter = "*.symbols.nupkg";
@@ -35,8 +38,8 @@ public partial class Build : NukeBuild
   private const string c_nugetWithDebugSymbolsFolderName = "NuGetWithDebugSymbols";
   private const string c_testFolderSuffix = "-Test";
 
-
-  private Target GenerateNuGetPackagesWithDebugSymbols => _ => _
+  [PublicAPI]
+  public Target GenerateNuGetPackagesWithDebugSymbols => _ => _
       .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
       .Description("Generate nuget packages with debug symbols")
       .OnlyWhenStatic(() => !SkipNuGet)
@@ -48,7 +51,8 @@ public partial class Build : NukeBuild
         });
       });
 
-  private Target GenerateNuGetPackagesWithSymbolServerSupport => _ => _
+  [PublicAPI]
+  public Target GenerateNuGetPackagesWithSymbolServerSupport => _ => _
       .DependsOn(ReadConfiguration, CompileReleaseBuild, CompileTestBuild)
       .Description("Generate nuget packages with symbol server support")
       .OnlyWhenStatic(() => !SkipNuGetOrg)
@@ -169,14 +173,15 @@ public partial class Build : NukeBuild
           .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile);
 
-  private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
+  private void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
   {
     var zipTempFolderPath = nugetOutputDirectoryPath / c_symbolTmpZipFolderName;
     var symbolFile = Glob.Files(nugetOutputDirectoryPath, c_symbolsNupkgFileExtensionFilter)
         .Single(x => x.ToLower().Contains(projectFile.ProjectPath.NameWithoutExtension.ToLower()));
     var nugetPackFile = Glob.Files(nugetOutputDirectoryPath, c_nupkgFileExtensionFilter).Single(
-        x =>
-            !x.Contains(c_symbolsNupkgFileExtension) && x.ToLower().Contains(projectFile.ProjectPath.NameWithoutExtension.ToLower()));
+        file =>
+            !file.Contains(c_symbolsNupkgFileExtension) &&
+            file.ToLower().Contains($"{projectFile.ProjectPath.NameWithoutExtension.ToLower()}.{SemanticVersion.AssemblyNuGetVersion}"));
     CompressionTasks.UncompressZip(nugetOutputDirectoryPath / symbolFile, zipTempFolderPath);
     FileSystemTasks.DeleteDirectory(zipTempFolderPath / c_srcFolderName);
     FileSystemTasks.DeleteFile(nugetOutputDirectoryPath / symbolFile);

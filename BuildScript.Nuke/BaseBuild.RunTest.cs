@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GlobExpressions;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
@@ -27,16 +28,19 @@ using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities.Collections;
-using Remotion.BuildScript.Nuke.GenerateTestMatrix;
+using Remotion.BuildScript.GenerateTestMatrix;
 using Serilog;
 
-public partial class Build : NukeBuild
+namespace Remotion.BuildScript;
+
+public partial class BaseBuild : NukeBuild
 {
   private readonly TestArgumentHelper _testArgumentHelper = new();
 
   [Parameter("Path to MSBuildExtensionPack for running the TestSetupBuildFile")]
-  private string MSBuildExtensionPackPath { get; } = "";
+  protected string MSBuildExtensionPackPath { get; } = "";
 
+  [PublicAPI]
   public Target CleanFolders => _ => _
       .Description("Remove build output, log and temp folders")
       .Executes(() =>
@@ -46,7 +50,8 @@ public partial class Build : NukeBuild
         FileSystemTasks.DeleteDirectory(Directories.Temp);
       });
 
-  private Target RunTests => _ => _
+  [PublicAPI]
+  public Target RunTests => _ => _
       .DependsOn(CompileTestBuild, CleanFolders)
       .Description("Run all tests")
       .OnlyWhenStatic(() => !SkipTests)
@@ -190,7 +195,7 @@ public partial class Build : NukeBuild
   private AbsolutePath GetTeamCityLoggerPath ()
   {
     var teamcityPackage = NuGetPackageResolver
-        .GetLocalInstalledPackage("TeamCity.Dotnet.Integration", ToolPathResolver.NuGetPackagesConfigFile)
+        .GetLocalInstalledPackage("TeamCity.Dotnet.Integration", ToolPathResolver.NuGetAssetsConfigFile)
         .NotNull("teamcityPackage != null");
     var loggerPath = teamcityPackage.Directory / "build" / "_common" / "vstest15";
     Assert.DirectoryExists(loggerPath);

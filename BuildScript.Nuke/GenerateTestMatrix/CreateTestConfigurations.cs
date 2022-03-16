@@ -23,7 +23,7 @@ using Nuke.Common;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 public class CreateTestConfigurations
 {

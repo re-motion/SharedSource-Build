@@ -17,7 +17,7 @@
 
 using System;
 using NUnit.Framework;
-using Remotion.BuildScript.Nuke.GenerateTestMatrix;
+using Remotion.BuildScript.GenerateTestMatrix;
 
 namespace BuildScript.Nuke.UnitTests;
 
