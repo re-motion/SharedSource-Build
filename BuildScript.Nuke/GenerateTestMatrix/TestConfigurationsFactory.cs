@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using Nuke.Common;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 public class TestConfigurationsFactory
 {

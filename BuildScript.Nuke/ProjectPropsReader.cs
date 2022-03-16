@@ -23,6 +23,8 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities;
 using Project = Microsoft.Build.Evaluation.Project;
 
+namespace Remotion.BuildScript;
+
 public record ProjectProps(
     IReadOnlyCollection<ProjectMetadata> ReleaseProjectMetadata,
     IReadOnlyCollection<TestProjectMetadata> UnitTestProjectMetadata,

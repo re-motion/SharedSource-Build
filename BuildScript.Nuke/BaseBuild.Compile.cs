@@ -16,15 +16,21 @@
 //
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 
-public partial class Build : NukeBuild
+namespace Remotion.BuildScript;
+
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+public partial class BaseBuild : NukeBuild
 {
-  private Target CompileReleaseBuild => _ => _
+  [PublicAPI]
+  public Target CompileReleaseBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreReleaseBuild)
       .Description("Compile release projects")
       .Executes(() =>
@@ -32,7 +38,8 @@ public partial class Build : NukeBuild
         ReleaseProjectFiles.ForEach(CompileProject);
       });
 
-  private Target CompileTestBuild => _ => _
+  [PublicAPI]
+  public Target CompileTestBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreTestBuild)
       .Description("Compile test projects")
       .OnlyWhenStatic(() => !SkipTests)
@@ -41,11 +48,12 @@ public partial class Build : NukeBuild
         TestProjectFiles.ForEach(CompileProject);
       });
 
+  [PublicAPI]
   public Target Restore => _ => _
       .Description("Restores all projects")
       .DependsOn(RestoreReleaseBuild, RestoreTestBuild);
 
-  private Target RestoreReleaseBuild => _ => _
+  protected Target RestoreReleaseBuild => _ => _
       .DependsOn(ReadConfiguration)
       .Unlisted()
       .Executes(() =>
@@ -53,7 +61,8 @@ public partial class Build : NukeBuild
         ReleaseProjectFiles.ForEach(RestoreProject);
       });
 
-  private Target RestoreTestBuild => _ => _
+
+  protected Target RestoreTestBuild => _ => _
       .DependsOn(ReadConfiguration)
       .Unlisted()
       .Executes(() =>
@@ -80,7 +89,7 @@ public partial class Build : NukeBuild
               .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
               .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
               .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
-              .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository.HttpsUrl))
+              .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
               .SetToolsVersion(projectFile.ToolsVersion)
           );
         });

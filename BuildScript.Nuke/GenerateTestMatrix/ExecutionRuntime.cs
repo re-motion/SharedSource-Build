@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 public class ExecutionRuntime
 {
@@ -40,7 +40,7 @@ public class ExecutionRuntime
       return false;
     if (ReferenceEquals(this, obj))
       return true;
-    if (obj.GetType() != this.GetType())
+    if (obj.GetType() != GetType())
       return false;
     return Equals((ExecutionRuntime) obj);
   }
@@ -48,10 +48,8 @@ public class ExecutionRuntime
   public override string ToString () =>
       $"{nameof(UseDocker)}: {UseDocker}, {nameof(Key)}: {Key}, {nameof(Value)}: {Value}, {nameof(DockerImage)}: {DockerImage}";
 
-  protected bool Equals (ExecutionRuntime other)
-  {
-    return UseDocker == other.UseDocker && Key == other.Key && Value == other.Value && DockerImage == other.DockerImage;
-  }
+  public override int GetHashCode () => HashCode.Combine(UseDocker, Key, Value, DockerImage);
 
-  public override int GetHashCode() => HashCode.Combine(UseDocker, Key, Value, DockerImage);
+  protected bool Equals (ExecutionRuntime other) =>
+      UseDocker == other.UseDocker && Key == other.Key && Value == other.Value && DockerImage == other.DockerImage;
 }

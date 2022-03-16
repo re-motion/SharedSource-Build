@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 /// <summary>
 ///   Wraps a <see cref="IDictionary{TKey,TValue}" /> and performs case-insensitive access operations, emulating default

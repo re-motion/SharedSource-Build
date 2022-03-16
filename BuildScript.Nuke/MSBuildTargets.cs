@@ -17,6 +17,8 @@
 
 using System;
 
+namespace Remotion.BuildScript;
+
 public static class MSBuildTargets
 {
   public const string Restore = "Restore";

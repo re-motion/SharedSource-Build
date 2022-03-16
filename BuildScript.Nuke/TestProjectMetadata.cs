@@ -16,16 +16,18 @@
 //
 
 using System;
-using System.Collections.Generic;
 
 #pragma warning disable CS8618
+
+namespace Remotion.BuildScript;
 
 public class TestProjectMetadata : ProjectMetadata
 {
   public string TestConfiguration { get; init; }
   public string TestSetupBuildFile { get; init; }
-  
-  public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), TestConfiguration, TestSetupBuildFile);
+
+  public override int GetHashCode () => HashCode.Combine(base.GetHashCode(), TestConfiguration, TestSetupBuildFile);
+
   public override bool Equals (object? obj)
   {
     if (ReferenceEquals(null, obj))

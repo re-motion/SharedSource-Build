@@ -17,6 +17,8 @@
 
 using System;
 
+namespace Remotion.BuildScript;
+
 public static class MSBuildProperties
 {
   public const string PackageVersion = "PackageVersion";
