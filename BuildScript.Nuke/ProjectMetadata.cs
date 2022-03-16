@@ -23,6 +23,8 @@ using Nuke.Common.ProjectModel;
 
 #pragma warning disable CS8618
 
+namespace Remotion.BuildScript;
+
 public class ProjectMetadata
 {
   public Project Project { get; init; }
@@ -51,16 +53,15 @@ public class ProjectMetadata
     return Equals((ProjectMetadata) obj);
   }
 
-  private bool AreEqualCollections<T> (IReadOnlyCollection<T> firstCollection, IReadOnlyCollection<T> secondCollection) => firstCollection.All(secondCollection.Contains) && secondCollection.All(firstCollection.Contains);
+  private bool AreEqualCollections<T> (IReadOnlyCollection<T> firstCollection, IReadOnlyCollection<T> secondCollection) =>
+      firstCollection.All(secondCollection.Contains) && secondCollection.All(firstCollection.Contains);
 
-  protected bool Equals (ProjectMetadata other)
-  {
-    return Configuration == other.Configuration && ProjectPath.ToString().Equals(other.ProjectPath.ToString())
-                                                && ToolsVersion == other.ToolsVersion
-                                                && IsMultiTargetFramework == other.IsMultiTargetFramework
-                                                && AreEqualCollections(TargetFrameworks, other.TargetFrameworks)
-                                                && IsSdkProject == other.IsSdkProject
-                                                && AreEqualCollections(AssemblyPaths,other.AssemblyPaths);
-  }
+  protected bool Equals (ProjectMetadata other) =>
+      Configuration == other.Configuration && ProjectPath.ToString().Equals(other.ProjectPath.ToString())
+                                           && ToolsVersion == other.ToolsVersion
+                                           && IsMultiTargetFramework == other.IsMultiTargetFramework
+                                           && AreEqualCollections(TargetFrameworks, other.TargetFrameworks)
+                                           && IsSdkProject == other.IsSdkProject
+                                           && AreEqualCollections(AssemblyPaths, other.AssemblyPaths);
 }
 #pragma warning restore CS8618

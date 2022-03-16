@@ -18,6 +18,7 @@
 using System;
 using Nuke.Common.IO;
 
+namespace Remotion.BuildScript;
 public class Directories
 {
   /// <summary>
@@ -28,33 +29,33 @@ public class Directories
   /// <summary>
   ///   <see cref="Solution" />/BuildOutput/
   ///   Subfolder of the solution directory named "BuildOutput"
-  ///   Is handed over to MSBuild during the compile step <see cref="BaseBuild.CompileReleaseBuild" />
+  ///   Is handed over to MSBuild during the compile step <see cref="Remotion.BuildScript.BaseBuild.CompileReleaseBuild" />
   /// </summary>
   public AbsolutePath Output { get; }
 
   /// <summary>
   ///   <see cref="Output" />/temp/
   ///   Temporary subfolder of the solution directory
-  ///   Is handed over to MSBuild during the compile step <see cref="Build.CompileReleaseBuild" />
+  ///   Is handed over to MSBuild during the compile step <see cref="Remotion.BuildScript.BaseBuild.CompileReleaseBuild" />
   /// </summary>
   public AbsolutePath Temp { get; }
 
   /// <summary>
   ///   <see cref="Output" />/log/
-  ///   Is handed over to MSBuild during the compile step <see cref="Build.CompileReleaseBuild" />
+  ///   Is handed over to MSBuild during the compile step <see cref="Remotion.BuildScript.BaseBuild.CompileReleaseBuild" />
   /// </summary>
   public AbsolutePath Log { get; }
 
   /// <summary>
   ///   <see cref="Solution" />/remotion.snk
-  ///   Is handed over to MSBuild during the compile step <see cref="BaseBuild.CompileReleaseBuild" />
+  ///   Is handed over to MSBuild during the compile step <see cref="Remotion.BuildScript.BaseBuild.CompileReleaseBuild" />
   /// </summary>
   public AbsolutePath SolutionKeyFile { get; }
 
   /// <summary>
   ///   <see cref="Solution" />/BuildScript.Nuke/Customizations
   ///   Contains configuration files for the build
-  ///   Which are loaded in the <see cref="Build.ImportPropertiesDefinition" />
+  ///   Which are loaded in the <see cref="Remotion.BuildScript.BaseBuild.ReadConfiguration" />
   /// </summary>
   public AbsolutePath CustomizationPath { get; }
 

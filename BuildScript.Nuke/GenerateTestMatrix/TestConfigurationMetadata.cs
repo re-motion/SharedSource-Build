@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 /// <summary>
 ///   The names of the metadata the resulting TestConfiguration msbuild items have.

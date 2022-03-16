@@ -21,6 +21,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Project = Microsoft.Build.Evaluation.Project;
 
+namespace Remotion.BuildScript;
 
 public class VersionPropsReader : BasePropsReader
 {

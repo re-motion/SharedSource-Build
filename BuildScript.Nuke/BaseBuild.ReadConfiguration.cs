@@ -17,11 +17,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Nuke.Common;
 
-public partial class Build : NukeBuild
+namespace Remotion.BuildScript;
+
+public partial class BaseBuild : NukeBuild
 {
   private string NormalTestConfiguration { get; set; } = "";
 
@@ -34,7 +35,7 @@ public partial class Build : NukeBuild
   private IReadOnlyCollection<string> SupportedDatabaseSystems { get; set; } = Array.Empty<string>();
   private IReadOnlyCollection<string> SupportedPlatforms { get; set; } = Array.Empty<string>();
 
-  private Target ReadConfiguration => _ => _
+  protected Target ReadConfiguration => _ => _
       .Unlisted()
       .Executes(() =>
       {

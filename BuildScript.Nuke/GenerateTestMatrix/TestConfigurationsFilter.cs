@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 public class TestConfigurationsFilter
 {

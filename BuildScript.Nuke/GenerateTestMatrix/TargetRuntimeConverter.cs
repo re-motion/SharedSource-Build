@@ -18,7 +18,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Remotion.BuildScript.Nuke.GenerateTestMatrix;
+namespace Remotion.BuildScript.GenerateTestMatrix;
 
 /// <summary>
 ///   Converts target runtimes from NUnit format to target framework moniker format and vice-versa.

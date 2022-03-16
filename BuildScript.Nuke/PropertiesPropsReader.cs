@@ -20,6 +20,8 @@ using System.Linq;
 using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 
+namespace Remotion.BuildScript;
+
 public class PropertiesPropsReader : BasePropsReader
 {
   private const string c_propertiesFileName = "Properties.props";
