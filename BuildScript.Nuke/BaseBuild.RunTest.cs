@@ -22,6 +22,7 @@ using System.Linq;
 using GlobExpressions;
 using JetBrains.Annotations;
 using Nuke.Common;
+using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
@@ -142,21 +143,19 @@ public partial class BaseBuild : NukeBuild
     var testFilter = _testArgumentHelper.CreateDotNetTestFilter(mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
     var testName = _testArgumentHelper.CreateTestName(testConfig, mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
     var testResultOutputPath = $"{Directories.Log / testName}.xml";
-
-    var teamCityLoggerPath = GetTeamCityLoggerPath();
-
+    
     var dotNetSettings = new Configure<DotNetTestSettings>(settings => settings
         .SetProjectFile(testConfig.TestAssemblyFullPath)
         .AddLoggers($"trx;LogFileName={testResultOutputPath}")
         .SetFilter(testFilter)
         .SetFramework(testConfig.TargetRuntimeMoniker)
-        .AddLoggers("teamcity")
-        .SetTestAdapterPath(teamCityLoggerPath)
         .SetRunSetting("RunConfiguration.TargetPlatform", testConfig.Platform)
+        .When(TeamCity.Instance != null, settings => settings.AddTeamCityLogger())
     )(new DotNetTestSettings());
     var exitCode = 0;
     if (testConfig.ExecutionRuntime.UseDocker)
     {
+      var teamCityLoggerPath = GetTeamCityLoggerPath();
       var dotNetTestRunnerPath = DotNetTasks.DotNetPath;
       var dotNetTestFolderPath = Path.GetDirectoryName(dotNetTestRunnerPath);
       exitCode = RunProcessWithoutExitCodeCheck(CreateDockerRunSettings(
@@ -164,7 +163,8 @@ public partial class BaseBuild : NukeBuild
               dotNetTestRunnerPath,
               dotNetTestFolderPath!,
               dotNetSettings.GetProcessArguments().RenderForExecution()
-          ).AddVolume($"\"{teamCityLoggerPath}:{teamCityLoggerPath}\"")
+          )
+          .When(TeamCity.Instance != null, settings => settings.AddVolume($"\"{teamCityLoggerPath}:{teamCityLoggerPath}\""))
       );
     }
     else
