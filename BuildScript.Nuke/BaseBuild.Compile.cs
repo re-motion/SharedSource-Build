@@ -99,7 +99,8 @@ public partial class BaseBuild : NukeBuild
   {
     MSBuild(s => s
         .SetTargetPath(projectFile.ProjectPath)
-        .SetTargets(MSBuildTargets.Restore)
+        .EnableRestore()
+    
     );
   }
 
