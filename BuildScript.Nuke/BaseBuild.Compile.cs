@@ -100,8 +100,9 @@ public partial class BaseBuild : NukeBuild
   {
     MSBuild(s => s
         .SetTargetPath(projectFile.ProjectPath)
-        .EnableRestore()
-    
+        .SetProperty("RestorePackagesConfig", true)
+        .SetProperty("SolutionDir", Directories.Solution)
+        .SetTargets("Restore")
     );
   }
 
