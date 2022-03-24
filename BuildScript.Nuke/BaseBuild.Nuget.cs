@@ -144,7 +144,9 @@ public partial class BaseBuild : NukeBuild
           .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
-          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile);
+          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
+          .EnableNoRestore()
+          .EnableNoBuild();
 
   private NuGetPackSettings SetBaseNuGetPackSettings (
       ProjectMetadata projectFile,
@@ -158,6 +160,7 @@ public partial class BaseBuild : NukeBuild
           .SetOutputDirectory(nugetOutputDirectoryPath)
           .SetIncludeReferencedProjects(true)
           .SetSymbols(true)
+          .DisableBuild()
           .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
           .SetProperty(MSBuildProperties.Copyright, AssemblyMetadata.Copyright)
           .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)

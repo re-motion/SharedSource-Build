@@ -82,6 +82,7 @@ public partial class BaseBuild : NukeBuild
         .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
         .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
         .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
+        .DisableRestore()
         .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
         .CombineWith(projectFiles, (settings, projectFile) =>
             settings.SetToolsVersion(projectFile.ToolsVersion)

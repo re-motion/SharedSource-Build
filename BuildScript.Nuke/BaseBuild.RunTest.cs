@@ -150,6 +150,8 @@ public partial class BaseBuild : NukeBuild
         .SetFilter(testFilter)
         .SetFramework(testConfig.TargetRuntimeMoniker)
         .SetRunSetting("RunConfiguration.TargetPlatform", testConfig.Platform)
+        .EnableNoBuild()
+        .EnableNoRestore()
         .When(TeamCity.Instance != null, settings => settings.AddTeamCityLogger())
     )(new DotNetTestSettings());
     var exitCode = 0;
