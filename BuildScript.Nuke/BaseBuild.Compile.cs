@@ -44,6 +44,7 @@ public partial class BaseBuild : NukeBuild
       .DependsOn(ReadConfiguration, RestoreTestBuild)
       .Description("Compile test projects")
       .OnlyWhenStatic(() => !SkipTests)
+      .After(CompileReleaseBuild)
       .Executes(() =>
       {
         CompileProject(TestProjectFiles);
