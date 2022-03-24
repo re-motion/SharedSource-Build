@@ -73,27 +73,24 @@ public partial class BaseBuild : NukeBuild
 
   private void CompileProject (IReadOnlyCollection<ProjectMetadata> projectFiles)
   {
-    Configuration.ForEach(
-        config =>
-        {
-          MSBuild(s => s
-              .SetConfiguration(config)
-              .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
-              .SetFileVersion(SemanticVersion.AssemblyFileVersion)
-              .SetInformationalVersion(SemanticVersion.GetAssemblyInformationalVersion(config, AdditionalBuildMetadata))
-              .SetCopyright(AssemblyMetadata.Copyright)
-              .SetProperty(MSBuildProperties.PackageVersion, SemanticVersion.AssemblyNuGetVersion)
-              .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
-              .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
-              .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
-              .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
-              .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
-              .CombineWith(projectFiles, (settings, projectFile) =>
-                  settings.SetToolsVersion(projectFile.ToolsVersion)
-                      .SetTargetPath(projectFile.ProjectPath)
-                      .SetTargets(GetCompileTargets(projectFile)))
-          );
-        });
+    MSBuild(s => s
+        .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
+        .SetFileVersion(SemanticVersion.AssemblyFileVersion)
+        .SetCopyright(AssemblyMetadata.Copyright)
+        .SetProperty(MSBuildProperties.PackageVersion, SemanticVersion.AssemblyNuGetVersion)
+        .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
+        .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
+        .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
+        .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
+        .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
+        .CombineWith(projectFiles, (settings, projectFile) =>
+            settings.SetToolsVersion(projectFile.ToolsVersion)
+                .SetTargetPath(projectFile.ProjectPath)
+                .SetTargets(GetCompileTargets(projectFile))
+                .SetConfiguration(projectFile.Configuration)
+                .SetInformationalVersion(SemanticVersion.GetAssemblyInformationalVersion(projectFile.Configuration, AdditionalBuildMetadata))
+        )
+    );
   }
 
   private void RestoreProject (ProjectMetadata projectFile)

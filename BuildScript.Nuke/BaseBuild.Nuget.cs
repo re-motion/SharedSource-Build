@@ -66,32 +66,24 @@ public partial class BaseBuild : NukeBuild
 
   private void GenerateSinglePackageWithDebugSymbols (ProjectMetadata projectFile, string folderSuffix = "")
   {
-    Configuration.ForEach(
-        config =>
-        {
-          var nugetOutputDirectory = Directories.Output / c_nugetWithDebugSymbolsFolderName / (config + folderSuffix);
-          FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
-          if (projectFile.IsSdkProject)
-            GeneratePackagesForSdkProjectWithDebugSymbols(projectFile, config, nugetOutputDirectory);
-          else
-            GeneratePackagesForNonSdkProjectWithDebugSymbols(projectFile, config, nugetOutputDirectory);
-        });
+    var nugetOutputDirectory = Directories.Output / c_nugetWithDebugSymbolsFolderName / (projectFile.Configuration + folderSuffix);
+    FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
+    if (projectFile.IsSdkProject)
+      GeneratePackagesForSdkProjectWithDebugSymbols(projectFile, projectFile.Configuration, nugetOutputDirectory);
+    else
+      GeneratePackagesForNonSdkProjectWithDebugSymbols(projectFile, projectFile.Configuration, nugetOutputDirectory);
   }
 
   private void GenerateSinglePackageWithSymbolServerSupport (
       ProjectMetadata projectFile,
       string folderSuffix = "")
   {
-    Configuration.ForEach(
-        config =>
-        {
-          var nugetOutputDirectory = Directories.Output / c_nugetWithSymbolServerSupportFolderName / (config + folderSuffix);
-          FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
-          if (projectFile.IsSdkProject)
-            GeneratePackagesForSdkProjectWithSymbolServerSupport(projectFile, config, nugetOutputDirectory);
-          else
-            GeneratePackagesForNonSdkProjectWithSymbolServerSupport(projectFile, config, nugetOutputDirectory);
-        });
+    var nugetOutputDirectory = Directories.Output / c_nugetWithSymbolServerSupportFolderName / (projectFile.Configuration + folderSuffix);
+    FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
+    if (projectFile.IsSdkProject)
+      GeneratePackagesForSdkProjectWithSymbolServerSupport(projectFile, projectFile.Configuration, nugetOutputDirectory);
+    else
+      GeneratePackagesForNonSdkProjectWithSymbolServerSupport(projectFile, projectFile.Configuration, nugetOutputDirectory);
   }
 
   private void GeneratePackagesForSdkProjectWithDebugSymbols (ProjectMetadata projectFile, string config, AbsolutePath nugetOutputDirectoryPath)
