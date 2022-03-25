@@ -6,10 +6,6 @@
     "build": {
       "type": "object",
       "properties": {
-        "AdditionalBuildMetadata": {
-          "type": "string",
-          "description": "Added to the AssemblyInformationalVersion"
-        },
         "Browsers": {
           "type": "array",
           "description": "Browser available for the build to use for test running",
@@ -109,6 +105,7 @@
               "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
+              "GenerateDocumentation",
               "GenerateNuGetPackagesWithDebugSymbols",
               "GenerateNuGetPackagesWithSymbolServerSupport",
               "ReadConfiguration",
@@ -118,6 +115,10 @@
               "RunTests"
             ]
           }
+        },
+        "SkipDocumentation": {
+          "type": "boolean",
+          "description": "Skip generating documentation - true / false"
         },
         "SkipNuGet": {
           "type": "boolean",
@@ -144,6 +145,7 @@
               "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
+              "GenerateDocumentation",
               "GenerateNuGetPackagesWithDebugSymbols",
               "GenerateNuGetPackagesWithSymbolServerSupport",
               "ReadConfiguration",

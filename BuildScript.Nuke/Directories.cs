@@ -58,6 +58,13 @@ public class Directories
   /// </summary>
   public AbsolutePath CustomizationPath { get; }
 
+  /// <summary>
+  ///   <see cref="Temp" />/doc
+  ///   Base path for generating the documentation
+  ///   Which are loaded in the <see cref="Remotion.BuildScript.BaseBuild.GenerateDocumentation" />
+  /// </summary>
+  public AbsolutePath DocumentationBaseDirectory { get; }
+
   public Directories (AbsolutePath rootDirectory, AbsolutePath buildProjectDirectory)
   {
     Solution = rootDirectory;
@@ -66,5 +73,6 @@ public class Directories
     Log = Output / "log/";
     SolutionKeyFile = Solution / "remotion.snk";
     CustomizationPath = buildProjectDirectory / "Customizations";
+    DocumentationBaseDirectory = Temp / "doc";
   }
 }

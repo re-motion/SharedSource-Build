@@ -35,6 +35,8 @@ public class ProjectMetadata
   public IReadOnlyCollection<string> TargetFrameworks { get; init; }
   public bool IsSdkProject { get; init; }
   public IReadOnlyCollection<string> AssemblyPaths { get; init; }
+  public bool IsDocumentationFile { get; init; }
+  public bool ExcludeFromDocumentation { get; init; }
 
   public override int GetHashCode () => HashCode.Combine(Configuration, ProjectPath, ToolsVersion, IsMultiTargetFramework, TargetFrameworks,
       IsSdkProject, AssemblyPaths);

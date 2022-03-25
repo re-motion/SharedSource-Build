@@ -41,11 +41,25 @@ public class ProjectPropsReader : BasePropsReader
   private const string c_integrationTestProjectFilesItem = "IntegrationTestProjectFiles";
   private const string c_testConfigurationMetaData = "TestConfiguration";
   private const string c_testSetupBuildFileMetaData = "TestSetupBuildFile";
+  private const string c_createDocumentationFile = "CreateDocumentationFile";
+  private const string c_excludeFromDocumentation = "ExcludeFromDocumentation";
 
   private readonly IReadOnlyCollection<string> _configuration;
   private readonly Solution _solution;
 
   private readonly Project _xmlProperties;
+
+  private ProjectPropsReader (
+      Solution solution,
+      IReadOnlyCollection<string> configuration,
+      AbsolutePath solutionDirectoryPath,
+      AbsolutePath customizationDirectoryPath)
+      : base(solutionDirectoryPath, customizationDirectoryPath)
+  {
+    _solution = solution;
+    _configuration = configuration;
+    _xmlProperties = LoadProjectWithSolutionDirectoryPropertySet(c_projectsFileName);
+  }
 
   public static ProjectProps Read (
       Solution solution,
@@ -61,24 +75,17 @@ public class ProjectPropsReader : BasePropsReader
     );
   }
 
-  private ProjectPropsReader (
-      Solution solution,
-      IReadOnlyCollection<string> configuration,
-      AbsolutePath solutionDirectoryPath,
-      AbsolutePath customizationDirectoryPath)
-      : base(solutionDirectoryPath, customizationDirectoryPath)
-  {
-    _solution = solution;
-    _configuration = configuration;
-    _xmlProperties = LoadProjectWithSolutionDirectoryPropertySet(c_projectsFileName);
-  }
-
   private IReadOnlyCollection<ProjectMetadata> ReadReleaseProjectMetadata ()
   {
     var releaseProjectFiles = _xmlProperties.Items.Where(prop => prop.ItemType == c_releaseProjectFilesItem);
     return _configuration.SelectMany(config =>
         releaseProjectFiles.Select(
-            x => SetupProjectMetadata(x.EvaluatedInclude, config))).ToList();
+            x => SetupProjectMetadata(
+                x.EvaluatedInclude,
+                config,
+                x.GetMetadataValue(c_createDocumentationFile) == "True",
+                x.GetMetadataValue(c_excludeFromDocumentation) == "True"
+            ))).ToList();
   }
 
   private IReadOnlyCollection<TestProjectMetadata> ReadUnitTestProjectMetadata ()
@@ -112,7 +119,7 @@ public class ProjectPropsReader : BasePropsReader
     return normalTestConfiguration.EvaluatedValue;
   }
 
-  private ProjectMetadata SetupProjectMetadata (string path, string configuration)
+  private ProjectMetadata SetupProjectMetadata (string path, string configuration, bool isDocumentationFile, bool excludeFromDocumentation)
   {
     var project = _solution.GetProject(path);
     if (project == null)
@@ -138,13 +145,15 @@ public class ProjectPropsReader : BasePropsReader
                IsSdkProject = !msBuildProject.Xml.Sdk.IsNullOrEmpty(),
                Configuration = configuration,
                TargetFrameworks = targetFrameworkList,
-               AssemblyPaths = assemblyPaths
+               AssemblyPaths = assemblyPaths,
+               IsDocumentationFile = isDocumentationFile,
+               ExcludeFromDocumentation = excludeFromDocumentation
            };
   }
 
   private TestProjectMetadata SetupTestProjectMetadata (string path, string testConfiguration, string testsSetupBuildFile, string configuration)
   {
-    var projectMetadata = SetupProjectMetadata(path, configuration);
+    var projectMetadata = SetupProjectMetadata(path, configuration, false, true);
     return new TestProjectMetadata
            {
                Project = projectMetadata.Project,

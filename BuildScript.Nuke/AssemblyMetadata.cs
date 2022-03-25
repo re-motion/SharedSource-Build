@@ -26,4 +26,7 @@ public class AssemblyMetadata
   public string CompanyUrl { get; init; } = "";
   public string Copyright { get; init; } = "";
   public string ProductName { get; init; } = "";
+  public string DocumentationFileName { get; init; } = "";
+  public string DocumentationRootPage { get; init; } = "";
+  public string DocumentationNamespaceSummaryFiles { get; init; } = "";
 }
