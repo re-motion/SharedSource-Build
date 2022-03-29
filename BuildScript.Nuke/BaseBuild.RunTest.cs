@@ -127,6 +127,7 @@ public partial class BaseBuild : NukeBuild
 
     if (!string.IsNullOrEmpty(testConfig.TestSetupBuildFile))
       MSBuildTasks.MSBuild(s => s
+          .SetProcessToolPath(ToolPath.Value)
           .SetTargetPath(testConfig.TestSetupBuildFile)
           .SetProperty("MSBuildExtensionPackPath", MSBuildExtensionPackPath)
           .SetProperty("BuildInParallel", false)
@@ -143,7 +144,7 @@ public partial class BaseBuild : NukeBuild
     var testFilter = _testArgumentHelper.CreateDotNetTestFilter(mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
     var testName = _testArgumentHelper.CreateTestName(testConfig, mergedTestCategoriesToExclude, mergedTestCategoriesToInclude);
     var testResultOutputPath = $"{Directories.Log / testName}.xml";
-    
+
     var dotNetSettings = new Configure<DotNetTestSettings>(settings => settings
         .SetProjectFile(testConfig.TestAssemblyFullPath)
         .AddLoggers($"trx;LogFileName={testResultOutputPath}")

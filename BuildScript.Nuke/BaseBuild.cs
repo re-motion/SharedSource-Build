@@ -74,4 +74,9 @@ public partial class BaseBuild : NukeBuild
 
   [Parameter("Test Categories to include for test running")]
   protected string[] TestCategoriesToInclude { get; set; } = { };
+
+  public BaseBuild ()
+  {
+    ToolPath = new Lazy<string>(GetToolPath);
+  }
 }

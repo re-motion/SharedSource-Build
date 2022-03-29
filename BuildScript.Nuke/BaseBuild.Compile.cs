@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
@@ -30,6 +32,14 @@ namespace Remotion.BuildScript;
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public partial class BaseBuild : NukeBuild
 {
+  [Parameter("MSBuild Path to exe")]
+  protected string MsBuildPath { get; set; } = "";
+
+  [Parameter("VisualStudio version")]
+  protected VisualStudioVersion? VisualStudioVersion { get; set; }
+
+  protected readonly Lazy<string> ToolPath;
+
   [PublicAPI]
   public Target CompileReleaseBuild => _ => _
       .DependsOn(ReadConfiguration, RestoreReleaseBuild)
@@ -75,6 +85,7 @@ public partial class BaseBuild : NukeBuild
   private void CompileProject (IReadOnlyCollection<ProjectMetadata> projectFiles)
   {
     MSBuild(s => s
+        .SetProcessToolPath(ToolPath.Value)
         .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
         .SetFileVersion(SemanticVersion.AssemblyFileVersion)
         .SetCopyright(AssemblyMetadata.Copyright)
@@ -95,9 +106,26 @@ public partial class BaseBuild : NukeBuild
     );
   }
 
+  private string GetToolPath ()
+  {
+    var toolPath = MSBuildTasks.MSBuildPath;
+    var editions = new[] { "Enterprise", "Professional", "Community", "BuildTools", "Preview" };
+    if (!string.IsNullOrEmpty(MsBuildPath))
+      toolPath = MsBuildPath;
+    else if (VisualStudioVersion != null)
+      toolPath = editions
+          .Select(
+              edition => Path.Combine(
+                  EnvironmentInfo.SpecialFolder(SpecialFolders.ProgramFilesX86)!,
+                  $@"Microsoft Visual Studio\{VisualStudioVersion.VsVersion}\{edition}\MSBuild\{VisualStudioVersion.MsBuildVersion}\Bin\msbuild.exe"))
+          .First(File.Exists);
+    return toolPath;
+  }
+
   private void RestoreProject (ProjectMetadata projectFile)
   {
     MSBuild(s => s
+        .SetProcessToolPath(ToolPath.Value)
         .SetTargetPath(projectFile.ProjectPath)
         .SetProperty("RestorePackagesConfig", true)
         .SetProperty("SolutionDir", Directories.Solution)
