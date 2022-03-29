@@ -62,7 +62,7 @@ public class BuildBaseTest
     Directory.GetFiles(_customizationsPath).ForEach(File.Delete);
   }
 
-  protected int RunTarget(string target, string arguments, [CallerMemberName] string testOutputFileName = "testOutput")
+  protected int RunTarget (string target, string arguments, [CallerMemberName] string testOutputFileName = "testOutput")
   {
     Environment.CurrentDirectory = TestSolutionPath;
     var processStartInfo = new ProcessStartInfo($"{TestSolutionPath}/build.cmd", $"{target} {arguments}")
@@ -77,7 +77,7 @@ public class BuildBaseTest
     return process.ExitCode;
   }
 
-  protected void DeleteCleanDirectories(IReadOnlyCollection<ProjectOutput> projectOutputs)
+  protected void DeleteCleanDirectories (IReadOnlyCollection<ProjectOutput> projectOutputs)
   {
     projectOutputs.ForEach(
         projectOutput =>

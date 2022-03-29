@@ -49,7 +49,7 @@ public class BuildDocumentationTest : BuildBaseTest
     var outputFiles = Directory.GetFiles($"{TestBuildOutputPath}/NuGetWithDebugSymbols/Debug/");
     Assert.That(outputFiles[0], Does.Contain(projectDocumentation.Name).And.Contain(".nupkg"));
   }
-  
+
   private void TestDocumentationDoesNotExist ()
   {
     var documentationOutputFilePath = $"{TestBuildOutputPath}/temp/doc/Output/";

@@ -50,7 +50,7 @@ public partial class BaseBuild : NukeBuild
 
   [Parameter("Skip compiling and running of tests - true / false")]
   protected bool SkipTests { get; set; }
-  
+
   [Parameter("Skip generating documentation - true / false")]
   protected bool SkipDocumentation { get; set; }
 

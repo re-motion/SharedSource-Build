@@ -29,7 +29,7 @@ public class ProjectOutput
   public IReadOnlyCollection<string> OutputPathsExclude { get; set; }
   public IReadOnlyCollection<string> CleanDirectories { get; set; }
   public ProjectOutputConfiguration Configuration { get; set; }
-  
+
   public bool IsDocumentationProject { get; set; }
 
   public ProjectOutput (

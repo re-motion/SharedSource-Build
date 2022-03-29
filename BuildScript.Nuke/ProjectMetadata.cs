@@ -42,7 +42,9 @@ public class ProjectMetadata
       IsSdkProject, AssemblyPaths);
 
   public override string ToString () =>
-      $"{nameof(Configuration)}: {Configuration}, {nameof(ProjectPath)}: {ProjectPath}, {nameof(ToolsVersion)}: {ToolsVersion}, {nameof(IsMultiTargetFramework)}: {IsMultiTargetFramework}, {nameof(TargetFrameworks)}: {string.Join(",", TargetFrameworks)}, {nameof(IsSdkProject)}: {IsSdkProject}, {nameof(AssemblyPaths)}: {string.Join(",", AssemblyPaths)}";
+      $"{nameof(Configuration)}: {Configuration}, {nameof(ProjectPath)}: {ProjectPath}, "
+      + $"{nameof(ToolsVersion)}: {ToolsVersion}, {nameof(IsMultiTargetFramework)}: {IsMultiTargetFramework}, "
+      + $"{nameof(TargetFrameworks)}: {string.Join(",", TargetFrameworks)}, {nameof(IsSdkProject)}: {IsSdkProject}, {nameof(AssemblyPaths)}: {string.Join(",", AssemblyPaths)}";
 
   public override bool Equals (object? obj)
   {
@@ -52,7 +54,7 @@ public class ProjectMetadata
       return true;
     if (obj.GetType() != GetType())
       return false;
-    return Equals((ProjectMetadata) obj);
+    return Equals((ProjectMetadata)obj);
   }
 
   private bool AreEqualCollections<T> (IReadOnlyCollection<T> firstCollection, IReadOnlyCollection<T> secondCollection) =>

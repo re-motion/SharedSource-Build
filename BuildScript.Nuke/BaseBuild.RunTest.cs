@@ -58,8 +58,7 @@ public partial class BaseBuild : NukeBuild
       .OnlyWhenStatic(() => !SkipTests)
       .Executes(() =>
           {
-            var createTestConfigurations = new CreateTestConfigurations
-            (
+            var createTestConfigurations = new CreateTestConfigurations(
                 supportedBrowsers: SupportedBrowsers,
                 supportedPlatforms: SupportedPlatforms,
                 supportedDatabaseSystems: SupportedDatabaseSystems,
@@ -175,7 +174,7 @@ public partial class BaseBuild : NukeBuild
       exitCode = RunProcessWithoutExitCodeCheck(dotNetSettings);
     }
 
-    if (exitCode < 0 || !((AbsolutePath) testResultOutputPath).FileExists())
+    if (exitCode < 0 || !((AbsolutePath)testResultOutputPath).FileExists())
     {
       Log.Error($"Error {exitCode} occurred while running test: {testConfig.TestAssemblyFullPath}");
       return -1;

@@ -139,7 +139,7 @@ public class ProjectPropsReader : BasePropsReader
     return new ProjectMetadata
            {
                Project = project,
-               ProjectPath = (AbsolutePath) path,
+               ProjectPath = (AbsolutePath)path,
                ToolsVersion = msBuildProject.ToolsVersion,
                IsMultiTargetFramework = targetFrameworkList.Count > 1,
                IsSdkProject = !msBuildProject.Xml.Sdk.IsNullOrEmpty(),
@@ -157,7 +157,7 @@ public class ProjectPropsReader : BasePropsReader
     return new TestProjectMetadata
            {
                Project = projectMetadata.Project,
-               ProjectPath = (AbsolutePath) path,
+               ProjectPath = (AbsolutePath)path,
                ToolsVersion = projectMetadata.ToolsVersion,
                IsMultiTargetFramework = projectMetadata.IsMultiTargetFramework,
                TestConfiguration = testConfiguration,

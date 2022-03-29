@@ -88,7 +88,7 @@ public class SandcastleProjectBuilder
         foreach (var namespaceSummary in _namespaceSummaryFiles)
           sources.Add(GetDocumentationSource(namespaceSummary));
       }
-      
+
       return sources;
     }
     catch (Exception ex)
