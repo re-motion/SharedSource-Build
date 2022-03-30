@@ -20,7 +20,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.MSBuild;
@@ -32,13 +35,17 @@ namespace Remotion.BuildScript;
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public partial class BaseBuild : NukeBuild
 {
+  protected readonly Lazy<string> ToolPath;
+
+  private IReadOnlyCollection<Project>? _sortedProjectList;
+
   [Parameter("MSBuild Path to exe")]
   protected string MsBuildPath { get; set; } = "";
 
   [Parameter("VisualStudio version")]
   protected VisualStudioVersion? VisualStudioVersion { get; set; }
 
-  protected readonly Lazy<string> ToolPath;
+  private IReadOnlyCollection<Project> SortedProjectList => _sortedProjectList ??= GetSortedProjects(Solution.Path).GetAwaiter().GetResult();
 
   [PublicAPI]
   public Target CompileReleaseBuild => _ => _
@@ -46,7 +53,7 @@ public partial class BaseBuild : NukeBuild
       .Description("Compile release projects")
       .Executes(() =>
       {
-        CompileProject(ReleaseProjectFiles);
+        CompileProjects(ReleaseProjectFiles);
       });
 
   [PublicAPI]
@@ -57,7 +64,7 @@ public partial class BaseBuild : NukeBuild
       .After(CompileReleaseBuild)
       .Executes(() =>
       {
-        CompileProject(TestProjectFiles);
+        CompileProjects(TestProjectFiles);
       });
 
   [PublicAPI]
@@ -66,49 +73,63 @@ public partial class BaseBuild : NukeBuild
       .DependsOn(RestoreReleaseBuild, RestoreTestBuild);
 
   protected Target RestoreReleaseBuild => _ => _
-      .DependsOn(ReadConfiguration)
+      .DependsOn(ReadConfiguration, CleanFolders)
       .Unlisted()
       .Executes(() =>
       {
-        ReleaseProjectFiles.ForEach(RestoreProject);
+        RestoreProjects(ReleaseProjectFiles);
       });
-
 
   protected Target RestoreTestBuild => _ => _
-      .DependsOn(ReadConfiguration)
+      .DependsOn(ReadConfiguration, CleanFolders)
       .Unlisted()
       .Executes(() =>
       {
-        TestProjectFiles.ForEach(RestoreProject);
+        RestoreProjects(TestProjectFiles);
       });
 
-  private void CompileProject (IReadOnlyCollection<ProjectMetadata> projectFiles)
+  private void CompileProjects (IReadOnlyCollection<ProjectMetadata> projectFiles)
   {
-    MSBuild(s => s
-        .SetProcessToolPath(ToolPath.Value)
-        .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
-        .SetFileVersion(SemanticVersion.AssemblyFileVersion)
-        .SetCopyright(AssemblyMetadata.Copyright)
-        .SetProperty(MSBuildProperties.PackageVersion, SemanticVersion.AssemblyNuGetVersion)
-        .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
-        .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
-        .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
-        .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
-        .DisableRestore()
-        .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
-        .CombineWith(projectFiles, (settings, projectFile) =>
-            settings.SetToolsVersion(projectFile.ToolsVersion)
-                .SetTargetPath(projectFile.ProjectPath)
-                .SetTargets(GetCompileTargets(projectFile))
-                .SetConfiguration(projectFile.Configuration)
-                .SetInformationalVersion(SemanticVersion.GetAssemblyInformationalVersion(projectFile.Configuration, AdditionalBuildMetadata))
-        )
-    );
+    var projectFilesDebugTargets = projectFiles
+        .Where(file => file.Configuration == "Debug").ToList();
+    var projectFilesReleaseTargets = projectFiles
+        .Where(file => file.Configuration == "Release").ToList();
+    if (projectFilesDebugTargets.Count > 0) CompileProject(projectFilesDebugTargets, "Debug");
+
+    if (projectFilesReleaseTargets.Count > 0) CompileProject(projectFilesReleaseTargets, "Release");
+  }
+
+  private void CompileProject (IReadOnlyCollection<ProjectMetadata> projects, string configuration)
+  {
+    var sortedProjects = SortedProjectList;
+    var filteredProjects = sortedProjects.Select(projectSort => projects.SingleOrDefault(project => projectSort.FilePath == project.ProjectPath)).WhereNotNull().Distinct();
+
+    filteredProjects.ForEach(project =>
+    {
+      MSBuild(s => s
+          .SetProcessToolPath(ToolPath.Value)
+          .SetAssemblyVersion(SemanticVersion.AssemblyVersion)
+          .SetFileVersion(SemanticVersion.AssemblyFileVersion)
+          .SetCopyright(AssemblyMetadata.Copyright)
+          .SetProperty(MSBuildProperties.PackageVersion, SemanticVersion.AssemblyNuGetVersion)
+          .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
+          .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
+          .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
+          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
+          .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
+          .SetToolsVersion(project.ToolsVersion)
+          .SetConfiguration(configuration)
+          .SetInformationalVersion(
+              SemanticVersion.GetAssemblyInformationalVersion(configuration, AdditionalBuildMetadata))
+          .SetTargetPath(project.ProjectPath)
+          .SetTargets(project.IsMultiTargetFramework ? MSBuildTargets.DispatchToInnerBuilds : MSBuildTargets.Build)
+      );
+    });
   }
 
   private string GetToolPath ()
   {
-    var toolPath = MSBuildTasks.MSBuildPath;
+    var toolPath = MSBuildPath;
     var editions = new[] { "Enterprise", "Professional", "Community", "BuildTools", "Preview" };
     if (!string.IsNullOrEmpty(MsBuildPath))
       toolPath = MsBuildPath;
@@ -122,21 +143,33 @@ public partial class BaseBuild : NukeBuild
     return toolPath;
   }
 
-  private void RestoreProject (ProjectMetadata projectFile)
+  private static async Task<IReadOnlyCollection<Project>> GetSortedProjects (string solutionPath)
   {
-    MSBuild(s => s
-        .SetProcessToolPath(ToolPath.Value)
-        .SetTargetPath(projectFile.ProjectPath)
-        .SetProperty("RestorePackagesConfig", true)
-        .SetProperty("SolutionDir", Directories.Solution)
-        .SetTargets("Restore")
-    );
+    var workspace = MSBuildWorkspace.Create();
+    var solution = await workspace.OpenSolutionAsync(solutionPath);
+    return solution
+        .GetProjectDependencyGraph()
+        .GetTopologicallySortedProjects()
+        .Select(proj =>
+        {
+          if (solution.ContainsProject(proj))
+            return solution.GetProject(proj);
+          Assert.Fail($"Project {proj} cannot be found in the solution");
+          return null;
+        })
+        .ToList()!;
   }
 
-  private string GetCompileTargets (ProjectMetadata project)
+  private void RestoreProjects (IReadOnlyCollection<ProjectMetadata> projects)
   {
-    if (project.IsMultiTargetFramework)
-      return MSBuildTargets.DispatchToInnerBuilds;
-    return MSBuildTargets.Build;
+    projects.ForEach(project =>
+    {
+      MSBuild(s => s
+          .SetProperty(MSBuildProperties.RestorePackagesConfig, true)
+          .SetProperty(MSBuildProperties.SolutionDir, Directories.Solution)
+          .SetTargetPath(project.ProjectPath)
+          .SetTargets(MSBuildTargets.Restore)
+      );
+    });
   }
 }

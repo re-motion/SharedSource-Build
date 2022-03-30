@@ -19,6 +19,8 @@
     <PackageReference Include="EWSoftware.SHFB.NET" Version="5.0.0.2"/>
     <PackageReference Include="EWSoftware.SHFB.NETFramework" Version="4.8.0.2"/>
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.1.0" />
     <PackageReference Include="Microsoft.SourceLink.Common" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
