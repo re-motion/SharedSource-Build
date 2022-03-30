@@ -29,16 +29,16 @@ public class PropertiesPropsReader : BasePropsReader
 
   private readonly Project _xmlProperties;
 
-  public static AssemblyMetadata Read (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath)
-  {
-    var propertiesPropsReader = new PropertiesPropsReader(solutionDirectoryPath, customizationDirectoryPath);
-    return propertiesPropsReader.ReadPropertiesDefinition();
-  }
-
   private PropertiesPropsReader (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath)
       : base(solutionDirectoryPath, customizationDirectoryPath)
   {
     _xmlProperties = LoadProjectWithSolutionDirectoryPropertySet(c_propertiesFileName);
+  }
+
+  public static AssemblyMetadata Read (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath)
+  {
+    var propertiesPropsReader = new PropertiesPropsReader(solutionDirectoryPath, customizationDirectoryPath);
+    return propertiesPropsReader.ReadPropertiesDefinition();
   }
 
   private AssemblyMetadata ReadPropertiesDefinition ()
@@ -48,13 +48,20 @@ public class PropertiesPropsReader : BasePropsReader
     var companyUrl = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.CompanyUrl);
     var copyright = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.Copyright);
     var productName = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.ProductName);
+    var documentationFileName = _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationFileName);
+    var documentationRootPage = _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationRootPage);
+    var documentationNamespaceSummaryFiles =
+        _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationNamespaceSummaryFiles);
     return new AssemblyMetadata
            {
                AssemblyInfoFile = assemblyInfoFile.EvaluatedValue,
                CompanyName = companyName.EvaluatedValue,
                CompanyUrl = companyUrl.EvaluatedValue,
                Copyright = copyright.EvaluatedValue,
-               ProductName = productName.EvaluatedValue
+               ProductName = productName.EvaluatedValue,
+               DocumentationFileName = documentationFileName.EvaluatedValue,
+               DocumentationRootPage = documentationRootPage.EvaluatedValue,
+               DocumentationNamespaceSummaryFiles = documentationNamespaceSummaryFiles.EvaluatedValue
            };
   }
 }

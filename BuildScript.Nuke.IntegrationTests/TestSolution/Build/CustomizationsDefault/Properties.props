@@ -6,5 +6,8 @@
     <CompanyUrl>http://www.rubicon.eu</CompanyUrl>
     <Copyright>Copyright (c) rubicon IT GmbH, www.rubicon.eu - Licensed under Apache License, Version 2.0</Copyright>
     <ProductName>re-motion Build Infrastructure (www.re-motion.org)</ProductName>
+    <DocumentationFileName>Remotion</DocumentationFileName>
+    <DocumentationRootPage>$(SolutionDirectory)\Build\Customizations\GettingStartedWithRemotion.aml</DocumentationRootPage>
+    <DocumentationNamespaceSummaryFiles>$(SolutionDirectory)\Build\Customizations\*.NamespaceDoc.xml</DocumentationNamespaceSummaryFiles>
   </PropertyGroup>
 </Project>

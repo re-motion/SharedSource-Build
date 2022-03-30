@@ -140,6 +140,8 @@ public partial class BaseBuild : NukeBuild
           .SetConfiguration(config)
           .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
+          .EnableNoBuild()
+          .EnableNoRestore()
           .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
           .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
