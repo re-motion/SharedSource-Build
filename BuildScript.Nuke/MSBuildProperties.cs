@@ -34,4 +34,6 @@ public static class MSBuildProperties
   public const string TargetFrameworkVersion = "TargetFrameworkVersion";
   public const string TargetFrameworks = "TargetFrameworks";
   public const string AssemblyInfoFile = "AssemblyInfoFile";
+  public const string RestorePackagesConfig = "RestorePackagesConfig";
+  public const string SolutionDir = "SolutionDir";
 }

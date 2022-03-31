@@ -36,7 +36,6 @@ public partial class BaseBuild : NukeBuild
   private const string c_srcFolderName = "src";
   private const string c_nugetWithSymbolServerSupportFolderName = "NuGetWithSymbolServerSupport";
   private const string c_nugetWithDebugSymbolsFolderName = "NuGetWithDebugSymbols";
-  private const string c_testFolderSuffix = "-Test";
 
   [PublicAPI]
   public Target GenerateNuGetPackagesWithDebugSymbols => _ => _
@@ -69,9 +68,9 @@ public partial class BaseBuild : NukeBuild
     var nugetOutputDirectory = Directories.Output / c_nugetWithDebugSymbolsFolderName / (projectFile.Configuration + folderSuffix);
     FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
     if (projectFile.IsSdkProject)
-      GeneratePackagesForSdkProjectWithDebugSymbols(projectFile, projectFile.Configuration, nugetOutputDirectory);
+      GeneratePackagesForSdkProjectWithDebugSymbols(projectFile, nugetOutputDirectory);
     else
-      GeneratePackagesForNonSdkProjectWithDebugSymbols(projectFile, projectFile.Configuration, nugetOutputDirectory);
+      GeneratePackagesForNonSdkProjectWithDebugSymbols(projectFile, nugetOutputDirectory);
   }
 
   private void GenerateSinglePackageWithSymbolServerSupport (
@@ -81,15 +80,15 @@ public partial class BaseBuild : NukeBuild
     var nugetOutputDirectory = Directories.Output / c_nugetWithSymbolServerSupportFolderName / (projectFile.Configuration + folderSuffix);
     FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
     if (projectFile.IsSdkProject)
-      GeneratePackagesForSdkProjectWithSymbolServerSupport(projectFile, projectFile.Configuration, nugetOutputDirectory);
+      GeneratePackagesForSdkProjectWithSymbolServerSupport(projectFile, nugetOutputDirectory);
     else
-      GeneratePackagesForNonSdkProjectWithSymbolServerSupport(projectFile, projectFile.Configuration, nugetOutputDirectory);
+      GeneratePackagesForNonSdkProjectWithSymbolServerSupport(projectFile, nugetOutputDirectory);
   }
 
-  private void GeneratePackagesForSdkProjectWithDebugSymbols (ProjectMetadata projectFile, string config, AbsolutePath nugetOutputDirectoryPath)
+  private void GeneratePackagesForSdkProjectWithDebugSymbols (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
   {
     DotNetTasks.DotNetPack(
-        settings => SetBaseDotNetPackSettings(projectFile, config, nugetOutputDirectoryPath, settings)
+        settings => SetBaseDotNetPackSettings(projectFile, nugetOutputDirectoryPath, settings)
             .DisableIncludeSource()
             .DisableIncludeSymbols()
             .SetProperty(MSBuildProperties.IncludeReferenced, "True")
@@ -98,51 +97,48 @@ public partial class BaseBuild : NukeBuild
 
   private void GeneratePackagesForSdkProjectWithSymbolServerSupport (
       ProjectMetadata projectFile,
-      string config,
       AbsolutePath nugetOutputDirectoryPath)
   {
     DotNetTasks.DotNetPack(
         settings =>
-            SetBaseDotNetPackSettings(projectFile, config, nugetOutputDirectoryPath, settings)
+            SetBaseDotNetPackSettings(projectFile, nugetOutputDirectoryPath, settings)
                 .EnableIncludeSource()
                 .EnableIncludeSymbols()
                 .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
     );
   }
 
-  private void GeneratePackagesForNonSdkProjectWithDebugSymbols (ProjectMetadata projectFile, string config, AbsolutePath nugetOutputDirectoryPath)
+  private void GeneratePackagesForNonSdkProjectWithDebugSymbols (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath)
   {
     NuGetTasks.NuGetPack(
-        settings => SetBaseNuGetPackSettings(projectFile, config, nugetOutputDirectoryPath, settings)
+        settings => SetBaseNuGetPackSettings(projectFile, nugetOutputDirectoryPath, settings)
     );
     RemoveSrcFolder(projectFile, nugetOutputDirectoryPath);
   }
 
   private void GeneratePackagesForNonSdkProjectWithSymbolServerSupport (
       ProjectMetadata projectFile,
-      string config,
       AbsolutePath nugetOutputDirectoryPath)
   {
     NuGetTasks.NuGetPack(
         settings =>
-            SetBaseNuGetPackSettings(projectFile, config, nugetOutputDirectoryPath, settings)
+            SetBaseNuGetPackSettings(projectFile, nugetOutputDirectoryPath, settings)
                 .SetSymbolPackageFormat(NuGetSymbolPackageFormat.snupkg)
     );
   }
 
   private DotNetPackSettings SetBaseDotNetPackSettings (
       ProjectMetadata projectFile,
-      string config,
       AbsolutePath nugetOutputDirectoryPath,
       DotNetPackSettings settings) =>
       settings
           .SetProject(projectFile.ProjectPath)
-          .SetConfiguration(config)
+          .SetConfiguration(projectFile.Configuration)
           .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
           .EnableNoBuild()
           .EnableNoRestore()
-          .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
+          .SetProperty(MSBuildProperties.ExtraTags, $"{projectFile.Configuration}Build ")
           .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
@@ -152,18 +148,17 @@ public partial class BaseBuild : NukeBuild
 
   private NuGetPackSettings SetBaseNuGetPackSettings (
       ProjectMetadata projectFile,
-      string config,
       AbsolutePath nugetOutputDirectoryPath,
       NuGetPackSettings settings) =>
       settings
           .SetTargetPath(projectFile.ProjectPath)
-          .SetConfiguration(config)
+          .SetConfiguration(projectFile.Configuration)
           .SetVersion(SemanticVersion.AssemblyNuGetVersion)
           .SetOutputDirectory(nugetOutputDirectoryPath)
-          .SetIncludeReferencedProjects(true)
-          .SetSymbols(true)
+          .EnableIncludeReferencedProjects()
+          .EnableSymbols()
           .DisableBuild()
-          .SetProperty(MSBuildProperties.ExtraTags, $"{config}Build ")
+          .SetProperty(MSBuildProperties.ExtraTags, $"{projectFile.Configuration}Build ")
           .SetProperty(MSBuildProperties.Copyright, AssemblyMetadata.Copyright)
           .SetProperty(MSBuildProperties.CompanyName, AssemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, AssemblyMetadata.CompanyUrl)

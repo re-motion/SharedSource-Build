@@ -23,4 +23,5 @@ public static class MSBuildTargets
 {
   public const string Build = "Build";
   public const string DispatchToInnerBuilds = "DispatchToInnerBuilds";
+  public const string Restore = "Restore";
 }

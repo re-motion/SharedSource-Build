@@ -189,7 +189,7 @@ public partial class BaseBuild : NukeBuild
     var testPassed = XmlTasks.XmlPeekSingle(testResultOutputPath, "//@passed");
     var testFailed = XmlTasks.XmlPeekSingle(testResultOutputPath, "//@failed");
     var testCaseCount = XmlTasks.XmlPeekSingle(testResultOutputPath, "//@total");
-    if (testFailed == null && testPassed == null && testCaseCount == null)
+    if (testFailed != null && testPassed != null && testCaseCount != null)
       Log.Information(
           $"Tests run {testConfig.TestAssemblyFullPath}: duration {testTime}, tests run {testCaseCount}, tests passed {testPassed}, tests failed {testFailed}");
     return string.IsNullOrEmpty(testFailed) ? -1 : int.Parse(testFailed);
