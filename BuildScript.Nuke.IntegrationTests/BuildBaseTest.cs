@@ -32,6 +32,7 @@ public class BuildBaseTest
   private readonly string _customizationsPath;
   protected readonly BuildConfigurationSetup BuildConfigurationSetup;
   protected readonly string TestSolutionPath;
+  protected readonly string TestBuildOutputPath;
 
   public BuildBaseTest ()
   {
@@ -42,6 +43,7 @@ public class BuildBaseTest
     _customizationsPath = $"{TestSolutionPath}/Build/Customizations";
     _customizationsDefaultPath = $"{TestSolutionPath}/Build/CustomizationsDefault";
     BuildConfigurationSetup = new BuildConfigurationSetup(TestSolutionPath, _customizationsPath);
+    TestBuildOutputPath = $"{TestSolutionPath}/BuildOutput";
   }
 
   [SetUp]
@@ -85,6 +87,8 @@ public class BuildBaseTest
                   if (Directory.Exists(projectOutputCleanDirectory))
                     Directory.Delete(projectOutputCleanDirectory, true);
                 }));
+    if (Directory.Exists(TestBuildOutputPath))
+      Directory.Delete(TestBuildOutputPath, true);
   }
 
   private string ReadConsoleOutput (Process process)

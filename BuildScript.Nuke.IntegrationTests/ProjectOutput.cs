@@ -29,13 +29,16 @@ public class ProjectOutput
   public IReadOnlyCollection<string> OutputPathsExclude { get; set; }
   public IReadOnlyCollection<string> CleanDirectories { get; set; }
   public ProjectOutputConfiguration Configuration { get; set; }
+  
+  public bool IsDocumentationProject { get; set; }
 
   public ProjectOutput (
       string name,
       string testSolutionPath,
       IReadOnlyCollection<string> outputPaths,
       ProjectOutputConfiguration configuration = ProjectOutputConfiguration.ReleaseDebug,
-      bool isSdkProject = true)
+      bool isSdkProject = true,
+      bool isDocumentationProject = false)
   {
     Name = name;
     CleanDirectories = new[]
@@ -49,6 +52,7 @@ public class ProjectOutput
     OutputPathsExclude = outputPaths.Except(OutputPaths).ToList();
     IsSdkProject = isSdkProject;
     Configuration = configuration;
+    IsDocumentationProject = isDocumentationProject;
   }
 }
 
