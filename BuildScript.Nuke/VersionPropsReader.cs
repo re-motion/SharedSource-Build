@@ -30,10 +30,10 @@ public class VersionPropsReader : BasePropsReader
 
   private readonly Project _xmlProperties;
 
-  public static SemanticVersion Read (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath)
+  public static SemanticVersion Read (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath, bool isLocalBuild)
   {
     var versionPropsReader = new VersionPropsReader(solutionDirectoryPath, customizationDirectoryPath);
-    return versionPropsReader.ReadVersion();
+    return versionPropsReader.ReadVersion(isLocalBuild);
   }
 
   private VersionPropsReader (AbsolutePath solutionDirectoryPath, AbsolutePath customizationDirectoryPath)
@@ -42,9 +42,9 @@ public class VersionPropsReader : BasePropsReader
     _xmlProperties = ProjectModelTasks.ParseProject(_customizationDirectoryPath / c_versionFileName);
   }
 
-  private SemanticVersion ReadVersion ()
+  private SemanticVersion ReadVersion (bool isLocalBuild)
   {
     var version = _xmlProperties.Properties.Single(prop => prop.Name == c_versionProperty);
-    return new SemanticVersion(version.EvaluatedValue);
+    return new SemanticVersion(version.EvaluatedValue, isLocalBuild);
   }
 }

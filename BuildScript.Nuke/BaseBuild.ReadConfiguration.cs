@@ -60,7 +60,7 @@ public partial class BaseBuild : NukeBuild
         SupportedDatabaseSystems = buildConfigurationProps.SupportedDatabaseSystems;
         SupportedExecutionRuntimes = buildConfigurationProps.SupportedExecutionRuntimes;
 
-        SemanticVersion = VersionPropsReader.Read(RootDirectory, Directories.CustomizationPath);
+        SemanticVersion = VersionPropsReader.Read(RootDirectory, Directories.CustomizationPath, IsLocalBuild);
         AssemblyMetadata = PropertiesPropsReader.Read(RootDirectory, Directories.CustomizationPath);
       });
 }

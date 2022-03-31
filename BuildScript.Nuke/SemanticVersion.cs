@@ -72,14 +72,23 @@ public class SemanticVersion
   /// </remarks>
   public string VersionWithoutPreRelease { get; }
 
-  public SemanticVersion (string version)
+  public SemanticVersion (string version, bool isLocalBuild)
   {
     Version = version;
+
     var versionMatch = Regex.Match(Version, c_versionPattern);
     if (!versionMatch.Success)
       Assert.Fail($"Version semantic doesn't match: {Version}");
 
     SetVersionComponents(versionMatch);
+
+    if (isLocalBuild)
+    {
+      Version = $"{_major}.{_minor}.{_patch}-x.9.{DateTime.Now:yyMMdd-HHmmss}";
+      _preReleaseName = "x";
+      _preReleaseCounter = "9";
+    }
+
     AssemblyFileVersion = CreateAssemblyFileVersion();
     AssemblyVersion = $"{_major}.{_minor}.0.0";
     VersionWithoutPreRelease = $"{_major}.{_minor}.{_patch}";

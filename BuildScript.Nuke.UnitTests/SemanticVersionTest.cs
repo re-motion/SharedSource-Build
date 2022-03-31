@@ -16,6 +16,9 @@
 //
 
 using System;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Remotion.BuildScript;
 
@@ -31,7 +34,7 @@ public class SemanticVersionTest
   [TestCase("1.21.8-beta.102")]
   public void Version_WithValidVersion_ReturnsOriginalVersion (string version)
   {
-    var semanticVersion = new SemanticVersion(version);
+    var semanticVersion = new SemanticVersion(version, false);
     var actualVersion = semanticVersion.Version;
     Assert.That(actualVersion, Is.EqualTo(version));
   }
@@ -43,7 +46,7 @@ public class SemanticVersionTest
   [TestCase("1.21.8-beta.102", "1.21.0.0")]
   public void AssemblyVersion_WithValidVersion_ReturnsAssemblyVersion (string version, string expectedAssemblyVersion)
   {
-    var semanticVersion = new SemanticVersion(version);
+    var semanticVersion = new SemanticVersion(version, false);
     var assemblyVersion = semanticVersion.AssemblyVersion;
     Assert.That(assemblyVersion, Is.EqualTo(expectedAssemblyVersion));
   }
@@ -55,7 +58,7 @@ public class SemanticVersionTest
   [TestCase("1.21.8-beta.102", "1.21.8.02102")]
   public void AssemblyFileVersion_WithValidVersion_ReturnsAssemblyFileVersion (string version, string expectedAssemblyFileVersion)
   {
-    var semanticVersion = new SemanticVersion(version);
+    var semanticVersion = new SemanticVersion(version, false);
     var assemblyFileVersion = semanticVersion.AssemblyFileVersion;
     Assert.That(assemblyFileVersion, Is.EqualTo(expectedAssemblyFileVersion));
   }
@@ -72,7 +75,7 @@ public class SemanticVersionTest
       string configurationId,
       string additionalBuildMetadata)
   {
-    var semanticVersion = new SemanticVersion(version);
+    var semanticVersion = new SemanticVersion(version, false);
     var assemblyInformationVersion = semanticVersion.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
     Assert.That(assemblyInformationVersion, Is.EqualTo(expectedAssemblyInformationVersion));
   }
@@ -84,7 +87,7 @@ public class SemanticVersionTest
   [TestCase("1.21.8-beta.102", "1.21.8-beta.102")]
   public void AssemblyNuGetVersion_WithValidVersion_ReturnsAssemblyNugetVersion (string version, string expectedAssemblyNuGetVersion)
   {
-    var semanticVersion = new SemanticVersion(version);
+    var semanticVersion = new SemanticVersion(version, false);
     var assemblyNuGetVersion = semanticVersion.AssemblyNuGetVersion;
     Assert.That(assemblyNuGetVersion, Is.EqualTo(expectedAssemblyNuGetVersion));
   }
@@ -96,9 +99,9 @@ public class SemanticVersionTest
   [TestCase("1.21.8-beta.102", "1.21.0.0")]
   public void DependDBProjectVersion_WithValidVersion_ReturnsDepenDBProjectVersion (string version, string expectedDefineDependDBProjectVersion)
   {
-    var semanticVersion = new SemanticVersion(version);
-    var dependDBProjectVersion = semanticVersion.DependDBProjectVersion;
-    Assert.That(dependDBProjectVersion, Is.EqualTo(expectedDefineDependDBProjectVersion));
+    var semanticVersion = new SemanticVersion(version, false);
+    var dependDbProjectVersion = semanticVersion.DependDBProjectVersion;
+    Assert.That(dependDbProjectVersion, Is.EqualTo(expectedDefineDependDBProjectVersion));
   }
 
   [Test]
@@ -109,6 +112,62 @@ public class SemanticVersionTest
   [TestCase("wrong")]
   public void Version_WithInvalidVersion_ThrowsNukeBuildException (string version)
   {
-    Assert.That(() => new SemanticVersion(version), Throws.InstanceOf<ApplicationException>());
+    Assert.That(() => new SemanticVersion(version, false), Throws.InstanceOf<ApplicationException>());
+  }
+
+  [Test]
+  [TestCase("3.0.0", @"3\.0\.0")]
+  [TestCase("3.1.1", @"3\.1\.1")]
+  [TestCase("3.0.0-alpha.30", @"3\.0\.0")]
+  [TestCase("1.21.8-beta.102", @"1\.21\.8")]
+  public void Version_WithLocalBuildTrue_ReturnsValidVersionWithLocalBuildSuffix (string version, string expectedVersion)
+  {
+    var semanticVersion = new SemanticVersion(version, true);
+    
+    var actualVersion = semanticVersion.Version;
+
+    //language=regex
+    var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}";
+    var versionMatch = Regex.Match(actualVersion, regexPattern);
+    Assert.That(versionMatch.Success, Is.True);
+  }
+
+  [Test]
+  [TestCase("3.0.0", "Debug", "", @"3\.0\.0")]
+  [TestCase("3.1.0", "Release", "", @"3\.1\.0")]
+  [TestCase("3.0.0-alpha.30", "Release", "", @"3\.0\.0")]
+  [TestCase("1.21.8-beta.102", "Release", "buildMetaData", @"1\.21\.8")]
+  [TestCase("1.21.8-beta.102", "Release", "buildMetaData3422", @"1\.21\.8")]
+  public void GetAssemblyInformationVersion_WithLocalBuildTrue_ReturnsAssemblyInformationVersionWithLocalBuildSuffix (
+      string version,
+      string configurationId,
+      string additionalBuildMetadata,
+      string expectedVersion)
+  {
+    var semanticVersion = new SemanticVersion(version, true);
+    var assemblyInformationVersion = semanticVersion.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
+    
+    //language=regex
+    var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}\+" 
+                                       + configurationId 
+                                       + (string.IsNullOrEmpty(additionalBuildMetadata) ? "" : $".{additionalBuildMetadata}");
+    var versionMatch = Regex.Match(assemblyInformationVersion, regexPattern);
+    Assert.That(versionMatch.Success, Is.True);
+  }
+
+  [Test]
+  [TestCase("3.0.0", @"3\.0\.0")]
+  [TestCase("3.1.1", @"3\.1\.1")]
+  [TestCase("3.0.0-alpha.30", @"3\.0\.0")]
+  [TestCase("1.21.8-beta.102", @"1\.21\.8")]
+  public void AssemblyNuGetVersion_WithLocalBuildTrue_ReturnsAssemblyNugetVersionWithLocalBuildSuffix (string version, string expectedVersion)
+  {
+    var semanticVersion = new SemanticVersion(version, true);
+    var actualVersion = semanticVersion.AssemblyNuGetVersion;
+    
+    //language=regex
+    var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}";
+    var versionMatch = Regex.Match(actualVersion, regexPattern);
+    Assert.That(versionMatch.Success, Is.True);
   }
 }
