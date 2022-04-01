@@ -6,6 +6,10 @@
     "build": {
       "type": "object",
       "properties": {
+        "AdditionalBuildMetadata": {
+          "type": "string",
+          "description": "Added to the AssemblyInformationalVersion"
+        },
         "Browsers": {
           "type": "array",
           "description": "Browser available for the build to use for test running",
@@ -62,9 +66,13 @@
             "VSCode"
           ]
         },
-        "MSBuildExtensionPackPath": {
+        "MsBuildExtensionPackPath": {
           "type": "string",
           "description": "Path to MSBuildExtensionPack for running the TestSetupBuildFile"
+        },
+        "MsBuildPath": {
+          "type": "string",
+          "description": "MSBuild Path to exe"
         },
         "NoLogo": {
           "type": "boolean",
@@ -163,20 +171,6 @@
             "type": "string"
           }
         },
-        "TestCategoriesToExclude": {
-          "type": "array",
-          "description": "Test Categories to exclude for test running",
-          "items": {
-            "type": "string"
-          }
-        },
-        "TestCategoriesToInclude": {
-          "type": "array",
-          "description": "Test Categories to include for test running",
-          "items": {
-            "type": "string"
-          }
-        },
         "Verbosity": {
           "type": "string",
           "description": "Logging verbosity during build execution. Default is 'Normal'",
@@ -185,6 +179,16 @@
             "Normal",
             "Quiet",
             "Verbose"
+          ]
+        },
+        "VisualStudioVersion": {
+          "type": "string",
+          "description": "VisualStudio version",
+          "enum": [
+            "VS2015",
+            "VS2017",
+            "VS2019",
+            "VS2022"
           ]
         }
       }
