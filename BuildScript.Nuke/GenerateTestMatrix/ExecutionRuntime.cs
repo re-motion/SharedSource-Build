@@ -42,7 +42,7 @@ public class ExecutionRuntime
       return true;
     if (obj.GetType() != GetType())
       return false;
-    return Equals((ExecutionRuntime) obj);
+    return Equals((ExecutionRuntime)obj);
   }
 
   public override string ToString () =>

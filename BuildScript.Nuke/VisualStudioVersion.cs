@@ -28,12 +28,12 @@ public class VisualStudioVersion : Enumeration
     public static VisualStudioVersion VS2019 = new("2019", "Current");
     public static VisualStudioVersion VS2022 = new("2022", "Current");
 
-    private VisualStudioVersion(string vsVersion, string msBuildVersion)
+    private VisualStudioVersion (string vsVersion, string msBuildVersion)
     {
         Value = vsVersion;
         MsBuildVersion = msBuildVersion;
     }
 
-    public string VsVersion => Value; 
+    public string VsVersion => Value;
     public string MsBuildVersion { get; }
 }

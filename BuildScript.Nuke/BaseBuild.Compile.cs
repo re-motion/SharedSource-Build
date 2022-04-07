@@ -117,7 +117,7 @@ public partial class BaseBuild : NukeBuild
           .SetProperty(MSBuildProperties.ProductName, AssemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, Directories.SolutionKeyFile)
           .When(GitRepository != null, s => s.SetPackageProjectUrl(GitRepository!.HttpsUrl))
-          .SetToolsVersion(project.ToolsVersion)
+          .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(
               SemanticVersion.GetAssemblyInformationalVersion(configuration, AdditionalBuildMetadata))

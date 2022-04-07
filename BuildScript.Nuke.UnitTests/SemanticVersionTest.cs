@@ -123,7 +123,7 @@ public class SemanticVersionTest
   public void Version_WithLocalBuildTrue_ReturnsValidVersionWithLocalBuildSuffix (string version, string expectedVersion)
   {
     var semanticVersion = new SemanticVersion(version, true);
-    
+
     var actualVersion = semanticVersion.Version;
 
     //language=regex
@@ -146,10 +146,10 @@ public class SemanticVersionTest
   {
     var semanticVersion = new SemanticVersion(version, true);
     var assemblyInformationVersion = semanticVersion.GetAssemblyInformationalVersion(configurationId, additionalBuildMetadata);
-    
+
     //language=regex
-    var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}\+" 
-                                       + configurationId 
+    var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}\+"
+                                       + configurationId
                                        + (string.IsNullOrEmpty(additionalBuildMetadata) ? "" : $".{additionalBuildMetadata}");
     var versionMatch = Regex.Match(assemblyInformationVersion, regexPattern);
     Assert.That(versionMatch.Success, Is.True);
@@ -163,8 +163,9 @@ public class SemanticVersionTest
   public void AssemblyNuGetVersion_WithLocalBuildTrue_ReturnsAssemblyNugetVersionWithLocalBuildSuffix (string version, string expectedVersion)
   {
     var semanticVersion = new SemanticVersion(version, true);
+
     var actualVersion = semanticVersion.AssemblyNuGetVersion;
-    
+
     //language=regex
     var regexPattern = expectedVersion + @"-x\.9\.\d{6}-\d{6}";
     var versionMatch = Regex.Match(actualVersion, regexPattern);

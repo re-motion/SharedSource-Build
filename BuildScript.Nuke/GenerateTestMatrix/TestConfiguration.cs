@@ -92,7 +92,7 @@ public class TestConfiguration
     var isTargetRuntimeCoreProject = firstVersionNumber >= 5;
     var isNetStandardProject = TestAssemblyFrameworkVersion.StartsWith("netstandard");
     IsNetCoreFramework = isTargetFrameworkCoreProject &&
-                          isTargetRuntimeCoreProject;
+                         isTargetRuntimeCoreProject;
     IsNetFramework = !isTargetFrameworkCoreProject && !isTargetRuntimeCoreProject && !isNetStandardProject;
     IsNetStandardFramework = isNetStandardProject;
   }
@@ -132,11 +132,19 @@ public class TestConfiguration
       return true;
     if (obj.GetType() != GetType())
       return false;
-    return Equals((TestConfiguration) obj);
+    return Equals((TestConfiguration)obj);
   }
 
   public override string ToString () =>
-      $"{nameof(ID)}: {ID}, {nameof(Browser)}: {Browser}, {nameof(DatabaseSystem)}: {DatabaseSystem}, {nameof(ConfigurationID)}: {ConfigurationID}, {nameof(Platform)}: {Platform}, {nameof(ExecutionRuntime)}: {ExecutionRuntime}, {nameof(IsWebTest)}: {IsWebTest}, {nameof(IsDatabaseTest)}: {IsDatabaseTest}, {nameof(Use32Bit)}: {Use32Bit}, {nameof(TestAssemblyFileName)}: {TestAssemblyFileName}, {nameof(TestAssemblyFullPath)}: {TestAssemblyFullPath}, {nameof(TestAssemblyDirectoryPath)}: {TestAssemblyDirectoryPath}, {nameof(TestSetupBuildFile)}: {TestSetupBuildFile}, {nameof(TargetRuntime)}: {TargetRuntime}, {nameof(ExcludeCategories)}: {string.Join(",", ExcludeCategories)}, {nameof(IncludeCategories)}: {string.Join(",", IncludeCategories)}, {nameof(IsNetCoreFramework)}: {IsNetCoreFramework}, {nameof(TestAssemblyFrameworkVersion)}: {TestAssemblyFrameworkVersion}, {nameof(ProjectMetadata)}: {ProjectMetadata}";
+      @$"{nameof(ID)}: {ID}, {nameof(Browser)}: {Browser}, {nameof(DatabaseSystem)}: {DatabaseSystem},
+{nameof(ConfigurationID)}: {ConfigurationID}, {nameof(Platform)}: {Platform}, 
+{nameof(ExecutionRuntime)}: {ExecutionRuntime}, {nameof(IsWebTest)}: {IsWebTest}, 
+{nameof(IsDatabaseTest)}: {IsDatabaseTest}, {nameof(Use32Bit)}: {Use32Bit}, 
+{nameof(TestAssemblyFileName)}: {TestAssemblyFileName}, {nameof(TestAssemblyFullPath)}: {TestAssemblyFullPath}, 
+{nameof(TestAssemblyDirectoryPath)}: {TestAssemblyDirectoryPath}, {nameof(TestSetupBuildFile)}: {TestSetupBuildFile}, 
+{nameof(TargetRuntime)}: {TargetRuntime}, {nameof(ExcludeCategories)}: {string.Join(",", ExcludeCategories)}, 
+{nameof(IncludeCategories)}: {string.Join(",", IncludeCategories)}, {nameof(IsNetCoreFramework)}: {IsNetCoreFramework}, 
+{nameof(TestAssemblyFrameworkVersion)}: {TestAssemblyFrameworkVersion}, {nameof(ProjectMetadata)}: {ProjectMetadata}";
 
   protected bool Equals (TestConfiguration other) => ID == other.ID && Browser == other.Browser && DatabaseSystem == other.DatabaseSystem
                                                      && ConfigurationID == other.ConfigurationID && Platform == other.Platform

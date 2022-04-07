@@ -36,7 +36,7 @@ public class TestProjectMetadata : ProjectMetadata
       return true;
     if (obj.GetType() != GetType())
       return false;
-    return Equals((TestProjectMetadata) obj);
+    return Equals((TestProjectMetadata)obj);
   }
 
   public override string ToString () => $"{base.ToString()}, {nameof(TestSetupBuildFile)}: {TestSetupBuildFile}";
@@ -44,5 +44,4 @@ public class TestProjectMetadata : ProjectMetadata
   protected bool Equals (TestProjectMetadata other) =>
       base.Equals(other) && TestConfiguration == other.TestConfiguration && TestSetupBuildFile == other.TestSetupBuildFile;
 }
-
 #pragma warning restore CS8618

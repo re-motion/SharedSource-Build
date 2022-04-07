@@ -77,7 +77,7 @@ public class CreateTestConfigurationsTest
                Configuration = configuration,
                IsMultiTargetFramework = isMultiTargetFramework,
                IsSdkProject = isSdkProject,
-               ProjectPath = projectPath == null ? (AbsolutePath) "/x/Test.csproj" : projectPath,
+               ProjectPath = projectPath == null ? (AbsolutePath)"/x/Test.csproj" : projectPath,
                TargetFrameworks = targetFrameworks == null ? new[] { "net45" } : targetFrameworks,
                TestSetupBuildFile = testSetupBuildFile,
                ToolsVersion = toolsVersion,
@@ -201,7 +201,7 @@ public class CreateTestConfigurationsTest
                                   new[] { "/net45/test.dll", "/net5.0/test.dll" },
                                   isMultiTargetFramework: true,
                                   targetFrameworks: new List<string> { "net45", "net5.0" },
-                                  projectPath: (AbsolutePath) "/z/Test.csproj",
+                                  projectPath: (AbsolutePath)"/z/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;")
                           };
@@ -215,13 +215,13 @@ public class CreateTestConfigurationsTest
                                      targetRuntimeMoniker: "NET45",
                                      platform: "x86",
                                      use32Bit: true,
-                                     testAssemblyFullPath: (AbsolutePath) "/net45/test.dll",
+                                     testAssemblyFullPath: (AbsolutePath)"/net45/test.dll",
                                      testAssemblyDirectoryName: "\\net45",
                                      projectMetadata: CreateTestProjectMetadata(
                                          new[] { "/net45/test.dll" },
                                          isMultiTargetFramework: true,
                                          targetFrameworks: new List<string> { "net45" },
-                                         projectPath: (AbsolutePath) "/z/Test.csproj",
+                                         projectPath: (AbsolutePath)"/z/Test.csproj",
                                          testConfiguration:
                                          "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;")
                                  ),
@@ -232,13 +232,13 @@ public class CreateTestConfigurationsTest
                                      targetRuntimeMoniker: "NET50",
                                      platform: "x64",
                                      use32Bit: false,
-                                     testAssemblyFullPath: (AbsolutePath) "/net5.0/test.dll",
+                                     testAssemblyFullPath: (AbsolutePath)"/net5.0/test.dll",
                                      testAssemblyDirectoryName: "\\net5.0",
                                      projectMetadata: CreateTestProjectMetadata(
                                          new[] { "/net5.0/test.dll" },
                                          isMultiTargetFramework: true,
                                          targetFrameworks: new List<string> { "net5.0" },
-                                         projectPath: (AbsolutePath) "/z/Test.csproj",
+                                         projectPath: (AbsolutePath)"/z/Test.csproj",
                                          testConfiguration:
                                          "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;")
                                  )
@@ -255,7 +255,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET45 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -293,7 +293,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET60 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -313,7 +313,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net48" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET48 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -334,7 +334,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net48" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET48 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -355,7 +355,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;"
                               ),
@@ -363,7 +363,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net5.0" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -398,7 +398,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + MSSQL + Debug + x86; LocalMachine + NET50 + NoBrowser + MARIADB + Debug + x64;"
                               ),
@@ -406,7 +406,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net5.0" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + MSSQL + Debug + x86; LocalMachine + NET50 + NoBrowser + MARIADB + Debug + x64;"
                               )
@@ -444,7 +444,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; Win_NET48 + NET50 + NoBrowser + NoDB + Debug + x64;"
                               ),
@@ -452,7 +452,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net5.0" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; Win_NET48 + NET50 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -489,7 +489,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;"
                               ),
@@ -497,7 +497,7 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net5.0" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + NoBrowser + NoDB + Debug + x86; LocalMachine + NET50 + NoBrowser + NoDB + Debug + x64;"
                               )
@@ -533,14 +533,14 @@ public class CreateTestConfigurationsTest
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net45" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + Chrome + NoDB + Debug + x86; LocalMachine + NET50 + FireFox + NoDB + Debug + x64;"
                               ),
                               CreateTestProjectMetadata(
                                   new[] { "/x/test.dll" },
                                   targetFrameworks: new List<string> { "net5.0" },
-                                  projectPath: (AbsolutePath) "/x/Test.csproj",
+                                  projectPath: (AbsolutePath)"/x/Test.csproj",
                                   testConfiguration:
                                   "LocalMachine + NET45 + Chrome + NoDB + Debug + x86; LocalMachine + NET50 + FireFox + NoDB + Debug + x64;"
                               )
