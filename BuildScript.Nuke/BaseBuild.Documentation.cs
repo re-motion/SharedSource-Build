@@ -181,7 +181,7 @@ public partial class BaseBuild : NukeBuild
 
     properties.ForEach(property =>
     {
-      var nodes = xmlDocument.GetElementsByTagName($"/{property.Key}");
+      var nodes = xmlDocument.GetElementsByTagName(property.Key);
       if (nodes.Count > 0)
         nodes[0]!.InnerText = property.Value;
     });

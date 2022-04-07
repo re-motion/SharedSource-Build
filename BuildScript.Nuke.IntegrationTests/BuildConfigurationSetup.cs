@@ -72,6 +72,13 @@ public class BuildConfigurationSetup
     {
       var releaseProjectFilesNode = xmlDocument.CreateElement("ReleaseProjectFiles");
       releaseProjectFilesNode.SetAttribute("Include", $@"$(SolutionDirectory)\{projectReleaseOutput.Name}\{projectReleaseOutput.Name}.csproj");
+      if (projectReleaseOutput.IsDocumentationProject)
+      {
+        var createDocumentationFileNode = xmlDocument.CreateElement("CreateDocumentationFile");
+        createDocumentationFileNode.InnerText = "True";
+        releaseProjectFilesNode.AppendChild(createDocumentationFileNode);
+      }
+
       itemGroupNode.AppendChild(releaseProjectFilesNode);
     }
 
@@ -138,7 +145,17 @@ public class BuildConfigurationSetup
                        @$"{_testSolutionPath}/MultiTargetFrameworksTestProject/bin/Release/netstandard2.1/",
                        @$"{_testSolutionPath}/MultiTargetFrameworksTestProject/bin/Release/net45/"
                    },
-                   projectOutputConfiguration)
+                   projectOutputConfiguration),
+               new ProjectOutput(
+                   "DocumentationTestProject",
+                   _testSolutionPath,
+                   new[]
+                   {
+                       @$"{_testSolutionPath}/DocumentationTestProject/bin/Debug/net45/",
+                       @$"{_testSolutionPath}/DocumentationTestProject/bin/Release/net45/"
+                   },
+                   projectOutputConfiguration
+               ),
            };
   }
 
