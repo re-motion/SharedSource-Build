@@ -1,10 +1,26 @@
-﻿using System;
+// Copyright (c) rubicon IT GmbH, www.rubicon.eu
+// 
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.  rubicon licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may not use this
+// file except in compliance with the License.  You may obtain a copy of the
+// License at
+// 
+//   http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+// License for the specific language governing permissions and limitations
+// under the License.
+// 
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using GlobExpressions;
-using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
@@ -13,59 +29,23 @@ using Nuke.Common.Utilities.Collections;
 using Remotion.BuildScript.Documentation;
 using Serilog;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Components.Tasks;
 
-public partial class BaseBuild : NukeBuild
+internal static class DocumentationTask
 {
-  private const string c_contentLayoutFileName = "ContentLayout.content";
-  private const string c_gettingStartedFileName = "GettingStarted.aml";
-  private const string c_contentLayoutEmbeddedResourceName = "Remotion.BuildScript.DocumentationFiles.ContentLayout.content";
-  private const string c_sandcastleProjectTemplateEmbeddedResourceName = "Remotion.BuildScript.DocumentationFiles.SandcastleProjectTemplate.shfbproj";
-  private const string c_documentationProjectFileName = "documentation.shfbproj";
-  private const string c_outputDocumentationFolderName = "Output";
-
-  private readonly string[] _filterSpec =
-  {
-      "net48",
-      "net472",
-      "net471",
-      "net47",
-      "net462",
-      "net461",
-      "net46",
-      "net452",
-      "net451",
-      "net45"
-  };
-
-  private readonly string[] _standardExcludes =
-  {
-      ".git",
-      ".svn",
-      "_svn"
-  };
-
-  public string DocumentOutputFile { get; set; } = "";
-
-  [PublicAPI]
-  public Target GenerateDocumentation => _ => _
-      .DependsOn(CompileReleaseBuild, CleanFolders)
-      .OnlyWhenStatic(() => !SkipDocumentation)
-      .Executes(() =>
-      {
-        CreateSandcastleProjectFile(ReleaseProjectFiles);
-        CreateDocumentationNugetPackage();
-      });
-
-  private void CreateSandcastleProjectFile (IReadOnlyCollection<ProjectMetadata> projectMetadataList)
+  internal static string CreateSandcastleProjectFile (
+      IReadOnlyCollection<ProjectMetadata> projectMetadataList,
+      AssemblyMetadata assemblyMetadata,
+      Directories directories,
+      SemanticVersion semanticVersion)
   {
     var documentationProjectFiles = PrepareProjectMetadata(projectMetadataList)
         .Where(projectFile => !projectFile.ExcludeFromDocumentation && projectFile.Configuration == "Debug")
         .Where(projectFile => _filterSpec.Any(filter => projectFile.TargetFrameworks.Contains(filter)))
         .ToList();
-    FileSystemTasks.EnsureExistingDirectory(Directories.DocumentationBaseDirectory);
-    var documentationCompilationOutputDirectory = Directories.DocumentationBaseDirectory / c_outputDocumentationFolderName;
-    var documentationSandcastleProjectFile = Directories.DocumentationBaseDirectory / c_documentationProjectFileName;
+    FileSystemTasks.EnsureExistingDirectory(directories.DocumentationBaseDirectory);
+    var documentationCompilationOutputDirectory = directories.DocumentationBaseDirectory / c_outputDocumentationFolderName;
+    var documentationSandcastleProjectFile = directories.DocumentationBaseDirectory / c_documentationProjectFileName;
     var currentAssembly = typeof(BaseBuild).Assembly;
     using (var sandcastleProjectTemplateStream = currentAssembly.GetManifestResourceStream(c_sandcastleProjectTemplateEmbeddedResourceName))
     using (var sandcastleProjectFile = File.Open(documentationSandcastleProjectFile, FileMode.OpenOrCreate))
@@ -74,15 +54,15 @@ public partial class BaseBuild : NukeBuild
     }
 
     using (var contentLayoutStream = currentAssembly.GetManifestResourceStream(c_contentLayoutEmbeddedResourceName))
-    using (var contentLayoutFile = File.Open(Directories.DocumentationBaseDirectory / c_contentLayoutFileName, FileMode.OpenOrCreate))
+    using (var contentLayoutFile = File.Open(directories.DocumentationBaseDirectory / c_contentLayoutFileName, FileMode.OpenOrCreate))
     {
       contentLayoutStream!.CopyTo(contentLayoutFile);
     }
 
-    FileSystemTasks.CopyFile(AssemblyMetadata.DocumentationRootPage, Directories.DocumentationBaseDirectory / c_gettingStartedFileName);
+    FileSystemTasks.CopyFile(assemblyMetadata.DocumentationRootPage, directories.DocumentationBaseDirectory / c_gettingStartedFileName);
     var namespaceSummaryFiles = Glob.Files(
-            Directories.Solution,
-            AssemblyMetadata.DocumentationNamespaceSummaryFiles)
+            directories.Solution,
+            assemblyMetadata.DocumentationNamespaceSummaryFiles)
         .Where(file => !_standardExcludes.Any(file.Contains))
         .ToList();
     var sandcastlePackage = NuGetPackageResolver
@@ -90,20 +70,20 @@ public partial class BaseBuild : NukeBuild
         .NotNull("sandcastlePackage != null");
     var documentationProperties = new Dictionary<string, string>
                                   {
-                                      { SandcastleProperties.HtmlHelpName, AssemblyMetadata.DocumentationFileName },
+                                      { SandcastleProperties.HtmlHelpName, assemblyMetadata.DocumentationFileName },
                                       { SandcastleProperties.OutputPath, documentationCompilationOutputDirectory },
-                                      { SandcastleProperties.FooterText, $"<![CDATA[<p>Version: {SemanticVersion.Version}</p>]]>" },
-                                      { SandcastleProperties.HelpTitle, AssemblyMetadata.ProductName },
-                                      { SandcastleProperties.ProductTitle, AssemblyMetadata.ProductName },
-                                      { SandcastleProperties.CopyrightHref, AssemblyMetadata.CompanyUrl },
-                                      { SandcastleProperties.CopyrightText, AssemblyMetadata.Copyright },
-                                      { SandcastleProperties.HelpFileVersion, SemanticVersion.AssemblyVersion },
-                                      { SandcastleProperties.VendorName, AssemblyMetadata.CompanyName },
+                                      { SandcastleProperties.FooterText, $"<![CDATA[<p>Version: {semanticVersion.Version}</p>]]>" },
+                                      { SandcastleProperties.HelpTitle, assemblyMetadata.ProductName },
+                                      { SandcastleProperties.ProductTitle, assemblyMetadata.ProductName },
+                                      { SandcastleProperties.CopyrightHref, assemblyMetadata.CompanyUrl },
+                                      { SandcastleProperties.CopyrightText, assemblyMetadata.Copyright },
+                                      { SandcastleProperties.HelpFileVersion, semanticVersion.AssemblyVersion },
+                                      { SandcastleProperties.VendorName, assemblyMetadata.CompanyName },
                                       {
                                           SandcastleProperties.BuildLogFile,
-                                          $"{Directories.Log}Sandcastle.{AssemblyMetadata.DocumentationFileName}.log"
+                                          $"{directories.Log}Sandcastle.{assemblyMetadata.DocumentationFileName}.log"
                                       },
-                                      { SandcastleProperties.WorkingPath, Directories.DocumentationBaseDirectory / "Working" },
+                                      { SandcastleProperties.WorkingPath, directories.DocumentationBaseDirectory / "Working" },
                                       { SandcastleProperties.SHFBROOT, sandcastlePackage.Directory / "tools" },
                                       { SandcastleProperties.ComponentPath, $"{sandcastlePackage.Directory.Parent.Parent}" }
                                   };
@@ -117,21 +97,30 @@ public partial class BaseBuild : NukeBuild
     MSBuildTasks.MSBuild(settings => settings
         .SetTargetPath(documentationSandcastleProjectFile)
         .SetProcessEnvironmentVariable(SandcastleProperties.SHFBROOT, sandcastlePackage.Directory / "tools"));
-    DocumentOutputFile = @$"{documentationCompilationOutputDirectory}\{AssemblyMetadata.DocumentationFileName}.chm";
+    return @$"{documentationCompilationOutputDirectory}\{assemblyMetadata.DocumentationFileName}.chm";
   }
 
-  private void CreateDocumentationNugetPackage ()
+  internal static void CreateDocumentationNugetPackage (
+      IReadOnlyCollection<ProjectMetadata> projects,
+      string documentOutputFile,
+      AssemblyMetadata assemblyMetadata,
+      SemanticVersion semanticVersion,
+      Directories directories)
   {
-    var documentationProjects = ReleaseProjectFiles.Where(projectMetadata => projectMetadata.IsDocumentationFile).ToList();
+    var documentationProjects = projects.Where(projectMetadata => projectMetadata.IsDocumentationFile).ToList();
     if (documentationProjects.Count == 0)
       Log.Warning("No documentation projects found!");
 
     documentationProjects.ForEach(projectFile =>
     {
-      PrepareDocumentationProjectFile(projectFile);
+      PrepareDocumentationProjectFile(projectFile, documentOutputFile, assemblyMetadata);
       try
       {
-        GenerateSinglePackageWithDebugSymbols(projectFile);
+        NugetTask.GenerateSinglePackageWithDebugSymbols(
+            projectFile,
+            semanticVersion,
+            assemblyMetadata,
+            directories);
       }
       catch (Exception ex)
       {
@@ -144,13 +133,44 @@ public partial class BaseBuild : NukeBuild
     });
   }
 
-  private void RestoreDocumentationProjectFile (ProjectMetadata projectFile)
+  private const string c_contentLayoutFileName = "ContentLayout.content";
+  private const string c_gettingStartedFileName = "GettingStarted.aml";
+  private const string c_contentLayoutEmbeddedResourceName = "Remotion.BuildScript.DocumentationFiles.ContentLayout.content";
+  private const string c_sandcastleProjectTemplateEmbeddedResourceName = "Remotion.BuildScript.DocumentationFiles.SandcastleProjectTemplate.shfbproj";
+  private const string c_documentationProjectFileName = "documentation.shfbproj";
+  private const string c_outputDocumentationFolderName = "Output";
+
+  private static readonly string[] _filterSpec =
+  {
+      "net48",
+      "net472",
+      "net471",
+      "net47",
+      "net462",
+      "net461",
+      "net46",
+      "net452",
+      "net451",
+      "net45"
+  };
+
+  private static readonly string[] _standardExcludes =
+  {
+      ".git",
+      ".svn",
+      "_svn"
+  };
+
+  private static void RestoreDocumentationProjectFile (ProjectMetadata projectFile)
   {
     FileSystemTasks.CopyFile($"{projectFile.ProjectPath}.backup", projectFile.ProjectPath, FileExistsPolicy.Overwrite);
     FileSystemTasks.DeleteFile($"{projectFile.ProjectPath}.backup");
   }
 
-  private void PrepareDocumentationProjectFile (ProjectMetadata projectFile)
+  private static void PrepareDocumentationProjectFile (
+      ProjectMetadata projectFile,
+      string documentOutputFile,
+      AssemblyMetadata assemblyMetadata)
   {
     FileSystemTasks.CopyFile(projectFile.ProjectPath, $"{projectFile.ProjectPath}.backup", FileExistsPolicy.Overwrite);
 
@@ -161,11 +181,11 @@ public partial class BaseBuild : NukeBuild
     var itemGroupNode = xmlDocument.CreateElement("ItemGroup");
     var noneNode = xmlDocument.CreateElement("None");
     noneNode.SetAttribute("Pack", "True");
-    noneNode.SetAttribute("Include", DocumentOutputFile);
+    noneNode.SetAttribute("Include", documentOutputFile);
     var copyToOutputNode = xmlDocument.CreateElement("CopyToOutputDirectory");
     copyToOutputNode.InnerText = "PreserveNewest";
     var packagePathNode = xmlDocument.CreateElement("PackagePath");
-    packagePathNode.InnerText = $"doc/{AssemblyMetadata.DocumentationFileName}.chm";
+    packagePathNode.InnerText = $"doc/{assemblyMetadata.DocumentationFileName}.chm";
     noneNode.AppendChild(packagePathNode);
     noneNode.AppendChild(copyToOutputNode);
     itemGroupNode.AppendChild(noneNode);
@@ -174,7 +194,7 @@ public partial class BaseBuild : NukeBuild
     xmlDocument.Save(projectFile.ProjectPath);
   }
 
-  private void PrepareSandcastleProjectFile (string filePath, Dictionary<string, string> properties)
+  private static void PrepareSandcastleProjectFile (string filePath, Dictionary<string, string> properties)
   {
     var xmlDocument = new XmlDocument();
     xmlDocument.Load(filePath);
@@ -189,7 +209,7 @@ public partial class BaseBuild : NukeBuild
     xmlDocument.Save(filePath);
   }
 
-  private IReadOnlyCollection<ProjectMetadata> PrepareProjectMetadata (IReadOnlyCollection<ProjectMetadata> projectMetadataList)
+  private static IReadOnlyCollection<ProjectMetadata> PrepareProjectMetadata (IReadOnlyCollection<ProjectMetadata> projectMetadataList)
   {
     return projectMetadataList.SelectMany(
         projectMetadata =>
@@ -199,7 +219,7 @@ public partial class BaseBuild : NukeBuild
     ).ToList();
   }
 
-  private ProjectMetadata CreateProjectMetadataByTargetFramework (ProjectMetadata projectMetadata, string targetFramework)
+  private static ProjectMetadata CreateProjectMetadataByTargetFramework (ProjectMetadata projectMetadata, string targetFramework)
   {
     if (!projectMetadata.IsMultiTargetFramework)
       return projectMetadata;

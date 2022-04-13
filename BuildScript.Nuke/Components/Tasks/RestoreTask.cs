@@ -1,4 +1,4 @@
-﻿// Copyright (c) rubicon IT GmbH, www.rubicon.eu
+// Copyright (c) rubicon IT GmbH, www.rubicon.eu
 // 
 // See the NOTICE file distributed with this work for additional information
 // regarding copyright ownership.  rubicon licenses this file to you under
@@ -16,25 +16,24 @@
 // 
 
 using System;
-using System.ComponentModel;
-using Nuke.Common.Tooling;
+using System.Collections.Generic;
+using Nuke.Common.Tools.MSBuild;
+using Nuke.Common.Utilities.Collections;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Components.Tasks;
 
-[TypeConverter(typeof(TypeConverter<VisualStudioVersion>))]
-public class VisualStudioVersion : Enumeration
+internal static class RestoreTask
 {
-  public static VisualStudioVersion VS2015 = new("2015", "14.0");
-  public static VisualStudioVersion VS2017 = new("2017", "15.0");
-  public static VisualStudioVersion VS2019 = new("2019", "Current");
-  public static VisualStudioVersion VS2022 = new("2022", "Current");
-
-  public string VsVersion => Value;
-  public string MsBuildVersion { get; }
-
-  private VisualStudioVersion (string vsVersion, string msBuildVersion)
+  internal static void RestoreProject (IReadOnlyCollection<ProjectMetadata> projects, Directories directories)
   {
-    Value = vsVersion;
-    MsBuildVersion = msBuildVersion;
+    projects.ForEach(project =>
+    {
+      MSBuildTasks.MSBuild(s => s
+          .SetProperty(MSBuildProperties.RestorePackagesConfig, true)
+          .SetProperty(MSBuildProperties.SolutionDir, directories.Solution)
+          .SetTargetPath(project.ProjectPath)
+          .SetTargets(MSBuildTargets.Restore)
+      );
+    });
   }
 }
