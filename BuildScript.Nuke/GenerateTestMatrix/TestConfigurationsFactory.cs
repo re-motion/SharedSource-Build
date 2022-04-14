@@ -73,8 +73,10 @@ public class TestConfigurationsFactory
   {
     var duplicateValues = configurationItems.GetDuplicateValues(StringComparer.OrdinalIgnoreCase).ToList();
     if (duplicateValues.Any())
+    {
       throw new ArgumentException(
           $"The following configuration values were found multiple times: '{string.Join(",", duplicateValues)}'");
+    }
   }
 
   private TestConfiguration CreateTestConfiguration (
@@ -164,8 +166,11 @@ public class TestConfigurationsFactory
     if (hasLocalMachine)
       return new ExecutionRuntime(MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
     if (hasEnforcedLocalMachine)
+    {
       return new ExecutionRuntime(MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine, false,
           dockerImage.Value ?? "");
+    }
+
     return new ExecutionRuntime(dockerImage.Key, dockerImage.Value, true, dockerImage.Value);
   }
 
