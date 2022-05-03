@@ -17,12 +17,13 @@
 
 using System;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersionSemVerAdapter
   {
-    public JiraProjectVersion? JiraProjectVersion { get; set; }
-    public SemanticVersion? SemanticVersion { get; set; }
+    public JiraProjectVersion JiraProjectVersion { get; set; }
+    public SemanticVersion SemanticVersion { get; set; }
   }
 }

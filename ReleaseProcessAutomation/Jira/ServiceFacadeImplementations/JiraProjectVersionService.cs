@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
@@ -40,7 +41,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public string CreateVersion (string projectKey, string versionName, DateTime? releaseDate)
     {
-      var request = jiraClient.CreateRestRequest ("version", Method.Post);
+      
+      var request = jiraClient.CreateRestRequest ("version", Method.POST);
 
       if (releaseDate != null)
       {
@@ -77,7 +79,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public void MoveVersion(string versionId, string afterVersionUrl)
     {
-      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.Post);
+      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.POST);
 
       request.AddBody (new { after = afterVersionUrl });
 
@@ -86,7 +88,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public void MoveVersionByPosition (string versionId, string position)
     {
-      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.Post);
+      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.POST);
 
       request.AddBody (new { position = position });
 
@@ -96,7 +98,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public JiraProjectVersion GetVersionById (string versionId)
     {
       var resource = "version/" + versionId;
-      var request = jiraClient.CreateRestRequest (resource, Method.Get);
+      var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
       return response.Data;

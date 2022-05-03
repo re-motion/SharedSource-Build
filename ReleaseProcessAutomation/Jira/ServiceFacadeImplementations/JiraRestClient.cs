@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 using RestSharp.Authenticators;
 

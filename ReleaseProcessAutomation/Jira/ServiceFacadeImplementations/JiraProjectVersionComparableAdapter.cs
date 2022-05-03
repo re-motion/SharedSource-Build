@@ -22,6 +22,6 @@ namespace Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations
   public class JiraProjectVersionComparableAdapter<T> where T : IComparable<T>
   {
     public JiraProjectVersion JiraProjectVersion { get; set; }
-    public T ComparableVersion { get; set; }
+    public T? ComparableVersion { get; set; }
   }
 }

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
@@ -39,7 +40,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var versions = GetVersions (projectKey);
       return versions.Where (v => Regex.IsMatch (v.name, versionPattern));
     }
-
+    
     public IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern)
     {
       return FindVersions (projectKey, versionPattern).Where (v => v.released != true);
@@ -48,7 +49,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
     {
       var resource = "project/" + projectKey + "/versions";
-      var request = jiraClient.CreateRestRequest (resource, Method.Get);
+      var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
       return response.Data;
@@ -57,7 +58,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public JiraProjectVersion GetVersionById (string versionId)
     {
       var resource = "version/" + versionId;
-      var request = jiraClient.CreateRestRequest (resource, Method.Get);
+      var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
       return response.Data;

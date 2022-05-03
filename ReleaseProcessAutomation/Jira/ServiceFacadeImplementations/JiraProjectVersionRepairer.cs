@@ -21,6 +21,8 @@ using System.Linq;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
+using Remotion.ReleaseProcessScript.Jira.Utility;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
@@ -64,17 +66,17 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       return outVersion;
     }
 
-    private SemanticVersion ParseSemanticVersionOrNull (string input)
+    private SemanticVersion? ParseSemanticVersionOrNull (string input)
     {
-      return new SemanticVersionParser().ParseVersionOrNull (input);
+      return new SemanticVersionParser().TryParseVersion(input, out var output) ? output : null;
     }
 
-    private bool IsDotNetVersion (string version, Func<string, Version> netVersionParserFunc)
+    private bool IsDotNetVersion (string version, Func<string, Version?> netVersionParserFunc)
     {
       return netVersionParserFunc (version) != null;
     }
 
-    private bool IsSemanticVersion (string version, Func<string, SemanticVersion> semanticVersionParserFunc)
+    private bool IsSemanticVersion (string version, Func<string, SemanticVersion?> semanticVersionParserFunc)
     {
       return semanticVersionParserFunc (version) != null;
     }
@@ -82,7 +84,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     private void RepairVersion<T> (
         JiraProjectVersion toBeRepairedVersion,
         IEnumerable<JiraProjectVersion> versions,
-        Func<string, T> parseVersion)
+        Func<string, T?> parseVersion)
       where T : IComparable<T>
     {
       var parsedVersion = parseVersion (toBeRepairedVersion.name);

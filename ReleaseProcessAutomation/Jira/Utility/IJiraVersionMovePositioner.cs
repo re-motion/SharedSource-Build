@@ -24,6 +24,6 @@ namespace Remotion.ReleaseProcessScript.Jira.Utility
   {
     JiraProjectVersionComparableAdapter<T> GetCreatedVersion ();
     bool HasToBeMoved ();
-    JiraProjectVersionComparableAdapter<T> GetVersionBeforeCreatedVersionOrderedList ();
+    JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ();
   }
 }

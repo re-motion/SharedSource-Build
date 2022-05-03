@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 
 namespace ReleaseProcessAutomation.Jira
 {

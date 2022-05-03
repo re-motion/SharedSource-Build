@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 
 namespace ReleaseProcessAutomation.Jira.Utility
 {

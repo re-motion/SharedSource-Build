@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
@@ -37,7 +38,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       foreach (var issue in issues)
       {
         var resource = "issue/" + issue.id;
-        var request = jiraClient.CreateRestRequest (resource, Method.Put);
+        var request = jiraClient.CreateRestRequest (resource, Method.PUT);
 
         var newFixVersions = issue.fields.fixVersions;
         newFixVersions.RemoveAll (v => v.id == oldVersionId);
@@ -54,7 +55,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var jql = "fixVersion=" + versionId + " and resolution = \"unresolved\"";
       var resource = "search?jql=" + jql + "&fields=id,fixVersions";
-      var request = jiraClient.CreateRestRequest (resource, Method.Get);
+      var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
       return response.Data.issues;
@@ -64,7 +65,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var jql = "fixVersion=" + versionId + " and resolution != \"unresolved\"";
       var resource = "search?jql=" + jql + "&fields=id,fixVersions";
-      var request = jiraClient.CreateRestRequest (resource, Method.Get);
+      var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
       return response.Data.issues;

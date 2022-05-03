@@ -56,12 +56,12 @@ namespace Remotion.ReleaseProcessScript.Jira.Utility
       return true;
     }
 
-    public JiraProjectVersionComparableAdapter<T> GetVersionBeforeCreatedVersionOrderedList ()
+    public JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ()
     {
       return _orderedVersions.TakeWhile (x => !Equals (x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
     }
 
-    private JiraProjectVersionComparableAdapter<T> GetVersionBeforeCreatedVersionOriginalList ()
+    private JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOriginalList ()
     {
       return _toBeOrdered.TakeWhile (x => !Equals (x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
     }
