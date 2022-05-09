@@ -6,18 +6,18 @@ using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public interface IJira
+public interface IJiraEntrancePoint
 {
   void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
 }
 
-public class Jira : IJira
+public class JiraEntrancePoint : IJiraEntrancePoint
 {
   private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly string _jiraUrlPostfix;
-  private readonly ILogger _log = Log.ForContext<Jira>();
-  public Jira (Config config, IAnsiConsole console, string jiraUrlPostfix)
+  private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
+  public JiraEntrancePoint (Config config, IAnsiConsole console, string jiraUrlPostfix)
   {
     _config = config;
     _console = console;
@@ -56,7 +56,7 @@ public class Jira : IJira
     return jiraCreateVersion.CreatedVersionID ?? throw new InvalidOperationException("The created version did not have a version id assigned.");
   }
 
-  private string JiraUrlWithPostfix ()
+  public string JiraUrlWithPostfix ()
   {
     var url = _config.Jira.JiraURL;
     return url.EndsWith("/") ? $"{url}{_jiraUrlPostfix}" : $"{url}/{_jiraUrlPostfix}";
