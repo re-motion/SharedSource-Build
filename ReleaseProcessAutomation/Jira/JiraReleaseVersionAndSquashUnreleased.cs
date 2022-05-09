@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.IO;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
@@ -31,9 +32,26 @@ namespace ReleaseProcessAutomation.Jira
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
+      if (string.IsNullOrEmpty(JiraUrl))
+      {
+        throw new InvalidOperationException("Jira url was not assigned.");
+      }
+      if (string.IsNullOrEmpty(VersionID))
+      {
+        throw new InvalidOperationException("Version id was not assigned.");
+      }
+      if (string.IsNullOrEmpty(NextVersionID))
+      {
+        throw new InvalidOperationException("Next version id was not assigned");
+      }
+
+      if (string.IsNullOrEmpty(ProjectKey))
+      {
+        throw new InvalidDataException("Project key was not assigned");
+      }
+      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
       IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
-      service.ReleaseVersionAndSquashUnreleased (VersionID!, NextVersionID!, ProjectKey!);
+      service.ReleaseVersionAndSquashUnreleased (VersionID, NextVersionID, ProjectKey);
     }
   }
 }

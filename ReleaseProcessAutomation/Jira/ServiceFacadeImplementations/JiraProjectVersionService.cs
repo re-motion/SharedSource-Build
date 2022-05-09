@@ -54,14 +54,18 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
       var newProjectVersion = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.Created);
 
-      return newProjectVersion.Data.id!;
+      return newProjectVersion.Data.id ?? throw new InvalidOperationException("The created version id was not assigned.");
     }
 
     public string CreateSubsequentVersion (string projectKey, string versionPattern, int versionComponentToIncrement, DayOfWeek versionReleaseWeekday)
     {
       // Determine next version name
       var lastUnreleasedVersion = jiraProjectVersionFinder.FindUnreleasedVersions (projectKey, versionPattern).Last();
-      var nextVersionName = IncrementVersion (lastUnreleasedVersion.name!, versionComponentToIncrement);
+      if (lastUnreleasedVersion.name == null)
+      {
+        throw new InvalidOperationException("The last found unreleased version did not have a name assigned.");
+      }
+      var nextVersionName = IncrementVersion (lastUnreleasedVersion.name, versionComponentToIncrement);
 
       // Determine next release day
       if (!lastUnreleasedVersion.releaseDate.HasValue)
@@ -72,7 +76,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         nextReleaseDay = nextReleaseDay.AddDays (1);
 
       var newVersionId = CreateVersion (projectKey, nextVersionName, nextReleaseDay);
-      MoveVersion (newVersionId, lastUnreleasedVersion.self!);
+      MoveVersion (newVersionId, lastUnreleasedVersion.self ?? throw new InvalidOperationException("The last found unreleased version did not have a 'self' assigned."));
 
       return newVersionId;
     }
@@ -144,7 +148,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
             versionList.Add(new JiraProjectVersionSemVerAdapter()
             {
               JiraProjectVersion = version,
-              SemanticVersion = _semanticVersionParser.ParseVersion(version.name!)
+              SemanticVersion = _semanticVersionParser.ParseVersion(version.name ?? throw new InvalidOperationException("The version did not have a name assigned."))
             });
           }
           catch (ArgumentException)
@@ -153,7 +157,14 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           }
         }
 
-        var currentVersion = versionList.Single (v => v.JiraProjectVersion!.id == versionID).JiraProjectVersion;
+        var currentVersion = versionList.Single (v =>
+        {
+          if (v.JiraProjectVersion == null)
+          {
+            throw new InvalidOperationException("The version did not have a proper jira project version assigned.");
+          }
+          return v.JiraProjectVersion!.id == versionID;
+        }).JiraProjectVersion;
         var nextVersion = versionList.Single (v => v.JiraProjectVersion!.id == nextVersionID).JiraProjectVersion;
 
         var orderedVersions = versionList.OrderBy (x => x.SemanticVersion).ToList();
@@ -191,12 +202,12 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
             if (toBeSquashedJiraProjectVersion!.released == null || toBeSquashedJiraProjectVersion.released == false)
             {
-              var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id;
+              var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id!;
               
-              var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID!);
-              jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID!, nextVersionID);
+              var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID);
+              jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID, nextVersionID);
 
-              this.DeleteVersion(projectKey, toBeSquashedJiraProjectVersion.name!);
+              DeleteVersion(projectKey, toBeSquashedJiraProjectVersion.name ?? throw new InvalidOperationException("The version did not have a proper name assigned."));
             }
           }
         }
@@ -207,7 +218,11 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     private bool IsReleased (JiraProjectVersionSemVerAdapter jiraVersion)
     {
-      return jiraVersion.JiraProjectVersion!.released.HasValue && jiraVersion.JiraProjectVersion.released.Value;
+      if (jiraVersion.JiraProjectVersion == null)
+      {
+        throw new InvalidOperationException("The version did not have a proper jira project version assigned.");
+      }
+      return jiraVersion.JiraProjectVersion.released.HasValue && jiraVersion.JiraProjectVersion.released.Value;
         
     }
 

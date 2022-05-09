@@ -41,9 +41,22 @@ namespace ReleaseProcessAutomation.Jira
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
+      if (string.IsNullOrEmpty(JiraUrl))
+      {
+        throw new InvalidOperationException("Jira url was not assigned.");
+      }
+      if (string.IsNullOrEmpty(JiraProject))
+      {
+        throw new InvalidOperationException("Jira project was not assigned.");
+      }
+      if (string.IsNullOrEmpty(VersionPattern))
+      {
+        throw new InvalidOperationException("Version pattern was not assigned.");
+      }
+      
+      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
-      var versions = finder.FindUnreleasedVersions (JiraProject!, VersionPattern!).ToArray();
+      var versions = finder.FindUnreleasedVersions (JiraProject, VersionPattern).ToArray();
 
       VersionID = "";
       VersionName = "";

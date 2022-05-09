@@ -41,15 +41,23 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var jiraProjectVersion = _jiraProjectVersionFinder.GetVersionById (versionId);
 
+      if (string.IsNullOrEmpty(jiraProjectVersion.projectId))
+      {
+        throw new InvalidOperationException("Project id was null while trying to repair version");
+      }
+      if (string.IsNullOrEmpty(jiraProjectVersion.name))
+      {
+        throw new InvalidOperationException("Name was null while trying to repair version");
+      }
       var versions = _jiraProjectVersionFinder
-          .FindVersions (jiraProjectVersion.projectId!, "(?s).*")
+          .FindVersions (jiraProjectVersion.projectId, "(?s).*")
           .ToList();
 
-      if (IsSemanticVersion (jiraProjectVersion.name!, ParseSemanticVersionOrNull))
+      if (IsSemanticVersion (jiraProjectVersion.name, ParseSemanticVersionOrNull))
       {
         RepairVersion (jiraProjectVersion, versions, ParseSemanticVersionOrNull);
       }
-      else if (IsDotNetVersion (jiraProjectVersion.name!, ParseDotNetVersionOrNull))
+      else if (IsDotNetVersion (jiraProjectVersion.name, ParseDotNetVersionOrNull))
       {
         RepairVersion (jiraProjectVersion, versions, ParseDotNetVersionOrNull);
       }
@@ -93,7 +101,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           x => new JiraProjectVersionComparableAdapter<T>()
                {
                  JiraProjectVersion = x,
-                 ComparableVersion = parseVersion (x.name!)
+                 ComparableVersion = parseVersion (x.name ?? throw new InvalidOperationException("Name was null while trying to repair version"))
                }).ToList();
 
       var repairedVersionAsAdapter =
@@ -112,14 +120,33 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var createdVersion = jiraVersionPositionFinder.GetCreatedVersion();
 
-      if (jiraVersionPositionFinder.HasToBeMoved())
-      {
-        var versionBeforeCreatedVersion = jiraVersionPositionFinder.GetVersionBeforeCreatedVersionOrderedList();
+      if (!jiraVersionPositionFinder.HasToBeMoved())
+        return;
+      
+      var versionBeforeCreatedVersion = jiraVersionPositionFinder.GetVersionBeforeCreatedVersionOrderedList();
 
-        if (versionBeforeCreatedVersion == null)
-          _jiraProjectVersionService.MoveVersionByPosition (createdVersion.JiraProjectVersion!.id!, "First");
-        else if (versionBeforeCreatedVersion.ComparableVersion == null || !versionBeforeCreatedVersion.ComparableVersion.Equals (createdVersion.ComparableVersion))
-          _jiraProjectVersionService.MoveVersion (createdVersion.JiraProjectVersion!.id!, versionBeforeCreatedVersion.JiraProjectVersion!.self!);
+      if (createdVersion.JiraProjectVersion == null)
+      {
+        throw new InvalidOperationException("Created version did not have a jira project version.");
+      }
+      if (createdVersion.JiraProjectVersion.id == null)
+      {
+        throw new InvalidOperationException("Created version did not have a jira project version with an id .");
+      }
+      
+      if (versionBeforeCreatedVersion == null)
+        _jiraProjectVersionService.MoveVersionByPosition (createdVersion.JiraProjectVersion.id, "First");
+      else if (versionBeforeCreatedVersion.ComparableVersion == null || !versionBeforeCreatedVersion.ComparableVersion.Equals (createdVersion.ComparableVersion))
+      {
+        if (versionBeforeCreatedVersion.JiraProjectVersion == null)
+        {
+          throw new InvalidOperationException("The version before the created version did not have a jira project version.");
+        }
+        if (versionBeforeCreatedVersion.JiraProjectVersion.self == null)
+        {
+          throw new InvalidOperationException("The version before the created version did not have a 'self' in the jira project version.");
+        }
+        _jiraProjectVersionService.MoveVersion (createdVersion.JiraProjectVersion.id, versionBeforeCreatedVersion.JiraProjectVersion.self);
       }
     }
   }

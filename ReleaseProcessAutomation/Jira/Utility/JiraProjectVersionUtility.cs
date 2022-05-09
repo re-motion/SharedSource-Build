@@ -39,7 +39,7 @@ namespace ReleaseProcessAutomation.Jira.Utility
               new JiraProjectVersionSemVerAdapter()
               {
                 JiraProjectVersion = version,
-                SemanticVersion = semVerParser.ParseVersion (version.name!)
+                SemanticVersion = semVerParser.ParseVersion (version.name ?? throw new InvalidOperationException("The given version did not have a name assigned."))
               });
         }
         catch (ArgumentException)

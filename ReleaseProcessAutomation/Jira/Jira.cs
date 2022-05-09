@@ -1,3 +1,4 @@
+using System;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Serilog;
@@ -44,7 +45,7 @@ public class Jira : IJira
     var jiraCreateVersion = new JiraCreateNewVersionWithVersionNumber
                             {
                                 JiraUrl = JiraUrlWithPostfix(),
-                                JiraProjectKey = _config.Jira.JiraProjectKey,
+                                JiraProject = _config.Jira.JiraProjectKey,
                                 VersionNumber = version.ToString()
                             };
     
@@ -52,7 +53,7 @@ public class Jira : IJira
     
     jiraCreateVersion.Execute();
 
-    return jiraCreateVersion.CreatedVersionID!;
+    return jiraCreateVersion.CreatedVersionID ?? throw new InvalidOperationException("The created version did not have a version id assigned.");
   }
 
   private string JiraUrlWithPostfix ()

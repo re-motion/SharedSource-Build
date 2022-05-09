@@ -44,6 +44,7 @@ namespace Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations
     public string? key { get; set; }
 
     public JiraNonClosedIssueFields? fields { get; set; }
+    
   }
 
   public class JiraNonClosedIssueFields
