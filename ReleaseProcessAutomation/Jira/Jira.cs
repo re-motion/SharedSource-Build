@@ -1,6 +1,13 @@
+using System;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using ReleaseProcessAutomation.Configuration.Data;
+using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using Serilog;
+using Serilog.Events;
 using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
@@ -12,15 +19,24 @@ public interface IJira
 
 public class Jira : IJira
 {
+  private readonly IInputReader _inputReader;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly string _jiraUrlPostfix;
   private readonly ILogger _log = Log.ForContext<Jira>();
-  public Jira (Config config, IAnsiConsole console, string jiraUrlPostfix)
+  public Jira (IInputReader inputReader, Config config, IAnsiConsole console, string jiraUrlPostfix)
   {
+    _inputReader = inputReader;
     _config = config;
     _console = console;
     _jiraUrlPostfix = jiraUrlPostfix;
+  }
+
+  internal struct Credentials
+  {
+    public string Username { get; set; } 
+    
+    public string Password { get; set; }
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -67,8 +83,8 @@ public class Jira : IJira
       return;
     
     var credential = GetCredential();
-    task.JiraUsername = credential.username;
-    task.JiraPassword = credential.password;
+    task.JiraUsername = credential.Username;
+    task.JiraPassword = credential.Password;
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
@@ -98,8 +114,103 @@ public class Jira : IJira
     }
   }
 
-  private (string username, string password) GetCredential ()
+  private Credentials GetCredential ()
   {
-    throw new System.NotImplementedException();
+
+    var credentials = new Credentials
+                      {
+                        Username = "user",
+                        Password = "password"
+                      };
+
+    if (CheckJiraAuthentication(credentials))
+    {
+      return credentials;
+    }
+
+    return AskForCredentials();
+
+  }
+
+  private Credentials AskForCredentials ()
+  {
+    var shouldContinue = true;
+    while (shouldContinue)
+    {
+      var tmpCredentials = new Credentials
+                           {
+                               Username = _inputReader.ReadString("Please enter your Jira username"),
+                               Password = _inputReader.ReadHiddenString("Please enter your Jira password")
+                           };
+
+      if (CheckJiraAuthentication(tmpCredentials))
+      {
+        _console.WriteLine("Do you want to save the password?");
+        if (_inputReader.ReadConfirmation())
+        {
+          
+          
+          const string message = "Saved Password";
+          _console.WriteLine(message);
+          _log.Information(message);
+        }
+        return tmpCredentials;
+      }
+      _console.WriteLine("The input credentials didnt match, do you want to try again?");
+      shouldContinue = _inputReader.ReadConfirmation();
+    }
+
+    throw new JiraAuthenticationException("Authentication not successful, user does not want to try again.");
+  }
+
+  private bool CheckJiraAuthentication (Credentials credentials)
+  {
+    try
+    {
+      CheckJiraCredentials(credentials);
+    }
+    catch (JiraException e)
+    {
+      if (e.HttpStatusCode.Equals(HttpStatusCode.Forbidden) || e.HttpStatusCode.Equals(HttpStatusCode.Unauthorized))
+        return false;
+      else
+        throw;
+    }
+
+    return true;
+  }
+
+  private void CheckJiraCredentials (Credentials credentials)
+  {
+    var jiraCheckAuthentication = new JiraCheckAuthentication
+                                  { 
+                                      JiraUrl = JiraUrlWithPostfix(),
+                                      JiraUsername = credentials.Username,
+                                      JiraPassword = credentials.Password,
+                                      JiraProject = _config.Jira.JiraProjectKey
+                                  };
+
+    try
+    {
+      jiraCheckAuthentication.Execute();
+    }
+    catch (Exception e)
+    {
+      var errorMessage =
+          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
+      _log.Warning(errorMessage);
+      _console.WriteLine(errorMessage);
+      throw;
+    }
+  }
+
+  private void SaveCredentials (Credentials credentials)
+  {
+    DeleteCredentials();
+  }
+
+  private void DeleteCredentials ()
+  {
+    
   }
 }
