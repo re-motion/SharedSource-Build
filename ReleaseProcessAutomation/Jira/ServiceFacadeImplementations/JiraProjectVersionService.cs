@@ -83,7 +83,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public void MoveVersion(string versionId, string afterVersionUrl)
     {
-      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.POST);
+      var request = jiraClient.CreateRestRequest ($"version/{versionId}/move", Method.POST);
 
       request.AddBody (new { after = afterVersionUrl });
 
@@ -92,7 +92,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public void MoveVersionByPosition (string versionId, string position)
     {
-      var request = jiraClient.CreateRestRequest ("version/" + versionId + "/move", Method.POST);
+      var request = jiraClient.CreateRestRequest ($"version/{versionId}/move", Method.POST);
 
       request.AddBody (new { position = position });
 
@@ -101,7 +101,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public JiraProjectVersion GetVersionById (string versionId)
     {
-      var resource = "version/" + versionId;
+      var resource = $"version/{versionId}";
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
@@ -179,9 +179,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           if (toBeSquashedVersions.Any (IsReleased))
             throw new JiraException (
-                "Version '" + currentVersion!.name + "' cannot be released, as there is already one or multiple released version(s) ("
-                + string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion!.name)) + ") before the next version '"
-                + nextVersion!.name + "'.");
+                $"Version '{currentVersion!.name}' cannot be released, as there is already one or multiple released version(s) ({string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion!.name))}) before the next version '{nextVersion!.name}'.");
 
           var allClosedIssues = new List<JiraToBeMovedIssue>();
 
@@ -192,9 +190,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           if (allClosedIssues.Count != 0)
             throw new JiraException(
-                "Version '" + currentVersion!.name + "' cannot be released, as one  or multiple versions contain closed issues ("
-                + string.Join(", ", allClosedIssues.Select(aci => aci.key)) + ")"
-                );
+                $"Version '{currentVersion!.name}' cannot be released, as one  or multiple versions contain closed issues ({string.Join(", ", allClosedIssues.Select(aci => aci.key))})");
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {
@@ -228,7 +224,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     private void ReleaseVersion (string versionID)
     {
-      var resource = "version/" + versionID;
+      var resource = $"version/{versionID}";
       var request = jiraClient.CreateRestRequest (resource, Method.PUT);
 
       var adjustedReleaseDate = AdjustReleaseDateForJira (DateTime.Today);
@@ -245,7 +241,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       if (versionToDelete == null)
         throw new JiraException (string.Format ("Error, version with name '{0}' does not exist in project '{1}'.", versionName, projectKey));
 
-      var resource = "version/" + versionToDelete.id;
+      var resource = $"version/{versionToDelete.id}";
       var request = jiraClient.CreateRestRequest (resource, Method.DELETE);
       jiraClient.DoRequest (request, HttpStatusCode.NoContent);
     }

@@ -37,7 +37,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       foreach (var issue in issues)
       {
-        var resource = "issue/" + issue.id;
+        var resource = $"issue/{issue.id}";
         var request = jiraClient.CreateRestRequest (resource, Method.PUT);
 
         if (issue.fields == null)
@@ -64,8 +64,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public IEnumerable<JiraToBeMovedIssue> FindAllNonClosedIssues (string versionId)
     {
-      var jql = "fixVersion=" + versionId + " and resolution = \"unresolved\"";
-      var resource = "search?jql=" + jql + "&fields=id,fixVersions";
+      var jql = $"fixVersion={versionId} and resolution = \"unresolved\"";
+      var resource = $"search?jql={jql}&fields=id,fixVersions";
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
@@ -74,8 +74,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public IEnumerable<JiraToBeMovedIssue> FindAllClosedIssues (string versionId)
     {
-      var jql = "fixVersion=" + versionId + " and resolution != \"unresolved\"";
-      var resource = "search?jql=" + jql + "&fields=id,fixVersions";
+      var jql = $"fixVersion={versionId} and resolution != \"unresolved\"";
+      var resource = $"search?jql={jql}&fields=id,fixVersions";
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);

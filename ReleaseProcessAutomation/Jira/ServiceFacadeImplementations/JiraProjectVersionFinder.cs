@@ -55,7 +55,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
     {
-      var resource = "project/" + projectKey + "/versions";
+      var resource = $"project/{projectKey}/versions";
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
@@ -64,7 +64,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public JiraProjectVersion GetVersionById (string versionId)
     {
-      var resource = "version/" + versionId;
+      var resource = $"version/{versionId}";
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
