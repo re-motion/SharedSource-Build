@@ -39,7 +39,7 @@ namespace ReleaseProcessAutomation.Jira.Utility
               new JiraProjectVersionSemVerAdapter()
               {
                 JiraProjectVersion = version,
-                SemanticVersion = semVerParser.ParseVersion (version.name)
+                SemanticVersion = semVerParser.ParseVersion (version.name!)
               });
         }
         catch (ArgumentException)

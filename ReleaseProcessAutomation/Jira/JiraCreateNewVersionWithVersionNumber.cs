@@ -25,20 +25,20 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraCreateNewVersionWithVersionNumber : JiraTask
   {
-    public string JiraProjectKey { get; set; }
+    public string? JiraProjectKey { get; set; }
 
-    public string VersionNumber { get; set; }
+    public string? VersionNumber { get; set; }
 
-    public string CreatedVersionID { get; private set; }
+    public string? CreatedVersionID { get; private set; }
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
       var _jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, finder);
 
-      var versions = finder.FindVersions (JiraProjectKey, "(?s).*").ToList();
+      var versions = finder.FindVersions (JiraProjectKey!, "(?s).*").ToList();
       var jiraProject = versions.Where (x => x.name == VersionNumber).DefaultIfEmpty().First();
 
       if (jiraProject != null)
@@ -53,7 +53,7 @@ namespace ReleaseProcessAutomation.Jira
       }
       else
       {
-        CreatedVersionID = service.CreateVersion (JiraProjectKey, VersionNumber, null);
+        CreatedVersionID = service.CreateVersion (JiraProjectKey!, VersionNumber!, null);
 
         _jiraProjectVersionRepairer.RepairVersionPosition (CreatedVersionID);
       }

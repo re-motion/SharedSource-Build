@@ -23,17 +23,17 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraReleaseVersionAndSquashUnreleased : JiraTask
   {
-    public string VersionID { get; set; }
+    public string? VersionID { get; init; }
 
-    public string NextVersionID { get; set; }
+    public string? NextVersionID { get; init; }
 
-    public string ProjectKey { get; set; }
+    public string? ProjectKey { get; init; }
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
-      service.ReleaseVersionAndSquashUnreleased (VersionID, NextVersionID, ProjectKey);
+      service.ReleaseVersionAndSquashUnreleased (VersionID!, NextVersionID!, ProjectKey!);
     }
   }
 }

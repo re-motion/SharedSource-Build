@@ -40,8 +40,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         var resource = "issue/" + issue.id;
         var request = jiraClient.CreateRestRequest (resource, Method.PUT);
 
-        var newFixVersions = issue.fields.fixVersions;
-        newFixVersions.RemoveAll (v => v.id == oldVersionId);
+        var newFixVersions = issue.fields!.fixVersions;
+        newFixVersions!.RemoveAll (v => v.id == oldVersionId);
         newFixVersions.Add (new JiraVersion { id = newVersionId });
 
         var body = new { fields = new { fixVersions = newFixVersions.Select (v => new { v.id }) } };
@@ -58,7 +58,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.issues;
+      return response.Data.issues!;
     }
 
     public IEnumerable<JiraToBeMovedIssue> FindAllClosedIssues (string versionId)
@@ -68,7 +68,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.issues;
+      return response.Data.issues!;
     }
   }
 }

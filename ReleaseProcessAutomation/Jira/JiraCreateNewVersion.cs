@@ -23,9 +23,9 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraCreateNewVersion : JiraTask
   {
-    public string JiraProject { get; set; }
+    public string? JiraProject { get; set; }
 
-    public string VersionPattern { get; set; }
+    public string? VersionPattern { get; set; }
 
     public int VersionComponentToIncrement { get; set; }
 
@@ -41,12 +41,12 @@ namespace ReleaseProcessAutomation.Jira
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
       var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, finder);
 
-      var createdVersionId = service.CreateSubsequentVersion (JiraProject, VersionPattern, VersionComponentToIncrement, _versionReleaseWeekday);
+      var createdVersionId = service.CreateSubsequentVersion (JiraProject!, VersionPattern!, VersionComponentToIncrement, _versionReleaseWeekday);
 
       if (SortVersion)
         jiraProjectVersionRepairer.RepairVersionPosition (createdVersionId);

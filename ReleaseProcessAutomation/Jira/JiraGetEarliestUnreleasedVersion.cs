@@ -25,26 +25,25 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraGetEarliestUnreleasedVersion : JiraTask
   {
-    public string JiraProject { get; set; }
+    public string? JiraProject { get; set; }
 
-    [CanBeNull]
-    public string VersionPattern { get; set; }
+    public string? VersionPattern { get; set; }
 
-    public string VersionID { get; private set; }
+    public string? VersionID { get; private set; }
 
-    public string VersionName { get; private set; }
+    public string? VersionName { get; private set; }
 
-    public string NextVersionID { get; private set; }
+    public string? NextVersionID { get; private set; }
 
-    public string NextVersionName { get; private set; }
+    public string? NextVersionName { get; private set; }
 
     public int NumberOfUnreleasedVersions { get; private set; }
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
-      var versions = finder.FindUnreleasedVersions (JiraProject, VersionPattern).ToArray();
+      var versions = finder.FindUnreleasedVersions (JiraProject!, VersionPattern!).ToArray();
 
       VersionID = "";
       VersionName = "";

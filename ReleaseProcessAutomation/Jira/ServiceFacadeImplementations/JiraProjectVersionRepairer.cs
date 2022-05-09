@@ -42,14 +42,14 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var jiraProjectVersion = _jiraProjectVersionFinder.GetVersionById (versionId);
 
       var versions = _jiraProjectVersionFinder
-          .FindVersions (jiraProjectVersion.projectId, "(?s).*")
+          .FindVersions (jiraProjectVersion.projectId!, "(?s).*")
           .ToList();
 
-      if (IsSemanticVersion (jiraProjectVersion.name, ParseSemanticVersionOrNull))
+      if (IsSemanticVersion (jiraProjectVersion.name!, ParseSemanticVersionOrNull))
       {
         RepairVersion (jiraProjectVersion, versions, ParseSemanticVersionOrNull);
       }
-      else if (IsDotNetVersion (jiraProjectVersion.name, ParseDotNetVersionOrNull))
+      else if (IsDotNetVersion (jiraProjectVersion.name!, ParseDotNetVersionOrNull))
       {
         RepairVersion (jiraProjectVersion, versions, ParseDotNetVersionOrNull);
       }
@@ -87,13 +87,13 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         Func<string, T?> parseVersion)
       where T : IComparable<T>
     {
-      var parsedVersion = parseVersion (toBeRepairedVersion.name);
+      var parsedVersion = parseVersion (toBeRepairedVersion.name!);
 
       var versionList = versions.Select (
           x => new JiraProjectVersionComparableAdapter<T>()
                {
                  JiraProjectVersion = x,
-                 ComparableVersion = parseVersion (x.name)
+                 ComparableVersion = parseVersion (x.name!)
                }).ToList();
 
       var repairedVersionAsAdapter =
@@ -117,9 +117,9 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         var versionBeforeCreatedVersion = jiraVersionPositionFinder.GetVersionBeforeCreatedVersionOrderedList();
 
         if (versionBeforeCreatedVersion == null)
-          _jiraProjectVersionService.MoveVersionByPosition (createdVersion.JiraProjectVersion.id, "First");
+          _jiraProjectVersionService.MoveVersionByPosition (createdVersion.JiraProjectVersion!.id!, "First");
         else if (versionBeforeCreatedVersion.ComparableVersion == null || !versionBeforeCreatedVersion.ComparableVersion.Equals (createdVersion.ComparableVersion))
-          _jiraProjectVersionService.MoveVersion (createdVersion.JiraProjectVersion.id, versionBeforeCreatedVersion.JiraProjectVersion.self);
+          _jiraProjectVersionService.MoveVersion (createdVersion.JiraProjectVersion!.id!, versionBeforeCreatedVersion.JiraProjectVersion!.self!);
       }
     }
   }

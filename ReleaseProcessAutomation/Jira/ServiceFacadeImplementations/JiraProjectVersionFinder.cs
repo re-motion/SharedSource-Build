@@ -38,7 +38,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public IEnumerable<JiraProjectVersion> FindVersions (string projectKey, string versionPattern)
     {
       var versions = GetVersions (projectKey);
-      return versions.Where (v => Regex.IsMatch (v.name, versionPattern));
+      return versions.Where (v => Regex.IsMatch (v.name!, versionPattern));
     }
     
     public IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern)

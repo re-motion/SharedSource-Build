@@ -23,24 +23,24 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraReleaseVersion : JiraTask
   {
-    public string VersionID { get; set; }
+    public string? VersionID { get; init; }
 
-    public string NextVersionID { get; set; }
+    public string? NextVersionID { get; init; }
 
-    public bool SortReleasedVersion { get; set; }
+    public bool SortReleasedVersion { get; init; } = false;
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
       var jiraProjectVersionFinder = new JiraProjectVersionFinder (restClient);
       var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, jiraProjectVersionFinder);
 
-      service.ReleaseVersion (VersionID, NextVersionID);
+      service.ReleaseVersion (VersionID!, NextVersionID!);
 
       if (SortReleasedVersion)
       {
-        jiraProjectVersionRepairer.RepairVersionPosition (VersionID);
+        jiraProjectVersionRepairer.RepairVersionPosition (VersionID!);
       }
     }
   }

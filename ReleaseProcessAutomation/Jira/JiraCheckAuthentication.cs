@@ -23,17 +23,17 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraCheckAuthentication : JiraTask
   {
-    public string JiraProject { get; set; }
+    public string? JiraProject { get; set; }
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
 
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
 
       //Just call any function to send a Request and test Authentication Details
       //Throws JiraException with HttpStatusCode.Forbidden if Authentication fails
-      finder.FindUnreleasedVersions (JiraProject, "(?s).*");
+      finder.FindUnreleasedVersions (JiraProject!, "(?s).*");
     }
   }
 }

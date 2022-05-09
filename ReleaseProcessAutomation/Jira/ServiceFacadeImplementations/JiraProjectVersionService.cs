@@ -54,14 +54,14 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
       var newProjectVersion = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.Created);
 
-      return newProjectVersion.Data.id;
+      return newProjectVersion.Data.id!;
     }
 
     public string CreateSubsequentVersion (string projectKey, string versionPattern, int versionComponentToIncrement, DayOfWeek versionReleaseWeekday)
     {
       // Determine next version name
       var lastUnreleasedVersion = jiraProjectVersionFinder.FindUnreleasedVersions (projectKey, versionPattern).Last();
-      var nextVersionName = IncrementVersion (lastUnreleasedVersion.name, versionComponentToIncrement);
+      var nextVersionName = IncrementVersion (lastUnreleasedVersion.name!, versionComponentToIncrement);
 
       // Determine next release day
       if (!lastUnreleasedVersion.releaseDate.HasValue)
@@ -72,7 +72,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         nextReleaseDay = nextReleaseDay.AddDays (1);
 
       var newVersionId = CreateVersion (projectKey, nextVersionName, nextReleaseDay);
-      MoveVersion (newVersionId, lastUnreleasedVersion.self);
+      MoveVersion (newVersionId, lastUnreleasedVersion.self!);
 
       return newVersionId;
     }
@@ -144,7 +144,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
             versionList.Add(new JiraProjectVersionSemVerAdapter()
             {
               JiraProjectVersion = version,
-              SemanticVersion = _semanticVersionParser.ParseVersion(version.name)
+              SemanticVersion = _semanticVersionParser.ParseVersion(version.name!)
             });
           }
           catch (ArgumentException)
@@ -153,12 +153,12 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           }
         }
 
-        var currentVersion = versionList.Single (v => v.JiraProjectVersion.id == versionID).JiraProjectVersion;
-        var nextVersion = versionList.Single (v => v.JiraProjectVersion.id == nextVersionID).JiraProjectVersion;
+        var currentVersion = versionList.Single (v => v.JiraProjectVersion!.id == versionID).JiraProjectVersion;
+        var nextVersion = versionList.Single (v => v.JiraProjectVersion!.id == nextVersionID).JiraProjectVersion;
 
         var orderedVersions = versionList.OrderBy (x => x.SemanticVersion).ToList();
-        var currentVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion.id == versionID));
-        var nextVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion.id == nextVersionID));
+        var currentVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion!.id == versionID));
+        var nextVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion!.id == nextVersionID));
         
         //There are versions between the currentVersion and the next version
         if (nextVersionIndex != currentVersionIndex + 1)
@@ -168,20 +168,20 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           if (toBeSquashedVersions.Any (IsReleased))
             throw new JiraException (
-                "Version '" + currentVersion.name + "' cannot be released, as there is already one or multiple released version(s) ("
-                + string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion.name)) + ") before the next version '"
-                + nextVersion.name + "'.");
+                "Version '" + currentVersion!.name + "' cannot be released, as there is already one or multiple released version(s) ("
+                + string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion!.name)) + ") before the next version '"
+                + nextVersion!.name + "'.");
 
           var allClosedIssues = new List<JiraToBeMovedIssue>();
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {
-            allClosedIssues.AddRange(jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion.id));
+            allClosedIssues.AddRange(jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion!.id!));
           }
 
           if (allClosedIssues.Count != 0)
             throw new JiraException(
-                "Version '" + currentVersion.name + "' cannot be released, as one  or multiple versions contain closed issues ("
+                "Version '" + currentVersion!.name + "' cannot be released, as one  or multiple versions contain closed issues ("
                 + string.Join(", ", allClosedIssues.Select(aci => aci.key)) + ")"
                 );
 
@@ -189,14 +189,14 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           {
             var toBeSquashedJiraProjectVersion = toBeSquashedVersion.JiraProjectVersion;
 
-            if (toBeSquashedJiraProjectVersion.released == null || toBeSquashedJiraProjectVersion.released == false)
+            if (toBeSquashedJiraProjectVersion!.released == null || toBeSquashedJiraProjectVersion.released == false)
             {
               var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id;
               
-              var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID);
-              jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID, nextVersionID);
+              var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID!);
+              jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID!, nextVersionID);
 
-              this.DeleteVersion(projectKey, toBeSquashedJiraProjectVersion.name);
+              this.DeleteVersion(projectKey, toBeSquashedJiraProjectVersion.name!);
             }
           }
         }
@@ -207,7 +207,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     private bool IsReleased (JiraProjectVersionSemVerAdapter jiraVersion)
     {
-      return jiraVersion.JiraProjectVersion.released.HasValue && jiraVersion.JiraProjectVersion.released.Value;
+      return jiraVersion.JiraProjectVersion!.released.HasValue && jiraVersion.JiraProjectVersion.released.Value;
         
     }
 

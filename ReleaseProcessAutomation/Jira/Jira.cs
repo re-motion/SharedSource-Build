@@ -52,7 +52,7 @@ public class Jira : IJira
     
     jiraCreateVersion.Execute();
 
-    return jiraCreateVersion.CreatedVersionID;
+    return jiraCreateVersion.CreatedVersionID!;
   }
 
   private string JiraUrlWithPostfix ()

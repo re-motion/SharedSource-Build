@@ -25,24 +25,23 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraGetLatestReleasedVersion : JiraTask
   {
-    public string JiraProject { get; set; }
+    public string? JiraProject { get; set; }
 
-    [CanBeNull]
-    public string VersionPattern { get; set; }
+    public string? VersionPattern { get; set; }
 
-    public string VersionID { get; private set; }
+    public string? VersionID { get; private set; }
 
-    public string VersionName { get; private set; }
+    public string? VersionName { get; private set; }
 
-    public string NextUnreleasedVersionID { get; private set; }
+    public string? NextUnreleasedVersionID { get; private set; }
 
-    public string NextUnreleasedVersionName { get; private set; }
+    public string? NextUnreleasedVersionName { get; private set; }
 
     public void Execute ()
     {
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (JiraUrl!, Authenticator);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
-      var versions = finder.FindVersions (JiraProject, VersionPattern).ToArray();
+      var versions = finder.FindVersions (JiraProject!, VersionPattern!).ToArray();
 
       var unreleasedVersions = versions.Where (v => v.released != true);
       var releasedVersions = versions.Where (v => v.released == true);
