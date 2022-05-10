@@ -1,7 +1,16 @@
 using System;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Security;
+using System.Security.Cryptography;
+using System.Xml;
+using AdysTech.CredentialManager;
 using ReleaseProcessAutomation.Configuration.Data;
+using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
+using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using Serilog;
+using Serilog.Events;
 using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
@@ -9,6 +18,8 @@ namespace ReleaseProcessAutomation.Jira;
 public interface IJiraEntrancePoint
 {
   void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
+
+  void CheckJiraCredentials (Credentials credentials);
 }
 
 public class JiraEntrancePoint : IJiraEntrancePoint
@@ -17,8 +28,11 @@ public class JiraEntrancePoint : IJiraEntrancePoint
   private readonly IAnsiConsole _console;
   private readonly string _jiraUrlPostfix;
   private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
-  public JiraEntrancePoint (Config config, IAnsiConsole console, string jiraUrlPostfix)
+  private readonly IJiraCredentialManager _jiraCredentialManager;
+
+  public Jira (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix)
   {
+    _jiraCredentialManager = jiraCredentialManager;
     _config = config;
     _console = console;
     _jiraUrlPostfix = jiraUrlPostfix;
@@ -67,9 +81,9 @@ public class JiraEntrancePoint : IJiraEntrancePoint
     if (_config.Jira.UseNTLM)
       return;
     
-    var credential = GetCredential();
-    task.JiraUsername = credential.username;
-    task.JiraPassword = credential.password;
+    var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
+    task.JiraUsername = credential.Username;
+    task.JiraPassword = credential.Password;
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
@@ -98,9 +112,27 @@ public class JiraEntrancePoint : IJiraEntrancePoint
       releaseVersion.Execute();
     }
   }
-
-  private (string username, string password) GetCredential ()
+  public void CheckJiraCredentials (Credentials credentials)
   {
-    throw new System.NotImplementedException();
+    var jiraCheckAuthentication = new JiraCheckAuthentication
+                                  { 
+                                      JiraUrl = JiraUrlWithPostfix(),
+                                      JiraUsername = credentials.Username,
+                                      JiraPassword = credentials.Password,
+                                      JiraProject = _config.Jira.JiraProjectKey
+                                  };
+
+    try
+    {
+      jiraCheckAuthentication.Execute();
+    }
+    catch (Exception e)
+    {
+      var errorMessage =
+          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
+      _log.Warning(errorMessage);
+      _console.WriteLine(errorMessage);
+      throw;
+    }
   }
 }
