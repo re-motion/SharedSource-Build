@@ -195,3 +195,5 @@ GitExtensions.settings.backup
 execution-plan.html
 
 BuildOutput/
+
+JiraCredentials.Config
