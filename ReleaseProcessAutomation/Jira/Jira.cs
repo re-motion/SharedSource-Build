@@ -1,7 +1,10 @@
 using System;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Security.Cryptography;
+using System.Xml;
+using AdysTech.CredentialManager;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -32,7 +35,7 @@ public class Jira : IJira
     _jiraUrlPostfix = jiraUrlPostfix;
   }
 
-  internal struct Credentials
+  private struct Credentials
   {
     public string Username { get; set; } 
     
@@ -116,18 +119,24 @@ public class Jira : IJira
 
   private Credentials GetCredential ()
   {
+    var cred = CredentialManager.GetCredentials(_config.Jira.JiraURL);
 
+    if (cred == null)
+    {
+      return AskForCredentials();
+    }
+    
     var credentials = new Credentials
                       {
-                        Username = "user",
-                        Password = "password"
+                        Username = cred.UserName,
+                        Password = cred.Password
                       };
-
+    
     if (CheckJiraAuthentication(credentials))
     {
       return credentials;
     }
-
+    _console.WriteLine("Invalid Jira Credentials saved.");
     return AskForCredentials();
 
   }
@@ -145,10 +154,12 @@ public class Jira : IJira
 
       if (CheckJiraAuthentication(tmpCredentials))
       {
-        _console.WriteLine("Do you want to save the password?");
+        _console.WriteLine("Do you want to save the login information to the credential manager?");
         if (_inputReader.ReadConfirmation())
         {
-          
+          var cred = new NetworkCredential(tmpCredentials.Username, tmpCredentials.Password);
+          CredentialManager.RemoveCredentials(_config.Jira.JiraURL);
+          CredentialManager.SaveCredentials(_config.Jira.JiraURL, cred);
           
           const string message = "Saved Password";
           _console.WriteLine(message);
@@ -204,13 +215,5 @@ public class Jira : IJira
     }
   }
 
-  private void SaveCredentials (Credentials credentials)
-  {
-    DeleteCredentials();
-  }
-
-  private void DeleteCredentials ()
-  {
-    
-  }
+  
 }
