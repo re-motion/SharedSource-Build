@@ -13,6 +13,7 @@
     <PackageTags>re-motion Nuke</PackageTags>
     <PackageLicenseUrl>http://opensource.org/licenses/Apache-2.0</PackageLicenseUrl>
     <PackageProjectUrl>http://www.re-motion.org</PackageProjectUrl>
+    <Version>3.0.0-alpha.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
