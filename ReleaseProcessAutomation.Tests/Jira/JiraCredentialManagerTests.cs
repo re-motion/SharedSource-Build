@@ -137,4 +137,29 @@ public class JiraCredentialManagerTests
     Assert.That(output.UserName, Is.EqualTo(c_userName));
     Assert.That(output.Password, Is.EqualTo(c_password));
   }
+
+  [Test]
+  public void GetCredential_WithWrongCredentialInput_RepeatsFiveTimes ()
+  {
+    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+
+    _jiraMock.Setup(_ => _.CheckJiraCredentials(new Credentials { Username = c_userName, Password = c_password }))
+        .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
+
+    _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
+    _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
+
+    var CallCount = 5;
+    _inputReaderMock.SetupSequence(_ => _.ReadConfirmation(It.IsAny<bool>()))
+        .Returns(true)
+        .Returns(true)
+        .Returns(true)
+        .Returns(true)
+        .Returns(false);
+
+    Assert.That(() => jiraCredentialManager.GetCredential(c_target), Throws.InstanceOf<JiraAuthenticationException>()
+        .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
+
+    _jiraMock.Verify(_ => _.CheckJiraCredentials(It.IsAny<Credentials>()), Times.Exactly(CallCount));
+  }
 }
