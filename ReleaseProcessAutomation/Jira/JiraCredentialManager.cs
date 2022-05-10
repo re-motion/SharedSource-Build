@@ -1,9 +1,8 @@
 using System;
 using System.Net;
 using AdysTech.CredentialManager;
-using ReleaseProcessAutomation.Configuration.Data;
+using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.ReadInput;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using Serilog;
 using Spectre.Console;
 
@@ -17,12 +16,12 @@ public interface IJiraCredentialManager
 public class JiraCredentialManager
     : IJiraCredentialManager
 {
-  private IJira _jira;
+  private IJiraEntrancePoint _jira;
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (IJira jira, IInputReader inputReader, IAnsiConsole console)
+  public JiraCredentialManager (IJiraEntrancePoint jira, IInputReader inputReader, IAnsiConsole console)
   {
     _jira = jira;
     _inputReader = inputReader;

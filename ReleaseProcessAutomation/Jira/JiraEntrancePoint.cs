@@ -1,16 +1,7 @@
 using System;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Security.Cryptography;
-using System.Xml;
-using AdysTech.CredentialManager;
 using ReleaseProcessAutomation.Configuration.Data;
-using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using Serilog;
-using Serilog.Events;
 using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
@@ -30,7 +21,7 @@ public class JiraEntrancePoint : IJiraEntrancePoint
   private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
   private readonly IJiraCredentialManager _jiraCredentialManager;
 
-  public Jira (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix)
+  public JiraEntrancePoint (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix)
   {
     _jiraCredentialManager = jiraCredentialManager;
     _config = config;

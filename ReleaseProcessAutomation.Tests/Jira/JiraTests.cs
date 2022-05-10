@@ -15,8 +15,9 @@ public class JiraTests
     config.Jira = new JiraConfig();
     config.Jira.JiraURL = "JIRA_URL/";
     var consoleStub = new Mock<IAnsiConsole>();
+    var credentialStub = new Mock<IJiraCredentialManager>();
     var postFix = "POSTFIX";
-    var jira = new JiraEntrancePoint(config, consoleStub.Object, postFix);
+    var jira = new JiraEntrancePoint(config, consoleStub.Object, credentialStub.Object, postFix);
 
     var output = jira.JiraUrlWithPostfix();
     
@@ -30,8 +31,10 @@ public class JiraTests
     config.Jira = new JiraConfig();
     config.Jira.JiraURL = "JIRA_URL";
     var consoleStub = new Mock<IAnsiConsole>();
+    var credentialStub = new Mock<IJiraCredentialManager>();
     var postFix = "POSTFIX";
-    var jira = new JiraEntrancePoint(config, consoleStub.Object, postFix);
+    var jira = new JiraEntrancePoint(config, consoleStub.Object, credentialStub.Object, postFix);
+
 
     var output = jira.JiraUrlWithPostfix();
     

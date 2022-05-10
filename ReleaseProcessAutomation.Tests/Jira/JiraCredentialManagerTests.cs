@@ -3,8 +3,8 @@ using AdysTech.CredentialManager;
 using Moq;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Jira;
+using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.ReadInput;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.Jira;
@@ -12,7 +12,7 @@ namespace ReleaseProcessAutomation.Tests.Jira;
 [TestFixture]
 public class JiraCredentialManagerTests
 {
-  private Mock<IJira> _jiraMock;
+  private Mock<IJiraEntrancePoint> _jiraMock;
   private Mock<IInputReader> _inputReaderMock;
   private TestConsole _console;
 
@@ -23,7 +23,7 @@ public class JiraCredentialManagerTests
   [SetUp]
   public void Setup ()
   {
-    _jiraMock = new Mock<IJira>();
+    _jiraMock = new Mock<IJiraEntrancePoint>();
     _inputReaderMock = new Mock<IInputReader>();
     _console = new TestConsole();
   }
