@@ -32,9 +32,6 @@ public interface IBaseBuild : INukeBuild
   public string[] Configuration => TryGetValue(() => Configuration)
                                    ?? new[] { "Debug", "Release" };
 
-  [GitRepository]
-  public GitRepository GitRepository => TryGetValue(() => GitRepository);
-
   [Solution]
   public Solution Solution => TryGetValue(() => Solution);
 

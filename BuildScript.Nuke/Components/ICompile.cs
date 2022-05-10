@@ -41,7 +41,6 @@ public interface ICompile : IBaseBuild
         CompileTask.CompileProjects(
             ConfigurationData.ReleaseProjectFiles,
             Directories,
-            GitRepository,
             AdditionalBuildMetadata,
             ConfigurationData.SemanticVersion,
             ConfigurationData.AssemblyMetadata,
@@ -63,7 +62,6 @@ public interface ICompile : IBaseBuild
         CompileTask.CompileProjects(
             ConfigurationData.TestProjectFiles,
             Directories,
-            GitRepository,
             AdditionalBuildMetadata,
             ConfigurationData.SemanticVersion,
             ConfigurationData.AssemblyMetadata,
