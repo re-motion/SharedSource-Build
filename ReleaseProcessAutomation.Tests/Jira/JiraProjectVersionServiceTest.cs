@@ -17,9 +17,10 @@ namespace ReleaseProcessAutomation.Tests.Jira
   {
     private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
     private const string c_jiraProjectKey = "SRCBLDTEST";
-    private const string c_pathToJiraCredentialConfig = "C:\\Development\\Remotion\\SharedSource-Build\\ReleaseProcessAutomation.Tests\\JiraCredentials.config";
+    private const string c_usernameEnvironmentVariableName = "JiraUsername";
+    private const string c_passwordEnvironmentVariableName = "JiraPassword";
 
-    private string _jiraUsername = string.Empty;
+    private string _jiraUsername;
     private string _jiraPassword;
     private JiraProjectVersionService _service;
     private JiraProjectVersionRepairer _repairer;
@@ -30,7 +31,13 @@ namespace ReleaseProcessAutomation.Tests.Jira
     [SetUp]
     public void SetUp ()
     {
-      LoadJiraCredentialsFromConfig(c_pathToJiraCredentialConfig);
+      _jiraUsername = Environment.GetEnvironmentVariable(c_usernameEnvironmentVariableName);
+      _jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
+
+      if (string.IsNullOrEmpty(_jiraUsername) || string.IsNullOrEmpty(_jiraPassword))
+      {
+        throw new InvalidOperationException($"Could not load credentials from environment variables '{c_usernameEnvironmentVariableName}' and '{c_passwordEnvironmentVariableName}'");
+      }
       
       IAuthenticator authenticator = new HttpBasicAuthenticator(_jiraUsername, _jiraPassword);
       _restClient = new JiraRestClient (c_jiraUrl, authenticator);
@@ -392,28 +399,6 @@ namespace ReleaseProcessAutomation.Tests.Jira
       Assert.That (positionSecondVersion < positionThirdVersion, Is.True);
     }
 
-    private void LoadJiraCredentialsFromConfig (string configPath)
-    {
-      var dir = Environment.CurrentDirectory;
-      if (!File.Exists(configPath))
-      {
-        var message = $"Could not Load Config from '{configPath}' because the file does not exist";
-        throw new FileNotFoundException(message);
-      }
-
-      using TextReader reader = new StreamReader(configPath);
-      var serializer = new XmlSerializer(typeof(JiraTestConfig));
-
-      var config = (JiraTestConfig) serializer.Deserialize(reader);
-      if (config == null)
-      {
-        const string message = "Could not deserialize config, please check your config settings format";
-        throw new InvalidOperationException(message);
-      }
-
-      _jiraUsername = config.Username;
-      _jiraPassword = config.Password;
-    }
 
     private void DeleteVersionsIfExistent (string projectName, params string[] versionNames)
     {
