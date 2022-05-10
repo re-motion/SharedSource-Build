@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces
 {

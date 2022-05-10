@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.SemanticVersioning;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations

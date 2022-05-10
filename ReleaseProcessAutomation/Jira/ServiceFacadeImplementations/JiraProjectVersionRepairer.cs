@@ -21,8 +21,6 @@ using System.Linq;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
-using Remotion.ReleaseProcessScript.Jira.Utility;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {

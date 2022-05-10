@@ -16,9 +16,9 @@
 // 
 
 using System;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
+using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
-namespace Remotion.ReleaseProcessScript.Jira.Utility
+namespace ReleaseProcessAutomation.Jira.Utility
 {
   public interface IJiraVersionMovePositioner<T> where T : IComparable<T>
   {

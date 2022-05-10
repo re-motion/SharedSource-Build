@@ -17,7 +17,6 @@
 
 using System;
 using ReleaseProcessAutomation.SemanticVersioning;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {

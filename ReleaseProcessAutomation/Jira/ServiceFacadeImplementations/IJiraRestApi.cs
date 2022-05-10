@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   interface IJiraRestApi
   {

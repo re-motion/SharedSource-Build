@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraIssue
   {

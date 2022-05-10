@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
-using Remotion.ReleaseProcessScript.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
