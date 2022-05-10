@@ -35,7 +35,6 @@ internal static class CompileTask
   internal static void CompileProjects (
       IReadOnlyCollection<ProjectMetadata> projectFiles,
       Directories directories,
-      GitRepository gitRepository,
       string additionalBuildMetadata,
       SemanticVersion semanticVersion,
       AssemblyMetadata assemblyMetadata,
@@ -58,7 +57,6 @@ internal static class CompileTask
           projectFilesDebugTargets,
           "Debug",
           directories,
-          gitRepository,
           additionalBuildMetadata,
           semanticVersion,
           assemblyMetadata,
@@ -72,7 +70,6 @@ internal static class CompileTask
           projectFilesReleaseTargets,
           "Release",
           directories,
-          gitRepository,
           additionalBuildMetadata,
           semanticVersion,
           assemblyMetadata,
@@ -124,7 +121,6 @@ internal static class CompileTask
       IReadOnlyCollection<ProjectMetadata> projects,
       string configuration,
       Directories directories,
-      GitRepository? gitRepository,
       string additionalBuildMetadata,
       SemanticVersion semanticVersion,
       AssemblyMetadata assemblyMetadata,
@@ -149,7 +145,6 @@ internal static class CompileTask
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
-          .When(gitRepository != null, s => s.SetPackageProjectUrl(gitRepository!.HttpsUrl))
           .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(
