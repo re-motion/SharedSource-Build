@@ -18,28 +18,24 @@ namespace ReleaseProcessAutomation.Jira;
 public interface IJira
 {
   void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
+
+  void CheckJiraCredentials (Credentials credentials);
 }
 
 public class Jira : IJira
 {
-  private readonly IInputReader _inputReader;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly string _jiraUrlPostfix;
   private readonly ILogger _log = Log.ForContext<Jira>();
-  public Jira (IInputReader inputReader, Config config, IAnsiConsole console, string jiraUrlPostfix)
+  private readonly IJiraCredentialManager _jiraCredentialManager;
+
+  public Jira (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix)
   {
-    _inputReader = inputReader;
+    _jiraCredentialManager = jiraCredentialManager;
     _config = config;
     _console = console;
     _jiraUrlPostfix = jiraUrlPostfix;
-  }
-
-  private struct Credentials
-  {
-    public string Username { get; set; } 
-    
-    public string Password { get; set; }
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -74,7 +70,7 @@ public class Jira : IJira
     return jiraCreateVersion.CreatedVersionID!;
   }
 
-  private string JiraUrlWithPostfix ()
+  public string JiraUrlWithPostfix ()
   {
     var url = _config.Jira.JiraURL;
     return url.EndsWith("/") ? $"{url}{_jiraUrlPostfix}" : $"{url}/{_jiraUrlPostfix}";
@@ -85,7 +81,7 @@ public class Jira : IJira
     if (_config.Jira.UseNTLM)
       return;
     
-    var credential = GetCredential();
+    var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
     task.JiraUsername = credential.Username;
     task.JiraPassword = credential.Password;
   }
@@ -116,82 +112,7 @@ public class Jira : IJira
       releaseVersion.Execute();
     }
   }
-
-  private Credentials GetCredential ()
-  {
-    var cred = CredentialManager.GetCredentials(_config.Jira.JiraURL);
-
-    if (cred == null)
-    {
-      return AskForCredentials();
-    }
-    
-    var credentials = new Credentials
-                      {
-                        Username = cred.UserName,
-                        Password = cred.Password
-                      };
-    
-    if (CheckJiraAuthentication(credentials))
-    {
-      return credentials;
-    }
-    _console.WriteLine("Invalid Jira Credentials saved.");
-    return AskForCredentials();
-
-  }
-
-  private Credentials AskForCredentials ()
-  {
-    var shouldContinue = true;
-    while (shouldContinue)
-    {
-      var tmpCredentials = new Credentials
-                           {
-                               Username = _inputReader.ReadString("Please enter your Jira username"),
-                               Password = _inputReader.ReadHiddenString("Please enter your Jira password")
-                           };
-
-      if (CheckJiraAuthentication(tmpCredentials))
-      {
-        _console.WriteLine("Do you want to save the login information to the credential manager?");
-        if (_inputReader.ReadConfirmation())
-        {
-          var cred = new NetworkCredential(tmpCredentials.Username, tmpCredentials.Password);
-          CredentialManager.RemoveCredentials(_config.Jira.JiraURL);
-          CredentialManager.SaveCredentials(_config.Jira.JiraURL, cred);
-          
-          const string message = "Saved Password";
-          _console.WriteLine(message);
-          _log.Information(message);
-        }
-        return tmpCredentials;
-      }
-      _console.WriteLine("The input credentials didnt match, do you want to try again?");
-      shouldContinue = _inputReader.ReadConfirmation();
-    }
-
-    throw new JiraAuthenticationException("Authentication not successful, user does not want to try again.");
-  }
-
-  private bool CheckJiraAuthentication (Credentials credentials)
-  {
-    try
-    {
-      CheckJiraCredentials(credentials);
-    }
-    catch (JiraException e)
-    {
-      if (e.HttpStatusCode.Equals(HttpStatusCode.Forbidden) || e.HttpStatusCode.Equals(HttpStatusCode.Unauthorized))
-        return false;
-      else
-        throw;
-    }
-
-    return true;
-  }
-
-  private void CheckJiraCredentials (Credentials credentials)
+  public void CheckJiraCredentials (Credentials credentials)
   {
     var jiraCheckAuthentication = new JiraCheckAuthentication
                                   { 
@@ -214,6 +135,4 @@ public class Jira : IJira
       throw;
     }
   }
-
-  
 }
