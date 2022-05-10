@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Xml.Serialization;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
@@ -15,9 +17,10 @@ namespace ReleaseProcessAutomation.Tests.Jira
   {
     private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
     private const string c_jiraProjectKey = "SRCBLDTEST";
-    private const string c_jiraUsername = "###";
-    private const string c_jiraPassword = "###";
+    private const string c_pathToJiraCredentialConfig = "C:\\Development\\Remotion\\SharedSource-Build\\ReleaseProcessAutomation.Tests\\JiraCredentials.config";
 
+    private string _jiraUsername = string.Empty;
+    private string _jiraPassword;
     private JiraProjectVersionService _service;
     private JiraProjectVersionRepairer _repairer;
     private JiraProjectVersionFinder _versionFinder;
@@ -27,8 +30,9 @@ namespace ReleaseProcessAutomation.Tests.Jira
     [SetUp]
     public void SetUp ()
     {
+      LoadJiraCredentialsFromConfig(c_pathToJiraCredentialConfig);
       
-      IAuthenticator authenticator = new HttpBasicAuthenticator(c_jiraUsername, c_jiraPassword);
+      IAuthenticator authenticator = new HttpBasicAuthenticator(_jiraUsername, _jiraPassword);
       _restClient = new JiraRestClient (c_jiraUrl, authenticator);
       _service = new JiraProjectVersionService (_restClient);
       _versionFinder = new JiraProjectVersionFinder (_restClient);
@@ -43,8 +47,8 @@ namespace ReleaseProcessAutomation.Tests.Jira
       {
         JiraProject = c_jiraProjectKey,
         JiraUrl = c_jiraUrl,
-        JiraUsername = c_jiraUsername,
-        JiraPassword = c_jiraPassword
+        JiraUsername = _jiraUsername,
+        JiraPassword = _jiraPassword
 
       };
       jiraCheckAuthenticationTask.Execute();
@@ -386,6 +390,29 @@ namespace ReleaseProcessAutomation.Tests.Jira
       Assert.That (positionFirstVersion < positionbetweenFirstAndSecondVersion, Is.True);
       Assert.That (positionbetweenFirstAndSecondVersion < positionSecondVersion, Is.True);
       Assert.That (positionSecondVersion < positionThirdVersion, Is.True);
+    }
+
+    private void LoadJiraCredentialsFromConfig (string configPath)
+    {
+      var dir = Environment.CurrentDirectory;
+      if (!File.Exists(configPath))
+      {
+        var message = $"Could not Load Config from '{configPath}' because the file does not exist";
+        throw new FileNotFoundException(message);
+      }
+
+      using TextReader reader = new StreamReader(configPath);
+      var serializer = new XmlSerializer(typeof(JiraTestConfig));
+
+      var config = (JiraTestConfig) serializer.Deserialize(reader);
+      if (config == null)
+      {
+        const string message = "Could not deserialize config, please check your config settings format";
+        throw new InvalidOperationException(message);
+      }
+
+      _jiraUsername = config.Username;
+      _jiraPassword = config.Password;
     }
 
     private void DeleteVersionsIfExistent (string projectName, params string[] versionNames)
