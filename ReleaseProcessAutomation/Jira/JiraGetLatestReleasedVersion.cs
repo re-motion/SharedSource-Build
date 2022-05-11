@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
@@ -25,46 +26,26 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraGetLatestReleasedVersion : JiraTask
   {
-    public string? JiraProject { get; set; }
-
-    public string? VersionPattern { get; set; }
-
-    public string? VersionID { get; private set; }
-
-    public string? VersionName { get; private set; }
-
-    public string? NextUnreleasedVersionID { get; private set; }
-
-    public string? NextUnreleasedVersionName { get; private set; }
-
-    public void Execute ()
+    
+    public JiraGetLatestReleasedVersion ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
+        : base(jiraUsername, jiraPassword) { }
+    public IReadOnlyList<JiraProjectVersion> Execute (string jiraUrl, string jiraProjectKey, string versionPattern)
     {
-      if (string.IsNullOrEmpty(JiraUrl))
-      {
-        throw new InvalidOperationException("Jira url was not assigned.");
-      }
-      if (string.IsNullOrEmpty(JiraProject))
-      {
-        throw new InvalidOperationException("Jira project was not assigned.");
-      }
-      if (string.IsNullOrEmpty(VersionPattern))
-      {
-        throw new InvalidOperationException("Version pattern was not assigned.");
-      }
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (jiraUrl, Authenticator);
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
-      var versions = finder.FindVersions (JiraProject, VersionPattern).ToArray();
+      var versions = finder.FindVersions (jiraProjectKey, versionPattern).ToArray();
 
       var unreleasedVersions = versions.Where (v => v.released != true);
       var releasedVersions = versions.Where (v => v.released == true);
 
-      var latestReleasedVersion = releasedVersions.Last();
-      var earliestUnreleasedVersion = unreleasedVersions.First();
+      var versionsList = new List<JiraProjectVersion>
+                         {
+                             releasedVersions.Last(),
+                             unreleasedVersions.First()
+                         };
 
-      VersionID = latestReleasedVersion.id;
-      VersionName = latestReleasedVersion.name;
-      NextUnreleasedVersionID = earliestUnreleasedVersion.id;
-      NextUnreleasedVersionName = earliestUnreleasedVersion.name;
+      return versionsList;
     }
+
   }
 }

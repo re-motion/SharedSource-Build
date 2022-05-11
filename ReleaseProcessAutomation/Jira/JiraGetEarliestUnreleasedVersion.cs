@@ -16,6 +16,7 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
@@ -25,58 +26,29 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraGetEarliestUnreleasedVersion : JiraTask
   {
-    public string? JiraProject { get; set; }
 
-    public string? VersionPattern { get; set; }
+    public JiraGetEarliestUnreleasedVersion ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword) 
+        : base(jiraUsername, jiraPassword) { }
 
-    public string? VersionID { get; private set; }
-
-    public string? VersionName { get; private set; }
-
-    public string? NextVersionID { get; private set; }
-
-    public string? NextVersionName { get; private set; }
-
-    public int NumberOfUnreleasedVersions { get; private set; }
-
-    public void Execute ()
+    public IReadOnlyList<JiraProjectVersion> GetVersions (string jiraUrl, string jiraProjectKey, string versionPattern)
     {
-      if (string.IsNullOrEmpty(JiraUrl))
-      {
-        throw new InvalidOperationException("Jira url was not assigned.");
-      }
-      if (string.IsNullOrEmpty(JiraProject))
-      {
-        throw new InvalidOperationException("Jira project was not assigned.");
-      }
-      if (string.IsNullOrEmpty(VersionPattern))
-      {
-        throw new InvalidOperationException("Version pattern was not assigned.");
-      }
-      
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
-      IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
-      var versions = finder.FindUnreleasedVersions (JiraProject, VersionPattern).ToArray();
+      var versionList = new List<JiraProjectVersion>();
 
-      VersionID = "";
-      VersionName = "";
-      NextVersionID = "";
-      NextVersionName = "";
-      NumberOfUnreleasedVersions = versions.Count();
+      JiraRestClient restClient = new JiraRestClient(jiraUrl, Authenticator);
+      IJiraProjectVersionFinder finder = new JiraProjectVersionFinder(restClient);
+      var versions = finder.FindUnreleasedVersions(jiraProjectKey, versionPattern).ToArray();
 
-      if (NumberOfUnreleasedVersions >= 1)
+      if (versions.Length >= 1)
       {
-        var version = versions.First();
-        VersionID = version.id;
-        VersionName = version.name;
+        versionList.Add(versions.First());
       }
 
-      if (NumberOfUnreleasedVersions >= 2)
+      if (versions.Length >= 2)
       {
-        var nextVersion = versions.Skip (1).First();
-        NextVersionID = nextVersion.id;
-        NextVersionName = nextVersion.name;
+        versionList.Add(versions.Skip(1).First());
       }
+
+      return versionList;
     }
-  }
+  } 
 }
