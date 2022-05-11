@@ -48,10 +48,10 @@ public class PropertiesPropsReader : BasePropsReader
     var companyUrl = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.CompanyUrl);
     var copyright = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.Copyright);
     var productName = _xmlProperties.Properties.Single(prop => prop.Name == MSBuildProperties.ProductName);
-    var documentationFileName = _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationFileName);
-    var documentationRootPage = _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationRootPage);
+    var documentationFileName = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == SandcastleProperties.DocumentationFileName);
+    var documentationRootPage = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == SandcastleProperties.DocumentationRootPage);
     var documentationNamespaceSummaryFiles =
-        _xmlProperties.Properties.Single(prop => prop.Name == SandcastleProperties.DocumentationNamespaceSummaryFiles);
+        _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == SandcastleProperties.DocumentationNamespaceSummaryFiles);
     return new AssemblyMetadata
            {
                AssemblyInfoFile = assemblyInfoFile.EvaluatedValue,
@@ -59,9 +59,9 @@ public class PropertiesPropsReader : BasePropsReader
                CompanyUrl = companyUrl.EvaluatedValue,
                Copyright = copyright.EvaluatedValue,
                ProductName = productName.EvaluatedValue,
-               DocumentationFileName = documentationFileName.EvaluatedValue,
-               DocumentationRootPage = documentationRootPage.EvaluatedValue,
-               DocumentationNamespaceSummaryFiles = documentationNamespaceSummaryFiles.EvaluatedValue
+               DocumentationFileName = documentationFileName != null ? documentationFileName.EvaluatedValue : "",
+               DocumentationRootPage = documentationRootPage != null ? documentationRootPage.EvaluatedValue : "",
+               DocumentationNamespaceSummaryFiles = documentationNamespaceSummaryFiles != null ? documentationNamespaceSummaryFiles.EvaluatedValue : ""
            };
   }
 }
