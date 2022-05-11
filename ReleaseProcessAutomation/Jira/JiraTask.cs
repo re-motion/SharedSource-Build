@@ -22,31 +22,18 @@ namespace ReleaseProcessAutomation.Jira
 {
   public abstract class JiraTask
   {
-    //TODO Should all the values in the jira part be nullable? If the application finds the config it should be fine, and if the config isnt there, it should terminate. 
-    //TODO The only reason to make them nullable is to show that it could NOT work I guess. 
-    public string? JiraUrl { get; set; }
+    protected IAuthenticator Authenticator;
 
-    public string? JiraUsername { get; set; }
-
-    public string? JiraPassword { get; set; }
-
-    protected IAuthenticator Authenticator
+    protected JiraTask (string? jiraUsername, string? jiraPassword)
     {
-      get
+      if (string.IsNullOrEmpty (jiraUsername) && string.IsNullOrEmpty (jiraPassword))
       {
-        IAuthenticator authenticator;
-
-        if (string.IsNullOrEmpty (JiraUsername) && string.IsNullOrEmpty (JiraPassword))
-        {
-          authenticator = new NtlmAuthenticator();
-        }
-        else
-        {
-          authenticator = new HttpBasicAuthenticator (JiraUsername!, JiraPassword!);
-        }
-
-        return authenticator;
+        Authenticator = new NtlmAuthenticator();
       }
+      else
+      {
+        Authenticator = new HttpBasicAuthenticator (jiraUsername!, jiraPassword!);
+      } 
     }
   }
 }
