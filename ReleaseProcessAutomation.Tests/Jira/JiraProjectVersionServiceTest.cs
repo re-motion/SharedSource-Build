@@ -34,11 +34,16 @@ namespace ReleaseProcessAutomation.Tests.Jira
       _jiraUsername = Environment.GetEnvironmentVariable(c_usernameEnvironmentVariableName);
       _jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
 
-      if (string.IsNullOrEmpty(_jiraUsername) || string.IsNullOrEmpty(_jiraPassword))
+      if (string.IsNullOrEmpty(_jiraUsername))
       {
-        throw new InvalidOperationException($"Could not load credentials from environment variables '{c_usernameEnvironmentVariableName}' and '{c_passwordEnvironmentVariableName}'");
+        throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
       }
-      
+
+      if (string.IsNullOrEmpty(_jiraPassword))
+      {
+        throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
+      }
+
       IAuthenticator authenticator = new HttpBasicAuthenticator(_jiraUsername, _jiraPassword);
       _restClient = new JiraRestClient (c_jiraUrl, authenticator);
       _service = new JiraProjectVersionService (_restClient);
