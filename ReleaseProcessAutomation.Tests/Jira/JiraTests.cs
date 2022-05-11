@@ -19,7 +19,7 @@ public class JiraTests
     var postFix = "POSTFIX";
     var jira = new JiraEntrancePoint(config, consoleStub.Object, credentialStub.Object, postFix);
 
-    var output = jira.JiraUrlWithPostfix();
+    var output = jira.JiraUrlWithPostfix(config.Jira.JiraURL);
     
     Assert.That(output, Is.EqualTo($"{config.Jira.JiraURL}{postFix}"));
   }
@@ -36,7 +36,7 @@ public class JiraTests
     var jira = new JiraEntrancePoint(config, consoleStub.Object, credentialStub.Object, postFix);
 
 
-    var output = jira.JiraUrlWithPostfix();
+    var output = jira.JiraUrlWithPostfix(config.Jira.JiraURL);
     
     Assert.That(output, Is.EqualTo($"{config.Jira.JiraURL}/{postFix}"));
   }

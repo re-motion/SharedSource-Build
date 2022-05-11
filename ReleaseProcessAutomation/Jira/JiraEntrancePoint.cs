@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 using ReleaseProcessAutomation.Configuration.Data;
+using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Serilog;
 using Spectre.Console;
@@ -47,60 +50,55 @@ public class JiraEntrancePoint : IJiraEntrancePoint
 
   private string CreateVersion (SemanticVersion version)
   {
-    var jiraCreateVersion = new JiraCreateNewVersionWithVersionNumber
-                            {
-                                JiraUrl = JiraUrlWithPostfix(),
-                                JiraProject = _config.Jira.JiraProjectKey,
-                                VersionNumber = version.ToString()
-                            };
-    
-    AddAuthentication(jiraCreateVersion);
-    
-    jiraCreateVersion.Execute();
-
-    return jiraCreateVersion.CreatedVersionID ?? throw new InvalidOperationException("The created version did not have a version id assigned.");
+    var creator = GetNewCreator();
+    return creator.CreateNewVersionWithVersionNumber(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, version.ToString());
   }
 
-  public string JiraUrlWithPostfix ()
+  public string JiraUrlWithPostfix (string url)
   {
-    var url = _config.Jira.JiraURL;
     return url.EndsWith("/") ? $"{url}{_jiraUrlPostfix}" : $"{url}/{_jiraUrlPostfix}";
   }
+  
+  private string JiraUrlWithPostfix()
+  {
+    return JiraUrlWithPostfix(_config.Jira.JiraURL);
+  }
 
-  private void AddAuthentication (JiraTask task)
+
+  private JiraVersionCreator GetNewCreator ()
   {
     if (_config.Jira.UseNTLM)
-      return;
-    
+    {
+      return new JiraVersionCreator(null, null);
+    }
+
     var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
-    task.JiraUsername = credential.Username;
-    task.JiraPassword = credential.Password;
+    
+    return new JiraVersionCreator(credential.Username, credential.Password);
+  }
+  
+  private JiraVersionReleaser GetNewReleaser ()
+  {
+    if (_config.Jira.UseNTLM)
+    {
+      return new JiraVersionReleaser(null, null);
+    }
+
+    var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
+    
+    return new JiraVersionReleaser(credential.Username, credential.Password);
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
+    var releaser = GetNewReleaser();
     if (squashUnreleased)
     {
-      var releaseVersion = new JiraReleaseVersionAndSquashUnreleased
-                           {
-                               JiraUrl = JiraUrlWithPostfix(),
-                               VersionID = currentVersionID,
-                               NextVersionID = nextVersionID,
-                               ProjectKey = _config.Jira.JiraProjectKey
-                           };
-      AddAuthentication(releaseVersion);
-      releaseVersion.Execute();
+      releaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
     }
     else
     {
-      var releaseVersion = new JiraReleaseVersion
-                           {
-                               JiraUrl = JiraUrlWithPostfix(),
-                               VersionID = currentVersionID,
-                               NextVersionID = nextVersionID
-                           };
-      AddAuthentication(releaseVersion);
-      releaseVersion.Execute();
+      releaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
     }
   }
   public void CheckJiraCredentials (Credentials credentials)
