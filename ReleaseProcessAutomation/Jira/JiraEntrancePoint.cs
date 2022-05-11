@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml.Schema;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -46,6 +47,23 @@ public class JiraEntrancePoint : IJiraEntrancePoint
     _console.WriteLine(moveMessage);
 
     ReleaseVersion(currentVersionID, nextVersionID, squashUnreleased);
+  }
+  
+  public void CheckJiraCredentials (Credentials credentials)
+  {
+    var checkAuthentication = new JiraCheckAuthentication(credentials.Username, credentials.Password);
+    try
+    {
+      checkAuthentication.CheckAuthentication(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey);
+    }
+    catch (Exception e)
+    {
+      var errorMessage =
+          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
+      _log.Warning(errorMessage);
+      _console.WriteLine(errorMessage);
+      throw;
+    }
   }
 
   private string CreateVersion (SemanticVersion version)
@@ -101,27 +119,5 @@ public class JiraEntrancePoint : IJiraEntrancePoint
       releaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
     }
   }
-  public void CheckJiraCredentials (Credentials credentials)
-  {
-    var jiraCheckAuthentication = new JiraCheckAuthentication
-                                  { 
-                                      JiraUrl = JiraUrlWithPostfix(),
-                                      JiraUsername = credentials.Username,
-                                      JiraPassword = credentials.Password,
-                                      JiraProject = _config.Jira.JiraProjectKey
-                                  };
-
-    try
-    {
-      jiraCheckAuthentication.Execute();
-    }
-    catch (Exception e)
-    {
-      var errorMessage =
-          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
-      _log.Warning(errorMessage);
-      _console.WriteLine(errorMessage);
-      throw;
-    }
-  }
+  
 }

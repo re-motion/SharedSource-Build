@@ -16,6 +16,7 @@
 // 
 
 using System;
+using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
@@ -23,21 +24,19 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraCheckAuthentication : JiraTask
   {
-    public string? JiraProject { get; set; }
 
-    public void Execute ()
+    public JiraCheckAuthentication ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
+        : base(jiraUsername, jiraPassword) { }
+    public void CheckAuthentication (string jiraUrl, string jiraProjectKey)
     {
-      if (string.IsNullOrEmpty(JiraUrl))
-      {
-        throw new InvalidOperationException("Jira url was not assigned.");
-      }
-      JiraRestClient restClient = new JiraRestClient (JiraUrl, Authenticator);
+      JiraRestClient restClient = new JiraRestClient (jiraUrl, Authenticator);
 
       IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
 
       //Just call any function to send a Request and test Authentication Details
       //Throws JiraException with HttpStatusCode.Forbidden if Authentication fails
-      finder.FindUnreleasedVersions (JiraProject!, "(?s).*");
+      finder.FindUnreleasedVersions (jiraProjectKey!, "(?s).*");
     }
+
   }
 }
