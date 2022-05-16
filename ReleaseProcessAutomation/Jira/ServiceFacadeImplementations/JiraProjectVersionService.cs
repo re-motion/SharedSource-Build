@@ -189,7 +189,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           if (allClosedIssues.Count != 0)
             throw new JiraException(
-                $"Version '{currentVersion!.name}' cannot be released, as one  or multiple versions contain closed issues ({string.Join(", ", allClosedIssues.Select(aci => aci.key))})");
+                $"Version '{currentVersion!.name}' cannot be released, as one  or multiple versions contain closed issues ({string.Join(", ", allClosedIssues.Select(aci => aci.Key))})");
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {

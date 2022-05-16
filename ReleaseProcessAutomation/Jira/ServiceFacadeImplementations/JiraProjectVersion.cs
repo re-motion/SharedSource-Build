@@ -21,6 +21,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersion
   {
+    // ReSharper disable InconsistentNaming
     public string? self { get; set; }
     public string? id { get; set; }
     public string? description { get; set; }
@@ -31,5 +32,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public bool? overdue { get; set; }
     public string? project { get; set; }
     public string? projectId { get; set; }
+    
+    // ReSharper restore InconsistentNaming
+
   }
 }

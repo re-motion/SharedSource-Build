@@ -36,25 +36,25 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       foreach (var issue in issues)
       {
-        var resource = $"issue/{issue.id}";
+        var resource = $"issue/{issue.ID}";
         var request = jiraClient.CreateRestRequest (resource, Method.PUT);
 
-        if (issue.fields == null)
+        if (issue.Fields == null)
         {
           throw new InvalidOperationException($"Could not get fields from issue '{issue}");
         }
-        var newFixVersions = issue.fields!.fixVersions;
+        var newFixVersions = issue.Fields!.FixVersions;
         newFixVersions!.RemoveAll (v =>
         {
-          if (string.IsNullOrEmpty(v.id))
+          if (string.IsNullOrEmpty(v.ID))
           {
             throw new InvalidOperationException($"Could not get id from jira version");
           }
-          return v.id == oldVersionId;
+          return v.ID == oldVersionId;
         });
-        newFixVersions.Add (new JiraVersion { id = newVersionId });
+        newFixVersions.Add (new JiraVersion { ID = newVersionId });
 
-        var body = new { fields = new { fixVersions = newFixVersions.Select (v => new { v.id }) } };
+        var body = new { fields = new { fixVersions = newFixVersions.Select (v => new { id = v.ID }) } };
         request.AddBody (body);
 
         jiraClient.DoRequest<JiraIssue> (request, HttpStatusCode.NoContent);
@@ -68,7 +68,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.issues ?? throw new InvalidOperationException($"Could not get non closed issue data from jira with request '{resource}'");
+      return response.Data.Issues ?? throw new InvalidOperationException($"Could not get non closed issue data from jira with request '{resource}'");
     }
 
     public IEnumerable<JiraToBeMovedIssue> FindAllClosedIssues (string versionId)
@@ -78,7 +78,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var request = jiraClient.CreateRestRequest (resource, Method.GET);
 
       var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.issues ?? throw new InvalidOperationException($"Could not get closed issue data from jira with request '{resource}'");
+      return response.Data.Issues ?? throw new InvalidOperationException($"Could not get closed issue data from jira with request '{resource}'");
 
     }
   }

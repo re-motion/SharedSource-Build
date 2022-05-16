@@ -128,7 +128,7 @@ namespace ReleaseProcessAutomation.Tests.Jira
       if(closed)
       {
         var issue = response.Data;
-        CloseIssue (issue.id);
+        CloseIssue (issue.ID);
       }
 
       return response.Data;
@@ -232,7 +232,7 @@ namespace ReleaseProcessAutomation.Tests.Jira
       Assert.That (
           () => { _service.ReleaseVersionAndSquashUnreleased (alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
           Throws.Exception.TypeOf<JiraException>().With.Message.EqualTo (
-              "Version '" + alpha1Version.name + "' cannot be released, as one  or multiple versions contain closed issues (" + jiraIssue.key + ")"));
+              "Version '" + alpha1Version.name + "' cannot be released, as one  or multiple versions contain closed issues (" + jiraIssue.Key + ")"));
 
       Assert.That (_versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.2").SingleOrDefault(x => x.name == "6.0.1-alpha.2"), Is.Not.Null);
 
