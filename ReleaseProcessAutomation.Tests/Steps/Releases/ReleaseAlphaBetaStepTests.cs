@@ -23,6 +23,7 @@ using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -41,6 +42,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
       _consoleMock = new Mock<IAnsiConsole>();
+      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
 
       var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
       _config = new ConfigReader().LoadConfig(path);
@@ -53,6 +55,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Configuration.Data.Config _config;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
+    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -72,7 +75,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _inputReaderStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => alphaBetaStep.Execute(new SemanticVersion(), "", false, false),
@@ -97,7 +101,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _inputReaderStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
 
 

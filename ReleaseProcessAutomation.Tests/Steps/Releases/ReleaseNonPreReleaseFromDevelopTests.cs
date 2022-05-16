@@ -22,6 +22,7 @@ using Moq;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -42,12 +43,15 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
       _continueReleaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>())).Verifiable();
       _consoleMock = new Mock<IAnsiConsole>();
+      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
+
     }
 
     private Mock<IAnsiConsole> _consoleMock;
     private Configuration.Data.Config _config;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
+    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -67,7 +71,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _config,
           _msBuildInvokerMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
       
       Assert.That(() => step.Execute(new SemanticVersion(), "", false, false, false),
           Throws.InstanceOf<Exception>()
@@ -91,7 +96,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _config,
           _msBuildInvokerMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(() => step.Execute(version, "commitHash", false, false, false),
           Throws.InstanceOf<Exception>()
@@ -121,7 +127,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _config,
           _msBuildInvokerMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
 
       step.Execute(version, "commitHash", false, false, false);
@@ -153,7 +160,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _config,
           _msBuildInvokerMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
 
       step.Execute(version, "commitHash", true, false, false);
@@ -186,7 +194,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _config,
           _msBuildInvokerMock.Object,
-          _consoleMock.Object);
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
 
 
       step.Execute(version, "commitHash", false, true, false);

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -43,6 +44,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
 {
   private readonly IAncestorFinder _ancestorFinder;
   private readonly IContinueAlphaBetaStep _continueAlphaBetaStep;
+  private readonly IJiraEntrancePoint _jiraEntrancePoint;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseRCStep>();
   
@@ -53,12 +55,14 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
       IAncestorFinder ancestorFinder,
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueAlphaBetaStep continueAlphaBetaStep,
-      IAnsiConsole console)
+      IAnsiConsole console,
+      IJiraEntrancePoint jiraEntrancePoint)
       : base(gitClient, config, inputReader, console)
   {
     _ancestorFinder = ancestorFinder;
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueAlphaBetaStep = continueAlphaBetaStep;
+    _jiraEntrancePoint = jiraEntrancePoint;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool pauseForCommit, bool noPush, string ancestor = "")
@@ -102,8 +106,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
     }
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Please choose next version (open JIRA issues get moved there): ", nextPossibleVersions);
-
-    //Create and release jira versions
+    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     var preReleaseBranchName = $"prerelease/v{nextVersion}";
     _log.Debug("Will try to create pre release branch with name '{PrereleaseBranchName}'", preReleaseBranchName);

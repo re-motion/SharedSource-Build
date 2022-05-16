@@ -19,6 +19,7 @@ using System;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -41,6 +42,7 @@ public interface IReleasePatchStep
 public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
 {
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
+  private readonly IJiraEntrancePoint _jiraEntrancePoint;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleasePatchStep>();
 
@@ -50,11 +52,13 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
       IInputReader inputReader,
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueReleasePatchStep continueReleasePatchStep,
-      IAnsiConsole console)
+      IAnsiConsole console,
+      IJiraEntrancePoint jiraEntrancePoint)
       : base(gitClient, config, inputReader, console)
   {
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueReleasePatchStep = continueReleasePatchStep;
+    _jiraEntrancePoint = jiraEntrancePoint;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool startReleasePhase, bool pauseForCommit, bool noPush, bool onMaster)
@@ -113,7 +117,7 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
     if (startReleasePhase)
       return;
 
-    //Create and Release Jira Versions
+    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 

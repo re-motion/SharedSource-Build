@@ -23,6 +23,7 @@ using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -45,6 +46,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
       _continueReleasePatchMock = new Mock<IContinueReleasePatchStep>();
+      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
 
       _consoleStub = new Mock<IAnsiConsole>();
 
@@ -61,6 +63,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
     private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
+    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -81,7 +84,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false,false, "hotfix/v1.3.5"),
@@ -107,7 +111,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
@@ -134,7 +139,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
@@ -162,7 +168,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
@@ -191,7 +198,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
@@ -221,7 +229,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(true, false, "develop"),

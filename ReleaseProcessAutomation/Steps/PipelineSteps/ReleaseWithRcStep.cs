@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -46,6 +47,7 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
   private readonly IAncestorFinder _ancestorFinder;
   private readonly IContinueReleaseOnMasterStep _continueReleaseOnMasterStep;
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
+  private readonly IJiraEntrancePoint _jiraEntrancePoint;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseWithRcStep>();
 
@@ -57,13 +59,15 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueReleaseOnMasterStep continueReleaseOnMasterStep,
       IContinueReleasePatchStep continueReleasePatchStep,
-      IAnsiConsole console)
+      IAnsiConsole console,
+      IJiraEntrancePoint jiraEntrancePoint)
       : base(gitClient, config, inputReader, console)
   {
     _ancestorFinder = ancestorFinder;
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueReleaseOnMasterStep = continueReleaseOnMasterStep;
     _continueReleasePatchStep = continueReleasePatchStep;
+    _jiraEntrancePoint = jiraEntrancePoint;
   }
 
   public void Execute (bool pauseForCommit, bool noPush, string ancestor)
@@ -114,8 +118,9 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
     }
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Choose next version (open JIRA issues get moved there):", nextPossibleVersions);
-    //Create and Release Jira stuff
-
+    
+    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 
     if (pauseForCommit)

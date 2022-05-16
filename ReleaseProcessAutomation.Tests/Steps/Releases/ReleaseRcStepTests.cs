@@ -23,6 +23,7 @@ using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
@@ -43,6 +44,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _ancestorStub = new Mock<IAncestorFinder>();
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
+      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
 
       _consoleStub = new Mock<IAnsiConsole>();
 
@@ -57,6 +59,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Configuration.Data.Config _config;
     private Mock<IAncestorFinder> _ancestorStub;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
     private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
@@ -79,7 +82,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", false, false, "develop"),
@@ -107,7 +111,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", false, false, "release/v1.3.5"),
@@ -135,7 +140,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", false, false, "hotfix/v1.3.5"),
@@ -164,7 +170,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", true, false, "hotfix/v1.3.5"),
@@ -194,7 +201,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", false, false, "hotfix/v1.3.5"),
@@ -221,7 +229,8 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _ancestorStub.Object,
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
-          _consoleStub.Object);
+          _consoleStub.Object,
+          _jiraEntrancePointMock.Object);
 
       Assert.That(
           () => rcStep.Execute(new SemanticVersion(), "", false, false, "hotfix/v1.3.5"),
