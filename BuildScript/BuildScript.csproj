@@ -113,6 +113,15 @@
     </Compile>
     <Compile Include="BuildTasks\CreateTestConfigurations.cs" />
     <Compile Include="BuildTasks\InsertSourceLinks.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\AssemblyInfo.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\AssemblyInfoWrapper.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\BaseTask.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\DateAndTime.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\Maths.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\MSBuildHelper.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\TextString.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\Version.cs" />
+    <Compile Include="BuildTasks\MSBuildExtensionPack\XmlFile.cs" />
     <Compile Include="BuildTasks\SandcastleProjectBuilder.cs" />
     <Compile Include="BuildTasks\StringEnumerableExtensions.cs" />
     <Compile Include="BuildTasks\ExecutionRuntime.cs" />

@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.MsBuildHelper"/>
   <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder"/>
 
   <Target Name="GenerateDocumentation" DependsOnTargets="CreateDocumentationProperties;GenerateDocumentationInternal;" />

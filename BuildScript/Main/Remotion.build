@@ -21,8 +21,6 @@
 
   <PropertyGroup>
     <PackagesDirectory Condition="'$(PackagesDirectory)' == ''">$(MSBuildProjectDirectory)\..\packages\</PackagesDirectory>
-    <MSBuildExtensionPackPath Condition="'$(MSBuildExtensionPackPath)' == ''">$(PackagesDirectory)MSBuild.Extension.Pack.1.5.0\tools\net40\</MSBuildExtensionPackPath>
-    <ExtensionTasksPath>$(MSBuildExtensionPackPath)</ExtensionTasksPath>
     <DependDBBuildProcessorToolPath Condition="'$(NuGetToolPath)' == ''">$(PackagesDirectory)DependDB.BuildProcessor.2.0.0\tools\</DependDBBuildProcessorToolPath>
     <DependDBNuGetPreProcessorToolPath Condition="'$(NuGetToolPath)' == ''">$(PackagesDirectory)DependDB.BuildProcessor.NuGetPreProcessor.2.0.0\tools\</DependDBNuGetPreProcessorToolPath>
     <NUnitToolPath Condition="'$(NUnitToolPath)' == ''">$(PackagesDirectory)NUnit.ConsoleRunner.3.11.1\tools\</NUnitToolPath>
@@ -42,7 +40,6 @@
   </ItemGroup>
 
   <Import Project="$(RemotionBuildScriptPath)*.targets" />
-  <Import Project="$(MSBuildExtensionPackPath)MSBuild.ExtensionPack.tasks" />
   <Import Project="$(NuGetForMSBuildPath)NuGet.For.MSBuild.tasks" />
 
   <PropertyGroup>

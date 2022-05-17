@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.TextString"/>
+
   <PropertyGroup>
     <!-- http://semver.org/spec/v2.0.0.html -->
     <_versionNumberPattern><![CDATA[(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)]]></_versionNumberPattern>

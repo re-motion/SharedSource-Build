@@ -18,6 +18,11 @@
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Compression.Zip"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.FileSystem.File"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
+
   <PropertyGroup>
     <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\</NuGetWithDebugSymbolsOutputDirectory>
     <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\</NuGetWithSymbolServerSupportDirectory>
