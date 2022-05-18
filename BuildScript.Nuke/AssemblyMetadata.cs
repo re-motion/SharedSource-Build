@@ -29,4 +29,11 @@ public class AssemblyMetadata
   public string DocumentationFileName { get; init; } = "";
   public string DocumentationRootPage { get; init; } = "";
   public string DocumentationNamespaceSummaryFiles { get; init; } = "";
+  public string DependDBProjectName { get; init; } = "";
+  public string DependDBRetentionTime { get; init; } = "";
+  public string DependDBProjectBranch { get; init; } = "";
+  public string[] DependDBTrackedReferences { get; init; } = Array.Empty<string>();
+  public string DependDBProjectImportNotificationMailAddress { get; init; } = "";
+  public string[] DependDBNuGetSources { get; init; } = Array.Empty<string>();
+  public string DependDBTargetFramework { get; init; } = "";
 }

@@ -25,12 +25,6 @@ namespace Remotion.BuildScript.Components;
 
 public interface ICompile : IBaseBuild
 {
-  [Parameter("MSBuild Path to exe")]
-  protected string MsBuildPath => TryGetValue(() => MsBuildPath) ?? "";
-
-  [Parameter("VisualStudio version")]
-  protected VisualStudioVersion? VisualStudioVersion => TryGetValue(() => VisualStudioVersion) ?? null;
-
   [PublicAPI]
   public Target CompileReleaseBuild => _ => _
       .DependsOn<IReadConfiguration>(x => x.ReadConfiguration)

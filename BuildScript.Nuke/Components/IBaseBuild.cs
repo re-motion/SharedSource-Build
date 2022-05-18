@@ -40,4 +40,10 @@ public interface IBaseBuild : INukeBuild
 
   [Parameter("Skip compiling and running of tests - true / false")]
   public bool SkipTests => TryGetValue<bool?>(() => SkipTests) ?? false;
+
+  [Parameter("MSBuild Path to exe")]
+  protected string MsBuildPath => TryGetValue(() => MsBuildPath) ?? "";
+
+  [Parameter("VisualStudio version")]
+  protected VisualStudioVersion? VisualStudioVersion => TryGetValue(() => VisualStudioVersion) ?? null;
 }

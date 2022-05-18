@@ -52,6 +52,22 @@ public class PropertiesPropsReader : BasePropsReader
     var documentationRootPage = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == SandcastleProperties.DocumentationRootPage);
     var documentationNamespaceSummaryFiles =
         _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == SandcastleProperties.DocumentationNamespaceSummaryFiles);
+    var dependDbProjectName = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == DependDbProperties.DependDBProjectName);
+    var dependDbRetentionTime = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == DependDbProperties.DependDBRetentionTime);
+    var dependDbProjectBranch = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == DependDbProperties.DependDBProjectBranch);
+    var dependDbProjectImportNotificationMailAddress =
+        _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == DependDbProperties.DependDBProjectImportNotificationMailAddress);
+    var dependDbTrackedReferences =
+        _xmlProperties.Properties
+            .Where(x => x.Name == DependDbProperties.DependDBTrackedReferences)
+            .SelectMany(x => x.EvaluatedValue.Split(";"))
+            .ToArray();
+    var dependDbNuGetSources =
+        _xmlProperties.Properties
+            .Where(x => x.Name == DependDbProperties.DependDBNuGetSources)
+            .SelectMany(x => x.EvaluatedValue.Split(";"))
+            .ToArray();
+    var dependDbTargetFramework = _xmlProperties.Properties.SingleOrDefault(prop => prop.Name == DependDbProperties.DependDBTargetFramework);
     return new AssemblyMetadata
            {
                AssemblyInfoFile = assemblyInfoFile.EvaluatedValue,
@@ -61,7 +77,16 @@ public class PropertiesPropsReader : BasePropsReader
                ProductName = productName.EvaluatedValue,
                DocumentationFileName = documentationFileName != null ? documentationFileName.EvaluatedValue : "",
                DocumentationRootPage = documentationRootPage != null ? documentationRootPage.EvaluatedValue : "",
-               DocumentationNamespaceSummaryFiles = documentationNamespaceSummaryFiles != null ? documentationNamespaceSummaryFiles.EvaluatedValue : ""
+               DocumentationNamespaceSummaryFiles = documentationNamespaceSummaryFiles != null ? documentationNamespaceSummaryFiles.EvaluatedValue : "",
+               DependDBProjectName = dependDbProjectName != null ? dependDbProjectName.EvaluatedValue : "",
+               DependDBRetentionTime = dependDbRetentionTime != null ? dependDbRetentionTime.EvaluatedValue : "",
+               DependDBProjectBranch = dependDbProjectBranch != null ? dependDbProjectBranch.EvaluatedValue : "",
+               DependDBProjectImportNotificationMailAddress = dependDbProjectImportNotificationMailAddress != null
+                   ? dependDbProjectImportNotificationMailAddress.EvaluatedValue
+                   : "",
+               DependDBTrackedReferences = dependDbTrackedReferences,
+               DependDBNuGetSources = dependDbNuGetSources,
+               DependDBTargetFramework = dependDbTargetFramework != null ? dependDbTargetFramework.EvaluatedValue : "",
            };
   }
 }

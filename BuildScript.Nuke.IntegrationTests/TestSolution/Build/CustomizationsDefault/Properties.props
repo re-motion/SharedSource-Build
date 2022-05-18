@@ -9,5 +9,14 @@
     <DocumentationFileName>Remotion</DocumentationFileName>
     <DocumentationRootPage>$(SolutionDirectory)\Build\Customizations\GettingStarted.aml</DocumentationRootPage>
     <DocumentationNamespaceSummaryFiles>$(SolutionDirectory)\Build\Customizations\*.NamespaceDoc.xml</DocumentationNamespaceSummaryFiles>
+    <DependDBProjectName>Testsolution</DependDBProjectName>
+    <DependDBRetentionTime>30</DependDBRetentionTime>
+    <DependDBProjectBranch>Main</DependDBProjectBranch>
+    <!-- Required, but can be supplied via commandline parameter in server build and uses a fallback in local build -->
+    <DependDBProjectImportNotificationMailAddress>
+    </DependDBProjectImportNotificationMailAddress>
+    <DependDBTrackedReferences>Remotion;Remotion.*</DependDBTrackedReferences>
+    <DependDBNuGetSources>$(SolutionDirectory)packages</DependDBNuGetSources>
+    <DependDBTargetFramework>netstandard2.1</DependDBTargetFramework>
   </PropertyGroup>
 </Project>

@@ -31,7 +31,8 @@ public class BaseBuild
         ICompile,
         INuget,
         IRunTests,
-        IDocumentation
+        IDocumentation,
+        IDependDb
 {
   public ConfigurationData ConfigurationData { get; set; } = null!;
 }

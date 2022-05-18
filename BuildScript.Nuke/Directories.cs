@@ -65,6 +65,30 @@ public class Directories
   /// </summary>
   public AbsolutePath DocumentationBaseDirectory { get; }
 
+  /// <summary>
+  ///   <see cref="Output" />/doc
+  ///   Output path for the dependDb
+  ///   Which is used in the <see cref="Remotion.BuildScript.Components.IDependDb" /> target
+  /// </summary>
+  public AbsolutePath DependDBOutputDirectory { get; }
+  
+  /// <summary>
+  ///   <see cref="Output" />/doc
+  ///   Output path for the nuget packages with debug symbols
+  ///   Which is used in the <see cref="Remotion.BuildScript.Components.INuget" /> target
+  /// </summary>
+  public AbsolutePath NuGetWithDebugSymbols { get; }
+  
+  /// <summary>
+  ///   <see cref="Output" />/doc
+  ///   Output path for the nuget packages with symbol server support
+  ///   Which is used in the <see cref="Remotion.BuildScript.Components.INuget" /> target
+  /// </summary>
+  public AbsolutePath NuGetWithSymbolServerSupport { get; }
+
+  
+  
+  
   public Directories (AbsolutePath rootDirectory, AbsolutePath buildProjectDirectory)
   {
     Solution = rootDirectory;
@@ -74,5 +98,8 @@ public class Directories
     SolutionKeyFile = Solution / "remotion.snk";
     CustomizationPath = buildProjectDirectory / "Customizations";
     DocumentationBaseDirectory = Temp / "doc";
+    DependDBOutputDirectory = Output / "DependDB";
+    NuGetWithDebugSymbols = Output / "NuGetWithDebugSymbols";
+    NuGetWithSymbolServerSupport = Output / "NuGetWithSymbolServerSupport";
   }
 }

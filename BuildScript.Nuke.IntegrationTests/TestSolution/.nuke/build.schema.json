@@ -35,6 +35,14 @@
             "type": "string"
           }
         },
+        "DependDbProjectImportNotificationMailAddress": {
+          "type": "string",
+          "description": "Override for the notification mail address in the dependDb project import"
+        },
+        "DependDbProjectImportNotificationMailAddressCc": {
+          "type": "string",
+          "description": "Override for the notification cc mail address in the dependDb project import"
+        },
         "ExecutionRuntimes": {
           "type": "array",
           "description": "Execution runtimes available for the build to use for test running",
@@ -113,6 +121,7 @@
               "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
+              "DependDb",
               "GenerateDocumentation",
               "GenerateNuGetPackagesWithDebugSymbols",
               "GenerateNuGetPackagesWithSymbolServerSupport",
@@ -153,6 +162,7 @@
               "CleanFolders",
               "CompileReleaseBuild",
               "CompileTestBuild",
+              "DependDb",
               "GenerateDocumentation",
               "GenerateNuGetPackagesWithDebugSymbols",
               "GenerateNuGetPackagesWithSymbolServerSupport",
@@ -170,6 +180,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "VcsUrlTemplate": {
+          "type": "string",
+          "description": "Template for the version control system url"
         },
         "Verbosity": {
           "type": "string",

@@ -32,7 +32,7 @@ internal static class NugetTask
       AssemblyMetadata assemblyMetadata,
       Directories directories)
   {
-    var nugetOutputDirectory = directories.Output / c_nugetWithDebugSymbolsFolderName / projectFile.Configuration;
+    var nugetOutputDirectory = directories.NuGetWithDebugSymbols / projectFile.Configuration;
     FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
     if (projectFile.IsSdkProject)
     {
@@ -59,7 +59,7 @@ internal static class NugetTask
       AssemblyMetadata assemblyMetadata,
       Directories directories)
   {
-    var nugetOutputDirectory = directories.Output / c_nugetWithSymbolServerSupportFolderName / projectFile.Configuration;
+    var nugetOutputDirectory = directories.NuGetWithSymbolServerSupport / projectFile.Configuration;
     FileSystemTasks.EnsureExistingDirectory(nugetOutputDirectory);
     if (projectFile.IsSdkProject)
     {
@@ -85,8 +85,6 @@ internal static class NugetTask
   private const string c_symbolsNupkgFileExtension = ".symbols.nupkg";
   private const string c_nupkgFileExtensionFilter = "*.nupkg";
   private const string c_srcFolderName = "src";
-  private const string c_nugetWithSymbolServerSupportFolderName = "NuGetWithSymbolServerSupport";
-  private const string c_nugetWithDebugSymbolsFolderName = "NuGetWithDebugSymbols";
 
   private static void GeneratePackagesForSdkProjectWithDebugSymbols (
       ProjectMetadata projectFile,

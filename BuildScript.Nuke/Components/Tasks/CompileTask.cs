@@ -44,7 +44,7 @@ internal static class CompileTask
       string solutionPath
   )
   {
-    var toolPath = _toolPath ??= GetToolPath(msBuildNukePath, msBuildPath, visualStudioVersion);
+    var toolPath = _toolPath ??= BaseTask.GetMsBuildToolPath(msBuildNukePath, msBuildPath, visualStudioVersion);
     var sortedProjects = _sortedProjects ??= GetSortedProjects(solutionPath).GetAwaiter().GetResult();
 
     var projectFilesDebugTargets = projectFiles
@@ -97,25 +97,6 @@ internal static class CompileTask
 
   private static string? _toolPath;
   private static IReadOnlyCollection<Project>? _sortedProjects;
-
-  private static string GetToolPath (string msBuildNukePath, string msBuildPath, VisualStudioVersion? visualStudioVersion)
-  {
-    var toolPath = msBuildNukePath;
-    var editions = new[] { "Enterprise", "Professional", "Community", "BuildTools", "Preview" };
-    if (!string.IsNullOrEmpty(msBuildPath))
-      toolPath = msBuildPath;
-    else if (visualStudioVersion != null)
-    {
-      toolPath = editions
-          .Select(
-              edition => Path.Combine(
-                  EnvironmentInfo.SpecialFolder(SpecialFolders.ProgramFilesX86)!,
-                  $@"Microsoft Visual Studio\{visualStudioVersion.VsVersion}\{edition}\MSBuild\{visualStudioVersion.MsBuildVersion}\Bin\msbuild.exe"))
-          .First(File.Exists);
-    }
-
-    return toolPath;
-  }
 
   private static void CompileProject (
       IReadOnlyCollection<ProjectMetadata> projects,
