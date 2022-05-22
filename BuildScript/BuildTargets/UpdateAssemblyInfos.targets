@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.AssemblyInfo"/>
+
   <Target Name="UpdateAssemblyInfos" 
           DependsOnTargets="PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion" 
           Condition="'$(HasCustomVersion)' == 'True'">

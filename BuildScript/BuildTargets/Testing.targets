@@ -19,6 +19,10 @@
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.MsBuildHelper"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.TextString"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Science.Maths"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
   <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.CreateTestConfigurations"/>
 
   <!-- Constants -->
@@ -71,7 +75,6 @@
           Outputs="%(_testOutputFiles.Identity)">
     <Message Text="Running tests %(_testOutputFiles.Identity)" Importance="High"/>
 
-    <Error Text="The property 'MSBuildExtensionPackPath' is not set." Condition="'$(MSBuildExtensionPackPath)' == ''"/>
     <Error Text="The property 'LogDirectory' is not set." Condition="'$(LogDirectory)' == ''"/>
     <Error Text="The property 'NoDB' is not set." Condition="'$(NoDB)' == ''"/>
     <Error Text="The property 'NoBrowser' is not set." Condition="'$(NoBrowser)' == ''"/>
@@ -104,7 +107,6 @@
     <MSBuild Projects="$(_testingSetupBuildFile)"
              BuildInParallel="false"
              Properties="
-                MSBuildExtensionPackPath=$(MSBuildExtensionPackPath);
                 LogDirectory=$(LogDirectory);
                 Platform=$(_platform);
                 AppConfigFile=$(_appConfigFile);

@@ -17,5 +17,6 @@
     <file src="BuildTargets\*.*" target="BuildTargets" />
     <file src="Customizations\**\*.*" target="content/Customizations" />
     <file src="Main\*.*" target="content" />
+    <file src="..\license\NOTICE.txt" target="\" />
   </files>
 </package>
