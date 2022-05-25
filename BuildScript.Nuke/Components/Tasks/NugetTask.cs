@@ -21,6 +21,7 @@ using GlobExpressions;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
+using Nuke.Common.Utilities;
 
 namespace Remotion.BuildScript.Components.Tasks;
 
@@ -184,6 +185,8 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.CompanyName, assemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
+          .SetAuthors(assemblyMetadata.CompanyName)
+          .SetCopyright(assemblyMetadata.Copyright.EscapeMSBuild().Replace(",", "%2C"))
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
           .EnableNoRestore()
           .EnableNoBuild();
@@ -208,6 +211,8 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.CompanyName, assemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
+          .SetProperty(MSBuildProperties.Copyright, assemblyMetadata.Copyright.EscapeMSBuild().EscapeBraces())
+          .SetProperty(MSBuildProperties.Authors, assemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile);
 
   private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath, SemanticVersion semanticVersion)

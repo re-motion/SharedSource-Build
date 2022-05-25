@@ -8,6 +8,11 @@
     <NoWarn>CS0649</NoWarn>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>true</WarningsAsErrors>
+    <Title>re-motion Nuke Build Script</Title>
+    <Description>The re-motion build script provides an Nuke-based build for re-motion components.</Description>
+    <PackageTags>re-motion Nuke</PackageTags>
+    <PackageLicenseUrl>http://opensource.org/licenses/Apache-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>http://www.re-motion.org</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

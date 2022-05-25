@@ -21,6 +21,7 @@ namespace Remotion.BuildScript;
 
 public static class MSBuildProperties
 {
+  public static string Authors = "Authors";
   public const string PackageVersion = "PackageVersion";
   public const string CompanyName = "CompanyName";
   public const string ProductName = "ProductName";
