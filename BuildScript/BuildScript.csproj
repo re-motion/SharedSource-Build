@@ -116,7 +116,6 @@
     <Compile Include="BuildTasks\MSBuildExtensionPack\AssemblyInfo.cs" />
     <Compile Include="BuildTasks\MSBuildExtensionPack\AssemblyInfoWrapper.cs" />
     <Compile Include="BuildTasks\MSBuildExtensionPack\BaseTask.cs" />
-    <Compile Include="BuildTasks\MSBuildExtensionPack\DateAndTime.cs" />
     <Compile Include="BuildTasks\MSBuildExtensionPack\Maths.cs" />
     <Compile Include="BuildTasks\MSBuildExtensionPack\MSBuildHelper.cs" />
     <Compile Include="BuildTasks\MSBuildExtensionPack\TextString.cs" />
