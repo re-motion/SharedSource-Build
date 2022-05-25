@@ -18,6 +18,7 @@
 using System;
 using JetBrains.Annotations;
 using Nuke.Common;
+using Nuke.Common.Utilities.Collections;
 using Remotion.BuildScript.Components.Tasks;
 
 namespace Remotion.BuildScript.Components;
@@ -35,6 +36,13 @@ public interface IDocumentation : IBaseBuild
       .OnlyWhenStatic(() => !SkipDocumentation)
       .Executes(() =>
       {
+        if (ConfigurationData.AssemblyMetadata.DocumentationFileName.IsNullOrEmpty() ||
+            ConfigurationData.AssemblyMetadata.DocumentationRootPage.IsNullOrEmpty() ||
+            ConfigurationData.AssemblyMetadata.DocumentationNamespaceSummaryFiles.IsNullOrEmpty()
+           )
+        {
+          Assert.Fail("A documentation property is missing. Please check if 'DocumentationFileName', 'DocumentationRootPage', 'DocumentationNamespaceSummaryFiles' are configured");
+        }
         var documentOutputFile = DocumentationTask.CreateSandcastleProjectFile(
             ConfigurationData.ReleaseProjectFiles,
             ConfigurationData.AssemblyMetadata,
