@@ -26,8 +26,9 @@
     <NUnitToolPath Condition="'$(NUnitToolPath)' == ''">$(PackagesDirectory)NUnit.ConsoleRunner.3.11.1\tools\</NUnitToolPath>
     <NuGetToolPath Condition="'$(NuGetToolPath)' == ''">$(PackagesDirectory)NuGet.CommandLine.3.5.0\tools\</NuGetToolPath>
     <NuGetForMSBuildPath Condition="'$(NuGetForMSBuildPath)' == ''">$(PackagesDirectory)NuGet.for.MSBuild.1.4.3\build\</NuGetForMSBuildPath>
-    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\BuildTargets\</RemotionBuildScriptPath>
-    <RemotionBuildScriptTasksPath Condition="'$(RemotionBuildScriptTasksPath)' == ''">$(RemotionBuildScriptTasksPath)..\lib\net472\</RemotionBuildScriptTasksPath>
+    <RemotionBuildScriptPath Condition="'$(RemotionBuildScriptPath)' == ''">$(PackagesDirectory)Remotion.BuildScript.*\</RemotionBuildScriptPath>
+    <RemotionBuildScriptTargetsPath Condition="'$(RemotionBuildScriptTargetsPath)' == ''">$(RemotionBuildScriptPath)BuildTargets\</RemotionBuildScriptTargetsPath>
+    <RemotionBuildScriptTasksPath Condition="'$(RemotionBuildScriptTasksPath)' == ''">$(RemotionBuildScriptPath)lib\net472\</RemotionBuildScriptTasksPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,7 +40,7 @@
     <SupportedConfigurationIDs Include="Debug;Release"/>
   </ItemGroup>
 
-  <Import Project="$(RemotionBuildScriptPath)*.targets" />
+  <Import Project="$(RemotionBuildScriptTargetsPath)*.targets" />
   <Import Project="$(NuGetForMSBuildPath)NuGet.For.MSBuild.tasks" />
 
   <PropertyGroup>
