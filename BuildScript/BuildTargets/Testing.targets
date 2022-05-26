@@ -75,6 +75,7 @@
           Outputs="%(_testOutputFiles.Identity)">
     <Message Text="Running tests %(_testOutputFiles.Identity)" Importance="High"/>
 
+    <Error Text="The property 'RemotionBuildScriptTasksPath' is not set." Condition="'$(RemotionBuildScriptTasksPath)' == ''"/>
     <Error Text="The property 'LogDirectory' is not set." Condition="'$(LogDirectory)' == ''"/>
     <Error Text="The property 'NoDB' is not set." Condition="'$(NoDB)' == ''"/>
     <Error Text="The property 'NoBrowser' is not set." Condition="'$(NoBrowser)' == ''"/>
@@ -107,6 +108,7 @@
     <MSBuild Projects="$(_testingSetupBuildFile)"
              BuildInParallel="false"
              Properties="
+                RemotionBuildScriptTasksPath=$(RemotionBuildScriptTasksPath);
                 LogDirectory=$(LogDirectory);
                 Platform=$(_platform);
                 AppConfigFile=$(_appConfigFile);
