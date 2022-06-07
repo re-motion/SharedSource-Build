@@ -22,7 +22,7 @@ namespace ReleaseProcessAutomation.Jira
 {
   public abstract class JiraTask
   {
-    protected IAuthenticator Authenticator;
+    protected IAuthenticator Authenticator { get; }
 
     protected JiraTask (string? jiraUsername, string? jiraPassword)
     {
