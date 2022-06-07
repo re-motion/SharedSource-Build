@@ -21,7 +21,7 @@ namespace ReleaseProcessAutomation.Jira;
 
 public class JiraAuthenticationException : Exception
 {
-  public JiraAuthenticationException (string message) : base(message)
+  public JiraAuthenticationException (string message, Exception innerException) : base(message,innerException: innerException)
   {
   }
 }

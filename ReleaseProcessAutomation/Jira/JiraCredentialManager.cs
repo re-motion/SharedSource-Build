@@ -39,13 +39,15 @@ public class JiraCredentialManager
   private readonly Config _config;
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
+  private readonly IJiraAuthenticationWrapper _jiraAuthenticationWrapper;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJiraAuthenticationWrapper jiraAuthenticationWrapper,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _inputReader = inputReader;
     _console = console;
+    _jiraAuthenticationWrapper = jiraAuthenticationWrapper;
   }
 
   public Credentials GetCredential (string target)
@@ -62,21 +64,24 @@ public class JiraCredentialManager
                           Username = cred.UserName,
                           Password = cred.Password
                       };
-    
-    if (CheckJiraAuthentication(credentials))
+
+
+    try
     {
-      return credentials;
+      CheckJiraCredentials(credentials);
     }
-
-    _console.WriteLine("Invalid Jira Credentials saved.");
-    return AskForCredentials(target);
-
+    catch
+    {
+      _console.WriteLine("Invalid Jira Credentials saved.");
+      return AskForCredentials(target);
+    }
+    
+    return credentials;
   }
 
   private Credentials AskForCredentials (string target)
   {
-    var shouldContinue = true;
-    while (shouldContinue)
+    while (true)
     {
       var tmpCredentials = new Credentials
                            {
@@ -84,25 +89,31 @@ public class JiraCredentialManager
                                Password = _inputReader.ReadHiddenString("Please enter your Jira password")
                            };
 
-      if (CheckJiraAuthentication(tmpCredentials))
+      try
       {
-        _console.WriteLine("Do you want to save the login information to the credential manager?");
+        CheckJiraCredentials(tmpCredentials);
+      }
+      catch (Exception e)
+      {
+        _console.WriteLine("The input credentials didnt match, do you want to try again?");
         if (_inputReader.ReadConfirmation())
         {
-          SaveCredentials(tmpCredentials, target);
-
-          const string message = "Saved Password";
-          _console.WriteLine(message);
-          _log.Information(message);
+          continue;
         }
-        return tmpCredentials;
+        throw new JiraAuthenticationException("Authentication not successful, user does not want to try again.", e);
       }
+      
+      _console.WriteLine("Do you want to save the login information to the credential manager?");
+      if (_inputReader.ReadConfirmation())
+      {
+        SaveCredentials(tmpCredentials, target);
 
-      _console.WriteLine("The input credentials didnt match, do you want to try again?");
-      shouldContinue = _inputReader.ReadConfirmation();
+        const string message = "Saved Password";
+        _console.WriteLine(message);
+        _log.Information(message);
+      }
+      return tmpCredentials;
     }
-
-    throw new JiraAuthenticationException("Authentication not successful, user does not want to try again.");
   }
 
   private void SaveCredentials (Credentials tmpCredentials, string target)
@@ -120,30 +131,12 @@ public class JiraCredentialManager
     CredentialManager.SaveCredentials(target, cred);
   }
 
-  private bool CheckJiraAuthentication (Credentials credentials)
-  {
-    try
-    {
-      CheckJiraCredentials(credentials);
-    }
-    catch (JiraException e)
-    {
-      if (e.HttpStatusCode.Equals(HttpStatusCode.Forbidden) || e.HttpStatusCode.Equals(HttpStatusCode.Unauthorized))
-        return false;
-      else
-        throw;
-    }
-
-    return true;
-  }
-
   private void CheckJiraCredentials (Credentials credentials)
   {
     var jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
-    var finder = new JiraProjectVersionFinder(jiraRestClient);
     try
     {
-      finder.FindUnreleasedVersions(_config.Jira.JiraURL, "(?s).*");
+      _jiraAuthenticationWrapper.CheckAuthentication(jiraRestClient, _config.Jira.JiraProjectKey);
     }
     catch (Exception e)
     {
