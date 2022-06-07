@@ -26,29 +26,24 @@ using RestSharp.Authenticators;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public class JiraVersionCreator : JiraTask
+public class JiraVersionCreator
 {
+  private readonly JiraRestClient _jiraRestClient;
 
-  public JiraVersionCreator ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
-      :
-      base(jiraUsername, jiraPassword)
+  public JiraVersionCreator (JiraRestClient jiraRestClient)
   {
+    _jiraRestClient = jiraRestClient;
   }
   
-  public string CreateNewVersionWithVersionNumber (string jiraUrl, string jiraProject, string versionNumber )
+  public string CreateNewVersionWithVersionNumber (string jiraProject, string versionNumber )
   {
-    if (string.IsNullOrEmpty(jiraUrl))
-    {
-      throw new InvalidOperationException("Jira url was not assigned.");
-    }
     if (string.IsNullOrEmpty(jiraProject))
     {
       throw new InvalidOperationException("Jira project was not assigned.");
     }
       
-    JiraRestClient restClient = new JiraRestClient (jiraUrl, Authenticator);
-    IJiraProjectVersionService service = new JiraProjectVersionService (restClient);
-    IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (restClient);
+    IJiraProjectVersionService service = new JiraProjectVersionService (_jiraRestClient);
+    IJiraProjectVersionFinder finder = new JiraProjectVersionFinder (_jiraRestClient);
     var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, finder);
 
     var versions = finder.FindVersions (jiraProject, "(?s).*").ToList();

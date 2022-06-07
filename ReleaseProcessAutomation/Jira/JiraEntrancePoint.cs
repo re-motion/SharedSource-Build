@@ -23,6 +23,7 @@ using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
+using RestSharp.Authenticators;
 using Serilog;
 using Spectre.Console;
 
@@ -36,16 +37,25 @@ public interface IJiraEntrancePoint
 
 public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
 {
+  private readonly JiraRestClient _jiraRestClient;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
-  private readonly IJiraCredentialManager _jiraCredentialManager;
 
   public JiraEntrancePoint (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
-    _jiraCredentialManager = jiraCredentialManager;
     _config = config;
     _console = console;
+
+    if (config.Jira.UseNTLM)
+    {
+      _jiraRestClient = new JiraRestClient(config.Jira.JiraURL, new NtlmAuthenticator());
+    }
+    else
+    {
+      var credentials = jiraCredentialManager.GetCredential(config.Jira.JiraURL);
+      _jiraRestClient = new JiraRestClient(config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+    }
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -66,40 +76,13 @@ public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
   
   private string CreateVersion (SemanticVersion version)
   {
-    var creator = GetNewCreator();
-    return creator.CreateNewVersionWithVersionNumber(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, version.ToString());
-  }
-
-  
-
-
-  private JiraVersionCreator GetNewCreator ()
-  {
-    if (_config.Jira.UseNTLM)
-    {
-      return new JiraVersionCreator(null, null);
-    }
-
-    var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
-    
-    return new JiraVersionCreator(credential.Username, credential.Password);
-  }
-  
-  private JiraVersionReleaser GetNewReleaser ()
-  {
-    if (_config.Jira.UseNTLM)
-    {
-      return new JiraVersionReleaser(null, null);
-    }
-
-    var credential = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
-    
-    return new JiraVersionReleaser(credential.Username, credential.Password);
+    var creator = new JiraVersionCreator(_jiraRestClient);
+    return creator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
-    var releaser = GetNewReleaser();
+    var releaser = new JiraVersionReleaser(_jiraRestClient);
     if (squashUnreleased)
     {
       releaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
