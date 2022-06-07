@@ -27,8 +27,10 @@ namespace ReleaseProcessAutomation.Jira
   public class JiraGetEarliestUnreleasedVersion : JiraTask
   {
 
-    public JiraGetEarliestUnreleasedVersion ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword) 
-        : base(jiraUsername, jiraPassword) { }
+    public JiraGetEarliestUnreleasedVersion ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
+        : base(jiraUsername, jiraPassword)
+    {
+    }
 
     public IReadOnlyList<JiraProjectVersion> GetVersions (string jiraUrl, string jiraProjectKey, string versionPattern)
     {

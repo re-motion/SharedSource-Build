@@ -29,8 +29,11 @@ namespace ReleaseProcessAutomation.Jira;
 public class JiraVersionCreator : JiraTask
 {
 
-  public JiraVersionCreator ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword) : 
-      base(jiraUsername, jiraPassword) { }
+  public JiraVersionCreator ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
+      :
+      base(jiraUsername, jiraPassword)
+  {
+  }
 
   public void CreateNewVersion (string jiraUrl, string jiraProject, string versionPattern, bool sortVersion, int versionComponentToIncrement, DayOfWeek versionReleaseWeekday)
   {

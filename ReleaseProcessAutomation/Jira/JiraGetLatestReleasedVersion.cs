@@ -26,9 +26,11 @@ namespace ReleaseProcessAutomation.Jira
 {
   public class JiraGetLatestReleasedVersion : JiraTask
   {
-    
+
     public JiraGetLatestReleasedVersion ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
-        : base(jiraUsername, jiraPassword) { }
+        : base(jiraUsername, jiraPassword)
+    {
+    }
     public IReadOnlyList<JiraProjectVersion> Execute (string jiraUrl, string jiraProjectKey, string versionPattern)
     {
       JiraRestClient restClient = new JiraRestClient (jiraUrl, Authenticator);

@@ -26,7 +26,9 @@ namespace ReleaseProcessAutomation.Jira;
 public class JiraVersionReleaser : JiraTask
 {
   public JiraVersionReleaser ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
-      : base(jiraUsername, jiraPassword) { }
+      : base(jiraUsername, jiraPassword)
+  {
+  }
 
   public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion)
   {
