@@ -21,6 +21,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Xml.Schema;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Serilog;
 using Spectre.Console;
@@ -31,23 +32,20 @@ public interface IJiraEntrancePoint
 {
   void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
 
-  void CheckJiraCredentials (Credentials credentials);
 }
 
-public class JiraEntrancePoint : IJiraEntrancePoint
+public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
 {
   private readonly Config _config;
   private readonly IAnsiConsole _console;
-  private readonly string _jiraUrlPostfix;
   private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
   private readonly IJiraCredentialManager _jiraCredentialManager;
 
-  public JiraEntrancePoint (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix)
+  public JiraEntrancePoint (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _jiraCredentialManager = jiraCredentialManager;
     _config = config;
     _console = console;
-    _jiraUrlPostfix = jiraUrlPostfix;
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -66,38 +64,13 @@ public class JiraEntrancePoint : IJiraEntrancePoint
     ReleaseVersion(currentVersionID, nextVersionID, squashUnreleased);
   }
   
-  public void CheckJiraCredentials (Credentials credentials)
-  {
-    var checkAuthentication = new CheckAuthenticationJiraTask(credentials.Username, credentials.Password);
-    try
-    {
-      checkAuthentication.CheckAuthentication(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey);
-    }
-    catch (Exception e)
-    {
-      var errorMessage =
-          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
-      _log.Warning(errorMessage);
-      _console.WriteLine(errorMessage);
-      throw;
-    }
-  }
-
   private string CreateVersion (SemanticVersion version)
   {
     var creator = GetNewCreator();
     return creator.CreateNewVersionWithVersionNumber(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, version.ToString());
   }
 
-  public string JiraUrlWithPostfix (string url)
-  {
-    return url.EndsWith("/") ? $"{url}{_jiraUrlPostfix}" : $"{url}/{_jiraUrlPostfix}";
-  }
   
-  private string JiraUrlWithPostfix()
-  {
-    return JiraUrlWithPostfix(_config.Jira.JiraURL);
-  }
 
 
   private JiraVersionCreator GetNewCreator ()

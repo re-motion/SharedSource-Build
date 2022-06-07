@@ -18,7 +18,9 @@
 using System;
 using System.Net;
 using AdysTech.CredentialManager;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.ReadInput;
 using Serilog;
 using Spectre.Console;
@@ -31,16 +33,16 @@ public interface IJiraCredentialManager
 }
 
 public class JiraCredentialManager
-    : IJiraCredentialManager
+    : JiraWithPostfix,IJiraCredentialManager
 {
-  private IJiraEntrancePoint _jira;
+  private readonly Config _config;
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (IJiraEntrancePoint jira, IInputReader inputReader, IAnsiConsole console)
+  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
-    _jira = jira;
+    _config = config;
     _inputReader = inputReader;
     _console = console;
   }
@@ -121,7 +123,7 @@ public class JiraCredentialManager
   {
     try
     {
-      _jira.CheckJiraCredentials(credentials);
+      CheckJiraCredentials(credentials);
     }
     catch (JiraException e)
     {
@@ -132,6 +134,23 @@ public class JiraCredentialManager
     }
 
     return true;
+  }
+
+  private void CheckJiraCredentials (Credentials credentials)
+  {
+    var checkAuthentication = new CheckAuthenticationJiraTask(credentials.Username, credentials.Password);
+    try
+    {
+      checkAuthentication.CheckAuthentication(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey);
+    }
+    catch (Exception e)
+    {
+      var errorMessage =
+          $"Jira Check Authentication has failed. Maybe wrong credentials? \nAlso be advised that the ProjectKey is case sensitive '{_config.Jira.JiraProjectKey}'\nJira Url: '{_config.Jira.JiraURL}'. \nException Message: '{e.Message}'";
+      _log.Warning(errorMessage);
+      _console.WriteLine(errorMessage);
+      throw;
+    }
   }
 
   
