@@ -22,10 +22,10 @@ using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
 namespace ReleaseProcessAutomation.Jira
 {
-  public class JiraCheckAuthentication : JiraTask
+  public class CheckAuthenticationJiraTask : JiraTask
   {
 
-    public JiraCheckAuthentication ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
+    public CheckAuthenticationJiraTask ([CanBeNull] string? jiraUsername, [CanBeNull] string? jiraPassword)
         : base(jiraUsername, jiraPassword) { }
     public void CheckAuthentication (string jiraUrl, string jiraProjectKey)
     {

@@ -68,7 +68,7 @@ public class JiraEntrancePoint : IJiraEntrancePoint
   
   public void CheckJiraCredentials (Credentials credentials)
   {
-    var checkAuthentication = new JiraCheckAuthentication(credentials.Username, credentials.Password);
+    var checkAuthentication = new CheckAuthenticationJiraTask(credentials.Username, credentials.Password);
     try
     {
       checkAuthentication.CheckAuthentication(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey);

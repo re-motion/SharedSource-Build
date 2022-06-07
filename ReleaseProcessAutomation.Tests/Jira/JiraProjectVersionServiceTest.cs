@@ -55,7 +55,7 @@ namespace ReleaseProcessAutomation.Tests.Jira
     [Test]
     public void Call_JiraCheckAuthentication()
     {
-      var jiraCheckAuthenticationTask = new JiraCheckAuthentication(_jiraUsername, _jiraPassword);
+      var jiraCheckAuthenticationTask = new CheckAuthenticationJiraTask(_jiraUsername, _jiraPassword);
       jiraCheckAuthenticationTask.CheckAuthentication(c_jiraUrl,c_jiraProjectKey);
     }
 
