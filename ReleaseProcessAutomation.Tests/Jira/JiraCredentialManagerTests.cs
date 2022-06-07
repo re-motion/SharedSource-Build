@@ -2,9 +2,11 @@ using System.Net;
 using AdysTech.CredentialManager;
 using Moq;
 using NUnit.Framework;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.ReadInput;
+using RestSharp.Authenticators;
 using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.Jira;
@@ -12,20 +14,26 @@ namespace ReleaseProcessAutomation.Tests.Jira;
 [TestFixture]
 public class JiraCredentialManagerTests
 {
-  private Mock<IJiraEntrancePoint> _jiraMock;
   private Mock<IInputReader> _inputReaderMock;
+  private Mock<IJiraAuthenticationWrapper> _jiraAuthenticationWrapperMock;
   private TestConsole _console;
+  private Configuration.Data.Config _config;
 
   private const string c_userName = "user";
   private const string c_password = "password";
   private const string c_target = "target";
+  private const string c_postfix = "postfix";
 
   [SetUp]
   public void Setup ()
   {
-    _jiraMock = new Mock<IJiraEntrancePoint>();
     _inputReaderMock = new Mock<IInputReader>();
+    _jiraAuthenticationWrapperMock = new Mock<IJiraAuthenticationWrapper>();
     _console = new TestConsole();
+    _config = new Configuration.Data.Config();
+    _config.Jira = new JiraConfig();
+    _config.Jira.JiraURL = "https://www.JiraURL.com/url";
+    _config.Jira.JiraProjectKey = "JiraProjectKey";
   }
 
   [TearDown]
@@ -44,7 +52,7 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_CredentialsInCredentialManager_ReturnsCredentials ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticationWrapperMock.Object, c_postfix);
 
     var cred = new NetworkCredential(c_userName, c_password);
 
@@ -59,7 +67,7 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_NoCredentialsInCredentialManager_AsksUser ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticationWrapperMock.Object, c_postfix);
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -75,7 +83,7 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_AsksUser_SavesPassword ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticationWrapperMock.Object, c_postfix);
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -92,25 +100,30 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_WithWrongCredentials_AsksUser ()
   {
-    var networkCredential = new NetworkCredential("NotUserName", "NotPassword");
+    var username = "NotUserName";
+    var password = "NotPassword";
+    var networkCredential = new NetworkCredential(username, password);
     CredentialManager.SaveCredentials(c_target, networkCredential);
 
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticationWrapperMock.Object, c_postfix);
 
-    _jiraMock.Setup(_ => _.CheckJiraCredentials(new Credentials { Username = "NotUserName", Password = "NotPassword" }))
+    _jiraAuthenticationWrapperMock.Setup(_ => _.CheckAuthentication(
+            It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
-
+    
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
     _inputReaderMock.Setup(_ => _.ReadConfirmation(It.IsAny<bool>())).Returns(false);
 
-    jiraCredentialManager.GetCredential(c_target);
+    Assert.That(() => jiraCredentialManager.GetCredential(c_target), Throws.InstanceOf<JiraAuthenticationException>()
+        .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
 
     _inputReaderMock.Verify(_ => _.ReadString(It.IsAny<string>()));
     _inputReaderMock.Verify(_ => _.ReadHiddenString(It.IsAny<string>()));
     _inputReaderMock.Verify(_ => _.ReadConfirmation(It.IsAny<bool>()));
 
-    _jiraMock.Verify(_ => _.CheckJiraCredentials(new Credentials { Username = "NotUserName", Password = "NotPassword" }));
+    _jiraAuthenticationWrapperMock.Verify(_ => _.CheckAuthentication(
+       It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey));
   }
 
   [Test]
@@ -119,10 +132,14 @@ public class JiraCredentialManagerTests
     var networkCredential = new NetworkCredential("NotUserName", "NotPassword");
     CredentialManager.SaveCredentials(c_target, networkCredential);
 
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
-
-    _jiraMock.Setup(_ => _.CheckJiraCredentials(new Credentials { Username = "NotUserName", Password = "NotPassword" }))
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticationWrapperMock.Object, c_postfix);
+    var sequence = new MockSequence();
+    
+    _jiraAuthenticationWrapperMock.InSequence(sequence).Setup(_ => _.CheckAuthentication(
+            It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
+    
+    _jiraAuthenticationWrapperMock.InSequence(sequence).Setup(_ => _.CheckAuthentication(It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey));
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -130,20 +147,21 @@ public class JiraCredentialManagerTests
 
     jiraCredentialManager.GetCredential(c_target);
 
-    _jiraMock.Verify(_ => _.CheckJiraCredentials(new Credentials { Username = "NotUserName", Password = "NotPassword" }));
-
     var output = CredentialManager.GetCredentials(c_target);
 
     Assert.That(output.UserName, Is.EqualTo(c_userName));
     Assert.That(output.Password, Is.EqualTo(c_password));
+    
+    _jiraAuthenticationWrapperMock.Verify(_=> _.CheckAuthentication(It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey),Times.Exactly(2));
   }
 
   [Test]
   public void GetCredential_WithWrongCredentialInput_RepeatsFiveTimes ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_jiraMock.Object, _inputReaderMock.Object, _console);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticationWrapperMock.Object, c_postfix);
 
-    _jiraMock.Setup(_ => _.CheckJiraCredentials(new Credentials { Username = c_userName, Password = c_password }))
+    _jiraAuthenticationWrapperMock.Setup(_ => _.CheckAuthentication(
+            It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
@@ -160,6 +178,7 @@ public class JiraCredentialManagerTests
     Assert.That(() => jiraCredentialManager.GetCredential(c_target), Throws.InstanceOf<JiraAuthenticationException>()
         .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
 
-    _jiraMock.Verify(_ => _.CheckJiraCredentials(It.IsAny<Credentials>()), Times.Exactly(CallCount));
+    _jiraAuthenticationWrapperMock.Verify(_ => _.CheckAuthentication(
+        It.IsAny<JiraRestClient>(), _config.Jira.JiraProjectKey));
   }
 }
