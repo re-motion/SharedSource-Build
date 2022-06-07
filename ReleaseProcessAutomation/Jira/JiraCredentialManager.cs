@@ -28,11 +28,6 @@ using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public interface IJiraCredentialManager
-{
-  Credentials GetCredential (string target);
-}
-
 public class JiraCredentialManager
     : JiraWithPostfix,IJiraCredentialManager
 {

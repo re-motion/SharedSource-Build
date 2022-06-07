@@ -24,18 +24,13 @@ using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 namespace ReleaseProcessAutomation.Jira;
 
 public class JiraVersionReleaser
+    : IJiraVersionReleaser
 {
-  private readonly JiraRestClient _jiraRestClient;
 
-  public JiraVersionReleaser (JiraRestClient jiraRestClient)
+  public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion, JiraRestClient jiraRestClient)
   {
-    _jiraRestClient = jiraRestClient;
-  }
-
-  public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion)
-  {
-    IJiraProjectVersionService service = new JiraProjectVersionService (_jiraRestClient);
-    var jiraProjectVersionFinder = new JiraProjectVersionFinder (_jiraRestClient);
+    IJiraProjectVersionService service = new JiraProjectVersionService (jiraRestClient);
+    var jiraProjectVersionFinder = new JiraProjectVersionFinder (jiraRestClient);
     var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, jiraProjectVersionFinder);
 
     service.ReleaseVersion (versionID, nextVersionID);
@@ -46,9 +41,9 @@ public class JiraVersionReleaser
     }
   }
   
-  public void ReleaseVersionAndSquashUnreleased (string jiraUrl, string jiraProjectKey, string versionID, string nextVersionID)
+  public void ReleaseVersionAndSquashUnreleased (string jiraUrl, string jiraProjectKey, string versionID, string nextVersionID, JiraRestClient jiraRestClient)
   {
-    IJiraProjectVersionService service = new JiraProjectVersionService(_jiraRestClient);
+    IJiraProjectVersionService service = new JiraProjectVersionService(jiraRestClient);
     service.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
   }
 }

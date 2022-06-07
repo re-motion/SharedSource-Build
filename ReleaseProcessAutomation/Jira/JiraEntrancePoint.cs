@@ -29,23 +29,21 @@ using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public interface IJiraEntrancePoint
-{
-  void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
-
-}
-
 public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
 {
   private readonly JiraRestClient _jiraRestClient;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
+  private readonly IJiraVersionReleaser _jiraVersionReleaser;
+  private readonly IJiraVersionCreator _jiraVersionCreator;
   private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
 
-  public JiraEntrancePoint (Config config, IAnsiConsole console, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraEntrancePoint (Config config, IAnsiConsole console,IJiraVersionReleaser jiraVersionReleaser,IJiraVersionCreator jiraVersionCreator, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _console = console;
+    _jiraVersionReleaser = jiraVersionReleaser;
+    _jiraVersionCreator = jiraVersionCreator;
 
     if (config.Jira.UseNTLM)
     {
@@ -76,20 +74,18 @@ public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
   
   private string CreateVersion (SemanticVersion version)
   {
-    var creator = new JiraVersionCreator(_jiraRestClient);
-    return creator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
+    return _jiraVersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString(), _jiraRestClient);
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
-    var releaser = new JiraVersionReleaser(_jiraRestClient);
     if (squashUnreleased)
     {
-      releaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
+      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID, _jiraRestClient);
     }
     else
     {
-      releaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
+      _jiraVersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false,_jiraRestClient);
     }
   }
   
