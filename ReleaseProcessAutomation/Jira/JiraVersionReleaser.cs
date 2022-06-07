@@ -49,10 +49,4 @@ public class JiraVersionReleaser : JiraTask
     IJiraProjectVersionService service = new JiraProjectVersionService(restClient);
     service.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
   }
-  
-  
-  
-  
-
-
 }
