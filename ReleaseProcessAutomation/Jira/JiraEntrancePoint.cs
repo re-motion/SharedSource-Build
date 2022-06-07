@@ -52,12 +52,14 @@ public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
     else
     {
       var credentials = jiraCredentialManager.GetCredential(config.Jira.JiraURL);
+      //var credentials = new Credentials { Username = "user", Password = "password" };
       _jiraRestClient = new JiraRestClient(config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     }
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
   {
+    
     var currentVersionID = CreateVersion(currentVersion);
     var nextVersionID = CreateVersion(nextVersion);
 
@@ -70,6 +72,7 @@ public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
     _console.WriteLine(moveMessage);
 
     ReleaseVersion(currentVersionID, nextVersionID, squashUnreleased);
+    
   }
   
   private string CreateVersion (SemanticVersion version)

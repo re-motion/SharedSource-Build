@@ -18,10 +18,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using ReleaseProcessAutomation.Commands;
 using ReleaseProcessAutomation.Configuration;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Git;
+using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.MSBuild;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
@@ -91,7 +94,14 @@ public static class Program
         .AddTransient<IMSBuildCallAndCommit, MSBuildCallAndCommit>()
         .AddTransient<ISemanticVersionedGitRepository, SemanticVersionedGitRepository>()
         .AddTransient<IAncestorFinder, AncestorFinder>()
-
+        
+        //Jira things
+        .AddTransient<IJiraEntrancePoint>(x => ActivatorUtilities.CreateInstance<JiraEntrancePoint>(x, "rest/api/2/"))
+        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x,"rest/api/2/"))
+        .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
+        .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
+        .AddTransient<IJiraAuthenticationWrapper, JiraAuthenticationWrapper>()
+        
         //Different invoked methods
         .AddTransient<IStartReleaseStep, StartReleaseStep>()
         .AddTransient<IContinueRelease, ContinueReleaseStep>()
