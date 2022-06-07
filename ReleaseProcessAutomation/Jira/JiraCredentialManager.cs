@@ -22,6 +22,7 @@ using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.ReadInput;
+using RestSharp.Authenticators;
 using Serilog;
 using Spectre.Console;
 
@@ -138,10 +139,11 @@ public class JiraCredentialManager
 
   private void CheckJiraCredentials (Credentials credentials)
   {
-    var checkAuthentication = new CheckAuthenticationJiraTask(credentials.Username, credentials.Password);
+    var jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+    var finder = new JiraProjectVersionFinder(jiraRestClient);
     try
     {
-      checkAuthentication.CheckAuthentication(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey);
+      finder.FindUnreleasedVersions(_config.Jira.JiraURL, "(?s).*");
     }
     catch (Exception e)
     {
