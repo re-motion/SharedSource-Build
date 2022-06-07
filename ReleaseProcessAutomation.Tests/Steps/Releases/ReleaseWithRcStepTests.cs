@@ -69,12 +69,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     [Test]
     public void Execute_FromHotfix_CreatesHotfixPossibleVersions()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
       _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
 
       var withRcStep = new ReleaseWithRcStep(
           _gitClientStub.Object,
@@ -96,12 +98,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     [Test]
     public void Execute_FromDevelop_CreatesDevelopPossibleVersions()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
       _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
 
       var withRcStep = new ReleaseWithRcStep(
           _gitClientStub.Object,
@@ -121,15 +125,16 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     }
 
     [Test]
-    public void Execute_ThrowsNothing_CallsMBuildInvokeAndCommit()
+    public void Execute_ThrowsNothing_CallsMBuildInvokeAndCommitAndJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
       _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      _msBuildInvokerMock.Setup(_ => _.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, new SemanticVersion())).Verifiable();
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
       var withRcStep = new ReleaseWithRcStep(
           _gitClientStub.Object,
@@ -145,19 +150,21 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
           Throws.Nothing);
-      _msBuildInvokerMock.Verify();
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion));
     }
 
     [Test]
-    public void Execute_ThrowsNothingFromHotfix_CallsNextStep()
+    public void Execute_ThrowsNothingFromHotfix_CallsNextStepAndJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
       _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
-      _continueReleasePatchMock.Setup(_ => _.Execute(new SemanticVersion(), false, false)).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
 
       var withRcStep = new ReleaseWithRcStep(
@@ -175,19 +182,21 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
           Throws.Nothing);
 
-      _continueReleasePatchMock.Verify();
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, false, false));
     }
 
     [Test]
-    public void Execute_ThrowsNothingFromDevelop_CallsNextStep()
+    public void Execute_ThrowsNothingFromDevelop_CallsNextStepAndJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
-      _continueReleaseOnMasterMock.Setup(_ => _.Execute(new SemanticVersion(), false)).Verifiable();
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
 
       var withRcStep = new ReleaseWithRcStep(
@@ -205,20 +214,21 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           () => withRcStep.Execute(false, false, "develop"),
           Throws.Nothing);
 
-      _continueReleaseOnMasterMock.Verify();
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, false));
     }
 
     [Test]
-    public void Execute_ThrowsNothingFromDevelopWithPause_DoesNotCallsNextStep()
+    public void Execute_ThrowsNothingFromDevelopWithPause_DoesNotCallNextStepDoesCallMsBuildAndJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
       var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion()).Verifiable();
-      _continueReleaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>())).Verifiable();
-      _continueReleasePatchMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>(), false)).Verifiable();
+      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
 
       var withRcStep = new ReleaseWithRcStep(
@@ -236,8 +246,10 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           () => withRcStep.Execute(true, false, "develop"),
           Throws.Nothing);
 
-      _continueReleaseOnMasterMock.Verify(_=>_.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>()),Times.Never);
-      _continueReleasePatchMock.Verify(_=>_.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>(), false),Times.Never);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _msBuildInvokerMock.Verify(_=> _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
+      _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()),Times.Never);
+      _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), false),Times.Never);
     }
   }
 }

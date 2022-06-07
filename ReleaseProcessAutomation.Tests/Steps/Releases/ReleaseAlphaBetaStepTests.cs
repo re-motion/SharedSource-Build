@@ -61,13 +61,19 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     [Test]
     public void Execute_OnMasterWithoutErrors_CallsNextStep ()
     {
+      var nextVersion = new SemanticVersion
+                       {
+                           Major = 1,
+                           Minor = 1,
+                           Patch = 1
+                       };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
       _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
-      _continueAlphaBetaMock.Setup(_ => _.Execute(new SemanticVersion(), "develop", "develop", false)).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
       var alphaBetaStep = new ReleaseAlphaBetaStep(
           _gitClientStub.Object,
@@ -79,20 +85,27 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _jiraEntrancePointMock.Object);
 
       Assert.That(
-          () => alphaBetaStep.Execute(new SemanticVersion(), "", false, false),
+          () => alphaBetaStep.Execute(nextVersion, "", false, false),
           Throws.Nothing);
-      _continueAlphaBetaMock.Verify();
+      _continueAlphaBetaMock.Verify(_ => _.Execute(nextVersion, "develop", "develop", false));
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
     }
     [Test]
     public void Execute_OnMasterWithoutErrorsButWithPauseForCommit_CallsInvokeMBuildAndCommitButNotNextStep()
     {
+      var nextVersion = new SemanticVersion
+                        {
+                            Major = 1,
+                            Minor = 1,
+                            Patch = 1
+                        };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
       _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
-      _msBuildInvokerMock.Setup(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>())).Verifiable();
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
 
       var alphaBetaStep = new ReleaseAlphaBetaStep(
@@ -107,11 +120,12 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
 
 
       Assert.That(
-          () => alphaBetaStep.Execute(new SemanticVersion(), "", true, false),
+          () => alphaBetaStep.Execute(nextVersion, "", true, false),
           Throws.Nothing);
       
-      _msBuildInvokerMock.Verify();
-      _continueAlphaBetaMock.Verify(_=>_.Execute(It.IsAny<SemanticVersion>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()),Times.Never);
+      _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _continueAlphaBetaMock.Verify(_=>_.Execute(nextVersion, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()),Times.Never);
     }
   }
 

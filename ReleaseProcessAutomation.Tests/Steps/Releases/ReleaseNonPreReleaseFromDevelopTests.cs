@@ -41,7 +41,6 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _config = new ConfigReader().LoadConfig(path);
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
-      _continueReleaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>())).Verifiable();
       _consoleMock = new Mock<IAnsiConsole>();
       _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
 
@@ -82,32 +81,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     [Test]
     public void Execute_NoCurrentBranchName_ThrowsException()
     {
-      var version = new SemanticVersion();
-      var gitClientStub = new Mock<IGitClient>();
-      gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{version}")).Returns(true);
-
-      var readInputStub = new Mock<IInputReader>();
-
-      var step = new ReleaseOnMasterStep(
-          gitClientStub.Object,
-          readInputStub.Object,
-          _continueReleaseOnMasterMock.Object,
-          _config,
-          _msBuildInvokerMock.Object,
-          _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
-
-      Assert.That(() => step.Execute(version, "commitHash", false, false, false),
-          Throws.InstanceOf<Exception>()
-              .With.Message.EqualTo("The branch 'release/v0.0.0' already exists."));
-    }
-
-    [Test]
-    public void Execute_NothingThrows_ShouldCallNextStep()
-    {
-      var version = new SemanticVersion
+      var nextVersion = new SemanticVersion
                         {
                             Major = 1,
                             Minor = 1,
@@ -116,10 +90,41 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       var gitClientStub = new Mock<IGitClient>();
       gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{version}")).Returns(false);
+      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{nextVersion}")).Returns(true);
 
       var readInputStub = new Mock<IInputReader>();
-      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(version);
+
+      var step = new ReleaseOnMasterStep(
+          gitClientStub.Object,
+          readInputStub.Object,
+          _continueReleaseOnMasterMock.Object,
+          _config,
+          _msBuildInvokerMock.Object,
+          _consoleMock.Object,
+          _jiraEntrancePointMock.Object);
+
+      Assert.That(() => step.Execute(nextVersion, "commitHash", false, false, false),
+          Throws.InstanceOf<Exception>()
+              .With.Message.EqualTo("The branch 'release/v1.1.1' already exists."));
+    }
+
+    [Test]
+    public void Execute_NothingThrows_ShouldCallNextStep()
+    {
+      var nextVersion = new SemanticVersion
+                        {
+                            Major = 1,
+                            Minor = 1,
+                            Patch = 1,
+                        };
+      var nextJiraVersion = new SemanticVersion();
+      var gitClientStub = new Mock<IGitClient>();
+      gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+      gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
+      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{nextVersion}")).Returns(false);
+
+      var readInputStub = new Mock<IInputReader>();
+      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(nextJiraVersion);
 
       var step = new ReleaseOnMasterStep(
           gitClientStub.Object,
@@ -131,28 +136,29 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _jiraEntrancePointMock.Object);
 
 
-      step.Execute(version, "commitHash", false, false, false);
+      step.Execute(nextVersion, "commitHash", false, false, false);
 
-
-      _continueReleaseOnMasterMock.Verify();
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _continueReleaseOnMasterMock.Verify(_=>_.Execute(nextVersion, It.IsAny<bool>()));
     }
 
     [Test]
     public void Execute_NothingThrowsButStartReleasePhase_ShouldNotCallNextStep()
     {
-      var version = new SemanticVersion
-                    {
-                        Major = 1,
-                        Minor = 1,
-                        Patch = 1,
-                    };
+        var nextVersion = new SemanticVersion
+                          {
+                                  Major = 1,
+                                  Minor = 1,
+                                  Patch = 1,
+                          };
+        var nextJiraVersion = new SemanticVersion();
       var gitClientStub = new Mock<IGitClient>();
       gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{version}")).Returns(false);
+      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{nextVersion}")).Returns(false);
 
       var readInputStub = new Mock<IInputReader>();
-      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(version);
+      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(nextJiraVersion);
 
       var step = new ReleaseOnMasterStep(
           gitClientStub.Object,
@@ -164,29 +170,32 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _jiraEntrancePointMock.Object);
 
 
-      step.Execute(version, "commitHash", true, false, false);
+      step.Execute(nextVersion, "commitHash", true, false, false);
       
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
 
-      _continueReleaseOnMasterMock.Verify(_=> _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>()),Times.Never);
+      _continueReleaseOnMasterMock.Verify(_=> _.Execute(nextVersion, It.IsAny<bool>()),Times.Never);
 
     }
 
     [Test]
     public void Execute_NothingThrowsButPauseForCommit_ShouldNotCallNextStep()
     {
-      var version = new SemanticVersion
+      var nextVersion = new SemanticVersion
                     {
                         Major = 1,
                         Minor = 1,
                         Patch = 1,
                     };
+      var nextJiraVersion = new SemanticVersion();
+      
       var gitClientStub = new Mock<IGitClient>();
       gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{version}")).Returns(false);
+      gitClientStub.Setup(_ => _.DoesBranchExist($"release/v{nextVersion}")).Returns(false);
 
       var readInputStub = new Mock<IInputReader>();
-      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(version);
+      readInputStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(nextJiraVersion);
 
       var step = new ReleaseOnMasterStep(
           gitClientStub.Object,
@@ -198,9 +207,10 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _jiraEntrancePointMock.Object);
 
 
-      step.Execute(version, "commitHash", false, true, false);
+      step.Execute(nextVersion, "commitHash", false, true, false);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
 
-      _continueReleaseOnMasterMock.Verify(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>()), Times.Never);
+      _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()), Times.Never);
     }
 
     

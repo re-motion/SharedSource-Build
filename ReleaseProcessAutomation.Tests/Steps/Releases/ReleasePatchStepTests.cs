@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using Moq;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
@@ -63,13 +64,15 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     [Test]
     public void Execute_OnMasterWithoutErrors_CallsNextStep()
     {
+      var nextVersion = new SemanticVersion { Major = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("master")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
-      _contineReleasePatchMock.Setup(_ => _.Execute(new SemanticVersion(), false, true)).Verifiable();
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v1.0.0");
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+      _contineReleasePatchMock.Setup(_ => _.Execute(nextVersion, false, true)).Verifiable();
 
       var patchStep = new ReleasePatchStep(
           _gitClientStub.Object,
@@ -83,21 +86,24 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
 
 
       Assert.That(
-          () => patchStep.Execute(new SemanticVersion(), "" , false, false, false, true),
+          () => patchStep.Execute(nextVersion, "" , false, false, false, true),
           Throws.Nothing);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _contineReleasePatchMock.Verify();
     }
 
     [Test]
     public void Execute_OnHotfixWithoutErrors_CallsNextStep()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("hotfix/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
-      _contineReleasePatchMock.Setup(_ => _.Execute(new SemanticVersion(), false, false)).Verifiable();
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+      _contineReleasePatchMock.Setup(_ => _.Execute(nextVersion, false, false)).Verifiable();
 
       var patchStep = new ReleasePatchStep(
           _gitClientStub.Object,
@@ -111,20 +117,23 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
 
 
       Assert.That(
-          () => patchStep.Execute(new SemanticVersion(), "", false, false, false, false),
+          () => patchStep.Execute(nextVersion, "", false, false, false, false),
           Throws.Nothing);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _contineReleasePatchMock.Verify();
     }
 
     [Test]
-    public void Execute_OnHotfixWithoutErrorsWithStartReleasePhase_DoesNotCallNextStepAndInvokeAndCommit()
+    public void Execute_OnHotfixWithoutErrorsWithStartReleasePhase_DoesNotCallNextStepOrInvokeAndCommitOrJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("hotfix/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
       
 
       var patchStep = new ReleasePatchStep(
@@ -139,21 +148,23 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
 
 
       Assert.That(
-          () => patchStep.Execute(new SemanticVersion(), "", true, false, false, false),
+          () => patchStep.Execute(nextVersion, "", true, false, false, false),
           Throws.Nothing);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
       _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>()), Times.Never);
       _contineReleasePatchMock.Verify(_=>_.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
     }
     [Test]
-    public void Execute_OnHotfixWithoutErrorsWithPauseForCommit_DoesNotCallNextStepButDoesCallInvokeBuildAndCommit()
+    public void Execute_OnHotfixWithoutErrorsWithPauseForCommit_DoesNotCallNextStepButDoesCallInvokeBuildAndCommitAndJira()
     {
+      var nextVersion = new SemanticVersion { Patch = 1 };
+      var nextJiraVersion = new SemanticVersion();
       _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
       _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
       _gitClientStub.Setup(_ => _.IsOnBranch("hotfix/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.0");
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsHotfix();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(new SemanticVersion());
-      _msBuildInvokerMock.Setup(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>())).Verifiable();
+      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
       var patchStep = new ReleasePatchStep(
           _gitClientStub.Object,
@@ -167,10 +178,11 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
 
 
       Assert.That(
-          () => patchStep.Execute(new SemanticVersion(), "", false, true, false, false),
+          () => patchStep.Execute(nextVersion, "", false, true, false, false),
           Throws.Nothing);
-      _msBuildInvokerMock.Verify();
-      _contineReleasePatchMock.Verify(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>()));
+      _contineReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
     }
   }
 }
