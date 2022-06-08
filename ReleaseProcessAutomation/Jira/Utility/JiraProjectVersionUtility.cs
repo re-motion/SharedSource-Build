@@ -20,34 +20,32 @@ using System.Collections.Generic;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.SemanticVersioning;
 
-namespace ReleaseProcessAutomation.Jira.Utility
-{
-  public class JiraProjectVersionUtility
-  {
-    public List<JiraProjectVersionSemVerAdapter> JiraProjectVersionsToJiraProjectVersionSemVerAdapters (
-        SemanticVersionParser semVerParser,
-        IEnumerable<JiraProjectVersion> jiraProjectVersions)
-    {
-      var versionList = new List<JiraProjectVersionSemVerAdapter>();
+namespace ReleaseProcessAutomation.Jira.Utility;
 
-      foreach (var version in jiraProjectVersions)
+public class JiraProjectVersionUtility
+{
+  public List<JiraProjectVersionSemVerAdapter> JiraProjectVersionsToJiraProjectVersionSemVerAdapters (
+      SemanticVersionParser semVerParser,
+      IEnumerable<JiraProjectVersion> jiraProjectVersions)
+  {
+    var versionList = new List<JiraProjectVersionSemVerAdapter>();
+
+    foreach (var version in jiraProjectVersions)
+      try
       {
-        try
-        {
-          versionList.Add (
-              new JiraProjectVersionSemVerAdapter()
-              {
+        versionList.Add(
+            new JiraProjectVersionSemVerAdapter()
+            {
                 JiraProjectVersion = version,
-                SemanticVersion = semVerParser.ParseVersion (version.name ?? throw new InvalidOperationException("The given version did not have a name assigned."))
-              });
-        }
-        catch (ArgumentException)
-        {
-          //Empty Catch. Invalid versions are not relevant for us
-        }
+                SemanticVersion = semVerParser.ParseVersion(
+                    version.name ?? throw new InvalidOperationException("The given version did not have a name assigned."))
+            });
+      }
+      catch (ArgumentException)
+      {
+        //Empty Catch. Invalid versions are not relevant for us
       }
 
-      return versionList;
-    }
+    return versionList;
   }
 }

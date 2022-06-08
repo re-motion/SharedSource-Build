@@ -16,12 +16,9 @@
 //
 
 using System;
-using System.IO;
 using Moq;
 using NUnit.Framework;
-using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
-using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.MSBuild;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Spectre.Console;

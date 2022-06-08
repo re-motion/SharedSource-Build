@@ -94,7 +94,7 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
 
     _log.Debug("Getting next possible jira versions for hotfix from version '{NextVersion}'", nextVersion);
     var nextPossibleJiraVersions = nextVersion.GetNextPossibleVersionsHotfix();
-    var nextJiraVersion = InputReader.ReadVersionChoice( "Please choose next version (open JIRA issues get moved there): ", nextPossibleJiraVersions);
+    var nextJiraVersion = InputReader.ReadVersionChoice("Please choose next version (open JIRA issues get moved there): ", nextPossibleJiraVersions);
 
     var releaseBranchName = $"release/v{nextVersion}";
     _log.Debug("Will try to create release branch name '{ReleaseBranchName}'", releaseBranchName);

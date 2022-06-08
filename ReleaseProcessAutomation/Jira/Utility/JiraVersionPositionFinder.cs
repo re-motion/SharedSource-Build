@@ -20,50 +20,52 @@ using System.Collections.Generic;
 using System.Linq;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
-namespace ReleaseProcessAutomation.Jira.Utility
+namespace ReleaseProcessAutomation.Jira.Utility;
+
+public class JiraVersionPositionFinder<T> : IJiraVersionMovePositioner<T>
+    where T : IComparable<T>
 {
-  public class JiraVersionPositionFinder<T> : IJiraVersionMovePositioner<T> where T : IComparable<T>
+  private readonly List<JiraProjectVersionComparableAdapter<T>> _jiraProjectVersions;
+  private readonly IOrderedEnumerable<JiraProjectVersionComparableAdapter<T>> _orderedVersions;
+  private readonly List<JiraProjectVersionComparableAdapter<T>> _toBeOrdered;
+  private readonly JiraProjectVersionComparableAdapter<T> _createdVersion;
+
+  public JiraVersionPositionFinder (
+      List<JiraProjectVersionComparableAdapter<T>> jiraProjectVersions,
+      JiraProjectVersionComparableAdapter<T> createdVersion)
   {
-    private readonly List<JiraProjectVersionComparableAdapter<T>> _jiraProjectVersions;
-    private readonly IOrderedEnumerable<JiraProjectVersionComparableAdapter<T>> _orderedVersions;
-    private readonly List<JiraProjectVersionComparableAdapter<T>> _toBeOrdered;
-    private readonly JiraProjectVersionComparableAdapter<T> _createdVersion;
+    _jiraProjectVersions = jiraProjectVersions;
+    _createdVersion = createdVersion;
 
-    public JiraVersionPositionFinder (List<JiraProjectVersionComparableAdapter<T>> jiraProjectVersions, JiraProjectVersionComparableAdapter<T> createdVersion)
-    {
-      _jiraProjectVersions = jiraProjectVersions;
-      _createdVersion = createdVersion;
+    _toBeOrdered = _jiraProjectVersions.ToList();
+    _toBeOrdered.Add(createdVersion);
 
-      _toBeOrdered = _jiraProjectVersions.ToList();
-      _toBeOrdered.Add (createdVersion);
+    _orderedVersions = _toBeOrdered.OrderBy(x => x.ComparableVersion);
+  }
 
-      _orderedVersions = _toBeOrdered.OrderBy (x => x.ComparableVersion);
-    }
+  public JiraProjectVersionComparableAdapter<T> GetCreatedVersion ()
+  {
+    return _createdVersion;
+  }
 
-    public JiraProjectVersionComparableAdapter<T> GetCreatedVersion ()
-    {
-      return _createdVersion;
-    }
+  public bool HasToBeMoved ()
+  {
+    if (_jiraProjectVersions.Count == 0)
+      return false;
 
-    public bool HasToBeMoved ()
-    {
-      if (_jiraProjectVersions.Count == 0)
-        return false;
+    if (Equals(GetVersionBeforeCreatedVersionOriginalList(), GetVersionBeforeCreatedVersionOrderedList()))
+      return false;
 
-      if (Equals (GetVersionBeforeCreatedVersionOriginalList(), GetVersionBeforeCreatedVersionOrderedList()))
-        return false;
+    return true;
+  }
 
-      return true;
-    }
+  public JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ()
+  {
+    return _orderedVersions.TakeWhile(x => !Equals(x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
+  }
 
-    public JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ()
-    {
-      return _orderedVersions.TakeWhile (x => !Equals (x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
-    }
-
-    private JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOriginalList ()
-    {
-      return _toBeOrdered.TakeWhile (x => !Equals (x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
-    }
+  private JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOriginalList ()
+  {
+    return _toBeOrdered.TakeWhile(x => !Equals(x.ComparableVersion, _createdVersion.ComparableVersion)).LastOrDefault();
   }
 }

@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
-using ReleaseProcessAutomation.Jira.Utility;
 
 namespace ReleaseProcessAutomation.Jira;
 
@@ -34,43 +33,37 @@ public class JiraVersionCreator
     _projectVersionFinder = projectVersionFinder;
     _jiraProjectVersionService = jiraProjectVersionService;
   }
+
   public string CreateNewVersionWithVersionNumber (string jiraProject, string versionNumber)
   {
     if (string.IsNullOrEmpty(jiraProject))
-    {
       throw new InvalidOperationException("Jira project was not assigned.");
-    }
-    
-    var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (_jiraProjectVersionService, _projectVersionFinder);
 
-    var versions = _projectVersionFinder.FindVersions (jiraProject, "(?s).*").ToList();
-    var jiraProjectVersion = versions.Where (x => x.name == versionNumber).DefaultIfEmpty().First();
+    var jiraProjectVersionRepairer = new JiraProjectVersionRepairer(_jiraProjectVersionService, _projectVersionFinder);
+
+    var versions = _projectVersionFinder.FindVersions(jiraProject, "(?s).*").ToList();
+    var jiraProjectVersion = versions.Where(x => x.name == versionNumber).DefaultIfEmpty().First();
 
     string createdVersionID;
-    
+
     if (jiraProjectVersion != null)
     {
       if (jiraProjectVersion.released)
-        throw new JiraException ("The Version '" + versionNumber + "' got already released in Jira.");
+        throw new JiraException("The Version '" + versionNumber + "' got already released in Jira.");
 
       if (string.IsNullOrEmpty(jiraProjectVersion.id))
-      {
         throw new InvalidOperationException("Jira project id was not assigned.");
-      }
       createdVersionID = jiraProjectVersion.id;
     }
     else
     {
       if (string.IsNullOrEmpty(versionNumber))
-      {
         throw new InvalidOperationException("Version number was not assigned.");
-      }
-      createdVersionID = _jiraProjectVersionService.CreateVersion (jiraProject, versionNumber, null);
+      createdVersionID = _jiraProjectVersionService.CreateVersion(jiraProject, versionNumber, null);
 
-      jiraProjectVersionRepairer.RepairVersionPosition (createdVersionID);
+      jiraProjectVersionRepairer.RepairVersionPosition(createdVersionID);
     }
 
     return createdVersionID;
   }
-  
 }

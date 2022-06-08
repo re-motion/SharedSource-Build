@@ -4,5 +4,5 @@ namespace ReleaseProcessAutomation.Jira.Utility;
 
 public interface IJiraRestClientProvider
 {
-  JiraRestClient GetJiraRestClient();
+  JiraRestClient GetJiraRestClient ();
 }

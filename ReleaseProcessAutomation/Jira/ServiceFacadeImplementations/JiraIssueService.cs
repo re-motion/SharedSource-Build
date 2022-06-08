@@ -22,66 +22,63 @@ using System.Net;
 using ReleaseProcessAutomation.Jira.Utility;
 using RestSharp;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+
+public class JiraIssueService
+    : IJiraIssueService
 {
-  public class JiraIssueService
-      : IJiraIssueService
+  private readonly IJiraRestClientProvider _jiraRestClientProvider;
+
+  public JiraIssueService (IJiraRestClientProvider jiraRestClientProvider)
   {
-    private readonly IJiraRestClientProvider _jiraRestClientProvider;
+    _jiraRestClientProvider = jiraRestClientProvider;
+  }
 
-    public JiraIssueService (IJiraRestClientProvider jiraRestClientProvider)
+  public void MoveIssuesToVersion (IEnumerable<JiraToBeMovedIssue> issues, string oldVersionId, string newVersionId)
+  {
+    foreach (var issue in issues)
     {
-      _jiraRestClientProvider = jiraRestClientProvider;
-    }
+      var resource = $"issue/{issue.ID}";
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest(resource, Method.PUT);
 
-    public void MoveIssuesToVersion (IEnumerable<JiraToBeMovedIssue> issues, string oldVersionId, string newVersionId)
-    {
-      foreach (var issue in issues)
-      {
-        var resource = $"issue/{issue.ID}";
-        var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.PUT);
+      if (issue.Fields == null)
+        throw new InvalidOperationException($"Could not get fields from issue '{issue}");
 
-        if (issue.Fields == null)
-        {
-          throw new InvalidOperationException($"Could not get fields from issue '{issue}");
-        }
-        var newFixVersions = issue.Fields.FixVersions;
-        newFixVersions.RemoveAll (v =>
-        {
-          if (string.IsNullOrEmpty(v.ID))
+      var newFixVersions = issue.Fields.FixVersions;
+      newFixVersions.RemoveAll(
+          v =>
           {
-            throw new InvalidOperationException($"Could not get id from jira version");
-          }
-          return v.ID == oldVersionId;
-        });
-        newFixVersions.Add (new JiraVersion { ID = newVersionId });
+            if (string.IsNullOrEmpty(v.ID))
+              throw new InvalidOperationException($"Could not get id from jira version");
 
-        var body = new { fields = new { fixVersions = newFixVersions.Select (v => new { id = v.ID }) } };
-        request.AddBody (body);
+            return v.ID == oldVersionId;
+          });
+      newFixVersions.Add(new JiraVersion { ID = newVersionId });
 
-        _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraIssue> (request, HttpStatusCode.NoContent);
-      }
+      var body = new { fields = new { fixVersions = newFixVersions.Select(v => new { id = v.ID }) } };
+      request.AddBody(body);
+
+      _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraIssue>(request, HttpStatusCode.NoContent);
     }
+  }
 
-    public IEnumerable<JiraToBeMovedIssue> FindAllNonClosedIssues (string versionId)
-    {
-      var jql = $"fixVersion={versionId} and resolution = \"unresolved\"";
-      var resource = $"search?jql={jql}&fields=id,fixVersions";
-      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
+  public IEnumerable<JiraToBeMovedIssue> FindAllNonClosedIssues (string versionId)
+  {
+    var jql = $"fixVersion={versionId} and resolution = \"unresolved\"";
+    var resource = $"search?jql={jql}&fields=id,fixVersions";
+    var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest(resource, Method.GET);
 
-      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.Issues ?? throw new InvalidOperationException($"Could not get non closed issue data from jira with request '{resource}'");
-    }
+    var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues>(request, HttpStatusCode.OK);
+    return response.Data.Issues ?? throw new InvalidOperationException($"Could not get non closed issue data from jira with request '{resource}'");
+  }
 
-    public IEnumerable<JiraToBeMovedIssue> FindAllClosedIssues (string versionId)
-    {
-      var jql = $"fixVersion={versionId} and resolution != \"unresolved\"";
-      var resource = $"search?jql={jql}&fields=id,fixVersions";
-      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
+  public IEnumerable<JiraToBeMovedIssue> FindAllClosedIssues (string versionId)
+  {
+    var jql = $"fixVersion={versionId} and resolution != \"unresolved\"";
+    var resource = $"search?jql={jql}&fields=id,fixVersions";
+    var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest(resource, Method.GET);
 
-      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
-      return response.Data.Issues ?? throw new InvalidOperationException($"Could not get closed issue data from jira with request '{resource}'");
-
-    }
+    var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues>(request, HttpStatusCode.OK);
+    return response.Data.Issues ?? throw new InvalidOperationException($"Could not get closed issue data from jira with request '{resource}'");
   }
 }

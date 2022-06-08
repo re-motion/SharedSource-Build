@@ -16,125 +16,117 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
-using Spectre.Console;
 using Spectre.Console.Testing;
 
-namespace ReleaseProcessAutomation.Tests.ReadInput
+namespace ReleaseProcessAutomation.Tests.ReadInput;
+
+[TestFixture]
+internal class InputReaderTests
 {
-  [TestFixture]
-  internal class InputReaderTests
+  [Test]
+  public void ReadVersionChoice_WithInteractiveConsole_ReturnsFirstVersion ()
   {
-    [Test]
-    public void ReadVersionChoice_WithInteractiveConsole_ReturnsFirstVersion ()
-    {
-      var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
-      var testConsole = new TestConsole();
-      testConsole.Interactive();
-      testConsole.Input.PushKey(ConsoleKey.Enter);
-      var inputReader = new InputReader(testConsole);
+    var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
+    var testConsole = new TestConsole();
+    testConsole.Interactive();
+    testConsole.Input.PushKey(ConsoleKey.Enter);
+    var inputReader = new InputReader(testConsole);
 
-      var act = inputReader.ReadVersionChoice("", nextVersions);
+    var act = inputReader.ReadVersionChoice("", nextVersions);
 
-      Assert.That(act, Is.EqualTo(nextVersions.First()));
-    }
+    Assert.That(act, Is.EqualTo(nextVersions.First()));
+  }
 
-    [Test]
-    public void ReadVersionChoice_WithoutInteractiveConsole_ReturnsIndexedVersion()
-    {
-      var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
-      var testConsole = new TestConsole();
-      testConsole.Input.PushTextWithEnter("2");
-      var inputReader = new InputReader(testConsole);
+  [Test]
+  public void ReadVersionChoice_WithoutInteractiveConsole_ReturnsIndexedVersion ()
+  {
+    var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
+    var testConsole = new TestConsole();
+    testConsole.Input.PushTextWithEnter("2");
+    var inputReader = new InputReader(testConsole);
 
+    var act = inputReader.ReadVersionChoice("", nextVersions);
 
+    var output = testConsole.Output;
+    Assert.That(act, Is.EqualTo(new SemanticVersion { Major = 1 }));
+  }
 
-      var act = inputReader.ReadVersionChoice("", nextVersions);
+  [Test]
+  public void ReadVersionChoice_WithoutInteractiveConsole_ReturnsSpecifiedVersion ()
+  {
+    var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
+    var testConsole = new TestConsole();
+    testConsole.Input.PushTextWithEnter("1.0.0");
+    var inputReader = new InputReader(testConsole);
 
-      var output = testConsole.Output;
-      Assert.That(act, Is.EqualTo(new SemanticVersion{Major = 1}));
-    }
+    var act = inputReader.ReadVersionChoice("", nextVersions);
 
-    [Test]
-    public void ReadVersionChoice_WithoutInteractiveConsole_ReturnsSpecifiedVersion()
-    {
-      var nextVersions = new SemanticVersion().GetNextPossibleVersionsDevelop(true);
-      var testConsole = new TestConsole();
-      testConsole.Input.PushTextWithEnter("1.0.0");
-      var inputReader = new InputReader(testConsole);
+    var output = testConsole.Output;
+    Assert.That(act, Is.EqualTo(new SemanticVersion { Major = 1 }));
+  }
 
+  [Test]
+  public void ReadStringChoice_WithInteractiveConsole_ReturnsThirdString ()
+  {
+    var strings = new[] { "foo", "bar", "faz", "foobar" };
 
+    var testConsole = new TestConsole();
+    testConsole.Interactive();
+    testConsole.Input.PushKey(ConsoleKey.DownArrow);
+    testConsole.Input.PushKey(ConsoleKey.DownArrow);
+    testConsole.Input.PushKey(ConsoleKey.Enter);
+    var inputReader = new InputReader(testConsole);
 
-      var act = inputReader.ReadVersionChoice("", nextVersions);
+    var act = inputReader.ReadStringChoice("", strings);
 
-      var output = testConsole.Output;
-      Assert.That(act, Is.EqualTo(new SemanticVersion { Major = 1 }));
-    }
+    Assert.That(act, Is.EqualTo(strings[2]));
+  }
 
-    [Test]
-    public void ReadStringChoice_WithInteractiveConsole_ReturnsThirdString ()
-    {
-      var strings = new string[] { "foo" , "bar" , "faz", "foobar" };
+  [Test]
+  public void ReadStringChoice_WithoutInteractiveConsole_ReturnsSpecifiedString ()
+  {
+    var strings = new[] { "foo", "bar", "faz", "foobar" };
 
-      var testConsole = new TestConsole();
-      testConsole.Interactive();
-      testConsole.Input.PushKey(ConsoleKey.DownArrow);
-      testConsole.Input.PushKey(ConsoleKey.DownArrow);
-      testConsole.Input.PushKey(ConsoleKey.Enter);
-      var inputReader = new InputReader(testConsole);
+    var testConsole = new TestConsole();
+    testConsole.Input.PushTextWithEnter("bar");
+    var inputReader = new InputReader(testConsole);
 
-      var act = inputReader.ReadStringChoice("", strings);
+    var act = inputReader.ReadStringChoice("", strings);
 
-      Assert.That(act, Is.EqualTo(strings[2]));
-    }
+    Assert.That(act, Is.EqualTo(strings[1]));
+  }
 
-    [Test]
-    public void ReadStringChoice_WithoutInteractiveConsole_ReturnsSpecifiedString()
-    {
-      var strings = new string[] { "foo", "bar", "faz", "foobar" };
+  [Test]
+  public void ReadStringChoice_WithoutInteractiveConsole_ReturnsIndexedString ()
+  {
+    var strings = new[] { "foo", "bar", "faz", "foobar" };
 
-      var testConsole = new TestConsole();
-      testConsole.Input.PushTextWithEnter("bar");
-      var inputReader = new InputReader(testConsole);
+    var testConsole = new TestConsole();
+    testConsole.Input.PushTextWithEnter("2");
+    var inputReader = new InputReader(testConsole);
 
-      var act = inputReader.ReadStringChoice("", strings);
+    var act = inputReader.ReadStringChoice("", strings);
 
-      Assert.That(act, Is.EqualTo(strings[1]));
-    }
+    Assert.That(act, Is.EqualTo(strings[1]));
+  }
 
-    [Test]
-    public void ReadStringChoice_WithoutInteractiveConsole_ReturnsIndexedString()
-    {
-      var strings = new string[] { "foo", "bar", "faz", "foobar" };
+  [Test]
+  public void ReadStringChoice_WithoutWrongInput_ThrowsNoMoreInputAvailable ()
+  {
+    var strings = new[] { "foo", "bar", "faz", "foobar" };
 
-      var testConsole = new TestConsole();
-      testConsole.Input.PushTextWithEnter("2");
-      var inputReader = new InputReader(testConsole);
+    var testConsole = new TestConsole();
+    testConsole.Input.PushTextWithEnter("-1");
+    var inputReader = new InputReader(testConsole);
 
-      var act = inputReader.ReadStringChoice("", strings);
-
-      Assert.That(act, Is.EqualTo(strings[1]));
-    }
-
-    [Test]
-    public void ReadStringChoice_WithoutWrongInput_ThrowsNoMoreInputAvailable()
-    {
-      var strings = new string[] { "foo", "bar", "faz", "foobar" };
-
-      var testConsole = new TestConsole();
-      testConsole.Input.PushTextWithEnter("-1");
-      var inputReader = new InputReader(testConsole);
-
-      Assert.That(() => inputReader.ReadStringChoice("", strings),
-          Throws.InstanceOf<InvalidOperationException>()
-              .With.Message.EqualTo("No input available."));
-    }
+    Assert.That(
+        () => inputReader.ReadStringChoice("", strings),
+        Throws.InstanceOf<InvalidOperationException>()
+            .With.Message.EqualTo("No input available."));
   }
 }

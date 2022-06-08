@@ -16,9 +16,7 @@
 //
 
 using System;
-using System.Collections.Generic;
 using Moq;
-using Moq.Protected;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
@@ -26,229 +24,232 @@ using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
 using ReleaseProcessAutomation.Steps.PipelineSteps;
 
-namespace ReleaseProcessAutomation.Tests.Steps.InitialBranching
+namespace ReleaseProcessAutomation.Tests.Steps.InitialBranching;
+
+[TestFixture]
+internal class BranchFromDevelopStepTests
 {
-  [TestFixture]
-  internal class BranchFromDevelopStepTests
+  [SetUp]
+  public void Setup ()
   {
-    [SetUp]
-    public void Setup()
-    {;
+    ;
 
-      _releaseAlphaBetaMock = new Mock<IReleaseAlphaBetaStep>();
-      _releaseAlphaBetaMock.Setup(_=>_.Execute(It.IsAny<SemanticVersion>(),It.IsAny<string>(), false, false)).Verifiable();
+    _releaseAlphaBetaMock = new Mock<IReleaseAlphaBetaStep>();
+    _releaseAlphaBetaMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<string>(), false, false)).Verifiable();
 
-      _releaseOnMasterMock = new Mock<IReleaseOnMasterStep>();
-      _releaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(),"",false,false,false)).Verifiable();
-    }
-    
-    private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaMock;
-    private Mock<IReleaseOnMasterStep> _releaseOnMasterMock;
+    _releaseOnMasterMock = new Mock<IReleaseOnMasterStep>();
+    _releaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), "", false, false, false)).Verifiable();
+  }
 
-    [Test]
-    public void GetNextVersion_NoCurrentVersionExists_GetsReadInput()
-    {
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
-      var version = new SemanticVersion();
+  private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaMock;
+  private Mock<IReleaseOnMasterStep> _releaseOnMasterMock;
 
-      var readInputMock = new Mock<IInputReader>();
-      readInputMock.Setup(
-              _ => _
-                  .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
+  [Test]
+  public void GetNextVersion_NoCurrentVersionExists_GetsReadInput ()
+  {
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
+    var version = new SemanticVersion();
 
-      var step = new BranchFromDevelopStep(
-          readInputMock.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputMock = new Mock<IInputReader>();
+    readInputMock.Setup(
+        _ => _
+            .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
 
-      step.Execute("",false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputMock.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      readInputMock.Verify();
-    }
+    step.Execute("", false, false, false);
 
-    [Test]
-    public void GetNextVersion_MasterNewer_ReadsPossibleNextVersionsFromMaster()
-    {
-      var oldVersion = new SemanticVersion
-                       {
-                           Major = 1,
-                           Minor = 2,
-                           Patch = 3
-                       };
-      var newVersion = new SemanticVersion
-                       {
-                           Major = 2
-                       };
-      IReadOnlyCollection<SemanticVersion> possibleVersions = newVersion.GetNextPossibleVersionsDevelop(false);
+    readInputMock.Verify();
+  }
 
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      var sequence = new MockSequence();
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny,"HEAD", "")).Returns(true);
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion, "HEAD", ""));
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion,"master", "")).Returns(true);
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny,"master", "")).Returns(true);
-      var version = new SemanticVersion();
-      var gitClientMock = new Mock<IGitClient>();
+  [Test]
+  public void GetNextVersion_MasterNewer_ReadsPossibleNextVersionsFromMaster ()
+  {
+    var oldVersion = new SemanticVersion
+                     {
+                         Major = 1,
+                         Minor = 2,
+                         Patch = 3
+                     };
+    var newVersion = new SemanticVersion
+                     {
+                         Major = 2
+                     };
+    var possibleVersions = newVersion.GetNextPossibleVersionsDevelop();
 
-      var readInputMock = new Mock<IInputReader>();
-      readInputMock.Setup(
-          _ => _
-              .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    var sequence = new MockSequence();
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "HEAD", "")).Returns(true);
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion, "HEAD", ""));
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion, "master", "")).Returns(true);
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "master", ""))
+        .Returns(true);
+    var version = new SemanticVersion();
+    var gitClientMock = new Mock<IGitClient>();
 
-      var step = new BranchFromDevelopStep(
-          readInputMock.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputMock = new Mock<IInputReader>();
+    readInputMock.Setup(
+        _ => _
+            .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
 
-      step.Execute("", false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputMock.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      readInputMock.Verify();
-    }
+    step.Execute("", false, false, false);
 
-    [Test]
-    public void GetNextVersion_DevelopNewer_ReadsPossibleNextVersionsFromDevelop()
-    {
-      var oldVersion = new SemanticVersion
-                       {
-                           Major = 1,
-                           Minor = 2,
-                           Patch = 3
-                       };
-      var newVersion = new SemanticVersion
-                       {
-                           Major = 2
-                       };
-      IReadOnlyCollection<SemanticVersion> possibleVersions = newVersion.GetNextPossibleVersionsDevelop(false);
+    readInputMock.Verify();
+  }
 
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      var sequence = new MockSequence();
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny,"HEAD", "")).Returns(true);
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion,"HEAD", ""));
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion,"master", ""));
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny,"master", "")).Returns(true);
-      var version = new SemanticVersion();
-      var gitClientMock = new Mock<IGitClient>();
+  [Test]
+  public void GetNextVersion_DevelopNewer_ReadsPossibleNextVersionsFromDevelop ()
+  {
+    var oldVersion = new SemanticVersion
+                     {
+                         Major = 1,
+                         Minor = 2,
+                         Patch = 3
+                     };
+    var newVersion = new SemanticVersion
+                     {
+                         Major = 2
+                     };
+    var possibleVersions = newVersion.GetNextPossibleVersionsDevelop();
 
-      var readInputMock = new Mock<IInputReader>();
-      readInputMock.Setup(
-          _ => _
-              .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    var sequence = new MockSequence();
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "HEAD", "")).Returns(true);
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion, "HEAD", ""));
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion, "master", ""));
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "master", ""))
+        .Returns(true);
+    var version = new SemanticVersion();
+    var gitClientMock = new Mock<IGitClient>();
 
-      var step = new BranchFromDevelopStep(
-          readInputMock.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputMock = new Mock<IInputReader>();
+    readInputMock.Setup(
+        _ => _
+            .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
 
-      step.Execute("", false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputMock.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      readInputMock.Verify();
-    }
+    step.Execute("", false, false, false);
 
-    [Test]
-    public void GetNextVersion_MasterNewerButDoesNotExist_ReadsPossibleNextVersionsFromDevelop()
-    {
-      var oldVersion = new SemanticVersion
-                       {
-                           Major = 1,
-                           Minor = 2,
-                           Patch = 3
-                       };
-      var newVersion = new SemanticVersion
-                       {
-                           Major = 2
-                       };
-      IReadOnlyCollection<SemanticVersion> possibleVersions = oldVersion.GetNextPossibleVersionsDevelop(false);
+    readInputMock.Verify();
+  }
 
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      var sequence = new MockSequence();
+  [Test]
+  public void GetNextVersion_MasterNewerButDoesNotExist_ReadsPossibleNextVersionsFromDevelop ()
+  {
+    var oldVersion = new SemanticVersion
+                     {
+                         Major = 1,
+                         Minor = 2,
+                         Patch = 3
+                     };
+    var newVersion = new SemanticVersion
+                     {
+                         Major = 2
+                     };
+    var possibleVersions = oldVersion.GetNextPossibleVersionsDevelop();
 
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny,"HEAD", "")).Returns(true);
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion, "HEAD", ""));
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion, "master", ""));
-      semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "master", "")).Returns(false);
-      var version = new SemanticVersion();
-      var gitClientMock = new Mock<IGitClient>();
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    var sequence = new MockSequence();
 
-      var readInputMock = new Mock<IInputReader>();
-      readInputMock.Setup(
-          _ => _
-              .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "HEAD", "")).Returns(true);
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out oldVersion, "HEAD", ""));
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out newVersion, "master", ""));
+    semanticVersionedGitRepoStub.InSequence(sequence).Setup(_ => _.TryGetCurrentVersion(out It.Ref<SemanticVersion>.IsAny, "master", ""))
+        .Returns(false);
+    var version = new SemanticVersion();
+    var gitClientMock = new Mock<IGitClient>();
 
-      var step = new BranchFromDevelopStep(
-          readInputMock.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputMock = new Mock<IInputReader>();
+    readInputMock.Setup(
+        _ => _
+            .ReadVersionChoice(It.IsAny<string>(), possibleVersions)).Returns(version).Verifiable();
 
-      step.Execute("", false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputMock.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      readInputMock.Verify();
-    }
+    step.Execute("", false, false, false);
 
-    [Test]
-    public void Execute_NoErrorsPreRelease_RunsPreRelease()
-    {
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
-      var version = new SemanticVersion
-                    {
-                        Major =1,
-                        Pre = PreReleaseStage.alpha,
-                        PreReleaseCounter = 1
-                    };
-      var gitClientMock = new Mock<IGitClient>();
+    readInputMock.Verify();
+  }
 
-      var readInputStub = new Mock<IInputReader>();
-      readInputStub.Setup(
-          _ => _
-              .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
+  [Test]
+  public void Execute_NoErrorsPreRelease_RunsPreRelease ()
+  {
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
+    var version = new SemanticVersion
+                  {
+                      Major = 1,
+                      Pre = PreReleaseStage.alpha,
+                      PreReleaseCounter = 1
+                  };
+    var gitClientMock = new Mock<IGitClient>();
 
-      var step = new BranchFromDevelopStep(
-          readInputStub.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputStub = new Mock<IInputReader>();
+    readInputStub.Setup(
+        _ => _
+            .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
 
-      step.Execute("", false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputStub.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      _releaseAlphaBetaMock.Verify();
-    }
+    step.Execute("", false, false, false);
 
-    [Test]
-    public void Execute_NoErrorsPreRelease_GetsReadInpu()
-    {
-      var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
-      var version = new SemanticVersion
-                    {
-                        Major = 1
-                    };
-      var gitClientMock = new Mock<IGitClient>();
+    _releaseAlphaBetaMock.Verify();
+  }
 
-      var readInputStub = new Mock<IInputReader>();
-      readInputStub.Setup(
-          _ => _
-              .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
+  [Test]
+  public void Execute_NoErrorsPreRelease_GetsReadInpu ()
+  {
+    var semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    // semVerMock.Setup(_ => _.DoesCurrentVersionExist("HEAD", "")).Returns(false);
+    var version = new SemanticVersion
+                  {
+                      Major = 1
+                  };
+    var gitClientMock = new Mock<IGitClient>();
 
-      var step = new BranchFromDevelopStep(
-          readInputStub.Object,
-          _releaseOnMasterMock.Object,
-          _releaseAlphaBetaMock.Object,
-          semanticVersionedGitRepoStub.Object
-      );
+    var readInputStub = new Mock<IInputReader>();
+    readInputStub.Setup(
+        _ => _
+            .ReadSemanticVersion(It.IsAny<string>())).Returns(version).Verifiable();
 
-      step.Execute("", false, false, false);
+    var step = new BranchFromDevelopStep(
+        readInputStub.Object,
+        _releaseOnMasterMock.Object,
+        _releaseAlphaBetaMock.Object,
+        semanticVersionedGitRepoStub.Object
+    );
 
-      _releaseOnMasterMock.Verify();
-    }
+    step.Execute("", false, false, false);
+
+    _releaseOnMasterMock.Verify();
   }
 }

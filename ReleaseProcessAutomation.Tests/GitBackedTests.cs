@@ -24,14 +24,71 @@ namespace ReleaseProcessAutomation.Tests;
 
 public class GitBackedTests
 {
-  protected string PreviousWorkingDirectory;
-  protected string RepositoryPath;
+  protected static void ExecuteGitCommand (string argument)
+  {
+    using var command = Process.Start("git", argument);
+    command.WaitForExit();
+  }
+
+  protected static string ExecuteGitCommandWithOutput (string argument)
+  {
+    var psi = new ProcessStartInfo("git", argument);
+    psi.UseShellExecute = false;
+    psi.RedirectStandardOutput = true;
+    psi.RedirectStandardError = true;
+
+    using var command = Process.Start(psi);
+    command.WaitForExit();
+    if (command.ExitCode != 0)
+    {
+      var error = command.StandardError.ReadToEnd();
+    }
+
+    var output = command.StandardOutput.ReadToEnd();
+
+    return output;
+  }
+
+  protected void AddCommit (string s = "")
+  {
+    var random = new Random().Next();
+    ExecuteGitCommand($"commit --allow-empty -m {random}");
+  }
+
+  protected void AddRandomFile (string directoryPath)
+  {
+    var random = new Random().Next();
+
+    var path = Path.Join(directoryPath, random.ToString());
+
+    using var fs = File.Create(path);
+    fs.Dispose();
+  }
+
+  protected void ReleaseVersion (string version)
+  {
+    var releaseBranchName = $"release/{version}";
+    ExecuteGitCommand($"checkout -b {releaseBranchName}");
+    AddCommit();
+    ExecuteGitCommand($"commit --amend -m \"Release Version {version}\"");
+    ExecuteGitCommand($"tag -a {version} -m {version}");
+  }
+
+  protected bool IsEqualRepo (string otherLogs)
+  {
+    var currentLogs = ExecuteGitCommandWithOutput("log--all--graph--oneline--decorate--pretty = '%d %s'");
+
+    return currentLogs.Equals(otherLogs);
+  }
+
   protected const string RemoteName = "origin";
 
   private string _remotePath;
+  protected string PreviousWorkingDirectory;
+  protected string RepositoryPath;
 
   [SetUp]
-  public void GitTestSetup()
+  public void GitTestSetup ()
   {
     PreviousWorkingDirectory = Environment.CurrentDirectory;
     var temp = Path.GetTempPath();
@@ -58,38 +115,14 @@ public class GitBackedTests
   }
 
   [TearDown]
-  public void TearDown()
+  public void TearDown ()
   {
     Environment.CurrentDirectory = PreviousWorkingDirectory;
     DeleteDirectory(RepositoryPath);
     DeleteDirectory(_remotePath);
   }
 
-  protected static void ExecuteGitCommand(string argument)
-  {
-    using var command = Process.Start("git", argument);
-    command.WaitForExit();
-  }
-
-  protected static string ExecuteGitCommandWithOutput(string argument)
-  {
-    var psi = new ProcessStartInfo("git", argument);
-    psi.UseShellExecute = false;
-    psi.RedirectStandardOutput = true;
-    psi.RedirectStandardError = true;
-
-    using var command = Process.Start(psi);
-    command.WaitForExit();
-    if (command.ExitCode != 0)
-    {
-      var error = command.StandardError.ReadToEnd();
-    }
-    var output = command.StandardOutput.ReadToEnd();
-
-    return output;
-  }
-
-  private static void DeleteDirectory(string target_dir)
+  private static void DeleteDirectory (string target_dir)
   {
     var files = Directory.GetFiles(target_dir);
     var dirs = Directory.GetDirectories(target_dir);
@@ -104,38 +137,5 @@ public class GitBackedTests
       DeleteDirectory(dir);
 
     Directory.Delete(target_dir, false);
-  }
-
-
-  protected void AddCommit(string s = "")
-  {
-    var random = new Random().Next();
-    ExecuteGitCommand($"commit --allow-empty -m {random}");
-  }
-
-  protected void AddRandomFile(string directoryPath)
-  {
-    var random = new Random().Next();
-
-    var path = Path.Join(directoryPath, random.ToString());
-
-    using var fs = File.Create(path);
-    fs.Dispose();
-  }
-
-  protected void ReleaseVersion(string version)
-  {
-    var releaseBranchName = $"release/{version}";
-    ExecuteGitCommand($"checkout -b {releaseBranchName}");
-    AddCommit();
-    ExecuteGitCommand($"commit --amend -m \"Release Version {version}\"");
-    ExecuteGitCommand($"tag -a {version} -m {version}");
-  }
-
-  protected bool IsEqualRepo (string otherLogs)
-  {
-    var currentLogs = ExecuteGitCommandWithOutput("log--all--graph--oneline--decorate--pretty = '%d %s'");
-
-    return currentLogs.Equals(otherLogs);
   }
 }

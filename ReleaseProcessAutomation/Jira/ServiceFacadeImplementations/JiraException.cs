@@ -18,15 +18,14 @@
 using System;
 using System.Net;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
-{
-  public class JiraException : Exception
-  {
-    public HttpStatusCode HttpStatusCode { get; set; }
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
-    public JiraException(string message)
+public class JiraException : Exception
+{
+  public HttpStatusCode HttpStatusCode { get; set; }
+
+  public JiraException (string message)
       : base(message)
-    {
-    }
+  {
   }
 }

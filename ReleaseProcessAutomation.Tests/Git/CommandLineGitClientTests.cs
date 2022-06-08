@@ -17,7 +17,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Git;
@@ -457,7 +456,7 @@ internal class CommandLineGitClientTests : GitBackedTests
   }
 
   [Test]
-  public void AddAll_WithoutErrors_AddsAllNewChanges()
+  public void AddAll_WithoutErrors_AddsAllNewChanges ()
   {
     AddRandomFile(RepositoryPath);
     AddRandomFile(RepositoryPath);
@@ -539,16 +538,16 @@ internal class CommandLineGitClientTests : GitBackedTests
     AddCommit();
     ExecuteGitCommand("checkout master");
     ExecuteGitCommand($"push -u {RemoteName} master");
-    
+
     var notBehind = ExecuteGitCommandWithOutput("show HEAD --pretty=%d");
 
-    ExecuteGitCommand($"branch --unset-upstream");
+    ExecuteGitCommand("branch --unset-upstream");
     ExecuteGitCommand($"branch -d -r {RemoteName}/master");
 
     client.Fetch($"{RemoteName}");
-    
+
     var fetched = ExecuteGitCommandWithOutput("show HEAD --pretty=%d");
-    
+
     Assert.That(fetched, Is.EqualTo(notBehind));
     Assert.That(fetched, Is.EqualTo(" (HEAD -> master, origin/master)\n"));
   }
@@ -562,7 +561,8 @@ internal class CommandLineGitClientTests : GitBackedTests
     Assert.That(
         () => gitClient.PushToRepos(remoteNames, "", "tag"),
         Throws.InstanceOf<InvalidOperationException>()
-            .With.Message.EqualTo("Tag with name 'tag' does not exist, must not have been created before calling pushToRepos, check previous steps."));
+            .With.Message.EqualTo(
+                "Tag with name 'tag' does not exist, must not have been created before calling pushToRepos, check previous steps."));
   }
 
   [Test]

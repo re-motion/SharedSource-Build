@@ -31,22 +31,23 @@ namespace ReleaseProcessAutomation.Tests.Steps.Continues;
 internal class ContinueAlphaBetaStepTests
 {
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  private Mock<IAncestorFinder> _ancestorMock;
   private Configuration.Data.Config _config;
 
   private Mock<IAnsiConsole> _consoleStub;
   private Mock<IGitClient> _gitClientMock;
   private Mock<IInputReader> _inputReaderStub;
   private Mock<IPushPreReleaseStep> _pushPreReleaseMock;
-  private Mock<IAncestorFinder> _ancestorMock;
 
   [SetUp]
   public void Setup ()
-  { _gitClientMock = new Mock<IGitClient>();
+  {
+    _gitClientMock = new Mock<IGitClient>();
     _inputReaderStub = new Mock<IInputReader>();
     _pushPreReleaseMock = new Mock<IPushPreReleaseStep>();
     _ancestorMock = new Mock<IAncestorFinder>();
     _consoleStub = new Mock<IAnsiConsole>();
-    
+
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
   }
@@ -68,7 +69,7 @@ internal class ContinueAlphaBetaStepTests
         _consoleStub.Object);
 
     Assert.That(
-        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "ancestor","", false),
+        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "ancestor", "", false),
         Throws.Nothing);
     _pushPreReleaseMock.Verify();
   }
@@ -113,7 +114,7 @@ internal class ContinueAlphaBetaStepTests
         _consoleStub.Object);
 
     Assert.That(
-        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "","", false),
+        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "", "", false),
         Throws.Nothing);
 
     _ancestorMock.Verify();
@@ -135,7 +136,7 @@ internal class ContinueAlphaBetaStepTests
         _consoleStub.Object);
 
     Assert.That(
-        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "ancestor","", false),
+        () => continueAlphaBetaStep.Execute(new SemanticVersion(), "ancestor", "", false),
         Throws.Nothing);
 
     _ancestorMock.Verify(_ => _.GetAncestor(It.IsAny<string[]>()), Times.Never);

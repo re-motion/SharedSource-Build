@@ -43,8 +43,8 @@ internal class ReleaseProcessStepTests : GitBackedTests
   private class NestedReleaseProcessStepBase : ReleaseProcessStepBase
   {
     public NestedReleaseProcessStepBase (
-        IGitClient gitClient, 
-        Configuration.Data.Config config, 
+        IGitClient gitClient,
+        Configuration.Data.Config config,
         IInputReader inputReader,
         IAnsiConsole console)
         : base(gitClient, config, inputReader, console)
@@ -175,7 +175,7 @@ internal class ReleaseProcessStepTests : GitBackedTests
     gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
 
     var readerMock = new Mock<IInputReader>();
-    var rps = new NestedReleaseProcessStepBase(gitClientStub.Object, _config, readerMock.Object,_console);
+    var rps = new NestedReleaseProcessStepBase(gitClientStub.Object, _config, readerMock.Object, _console);
 
     Assert.That(() => rps.EnsureWorkingDirectoryClean(), Throws.Nothing);
   }
@@ -201,10 +201,8 @@ internal class ReleaseProcessStepTests : GitBackedTests
     var readInputStub = new Mock<IInputReader>();
     readInputStub.Setup(_ => _.ReadConfirmation(true)).Returns(false);
 
-    var rps = new NestedReleaseProcessStepBase(gitClientStub.Object, _config, readInputStub.Object,_console);
+    var rps = new NestedReleaseProcessStepBase(gitClientStub.Object, _config, readInputStub.Object, _console);
 
-    
-    
     Assert.That(
         () => rps.EnsureWorkingDirectoryClean(),
         Throws.InstanceOf<Exception>()
@@ -216,9 +214,7 @@ internal class ReleaseProcessStepTests : GitBackedTests
   {
     var fileName = "File.txt";
     for (var index = 0; index < _config.DevelopStableMergeIgnoreList.FileName.Length; index++)
-    {
       _config.DevelopStableMergeIgnoreList.FileName[index] = fileName;
-    }
     var combinePath = Path.Combine(Environment.CurrentDirectory, fileName);
     using var fs = File.Create(combinePath);
     fs.Close();
@@ -236,14 +232,12 @@ internal class ReleaseProcessStepTests : GitBackedTests
   }
 
   [Test]
-  public void ResetItemsOfIgnoreList_DoesResetItemsOfIgnoreList_ShouldOnlyRevertIgnoreListChanges()
+  public void ResetItemsOfIgnoreList_DoesResetItemsOfIgnoreList_ShouldOnlyRevertIgnoreListChanges ()
   {
     var fileName = "File.txt";
     var otherFileName = "OtherFile.txt";
     for (var index = 0; index < _config.DevelopStableMergeIgnoreList.FileName.Length; index++)
-    {
       _config.DevelopStableMergeIgnoreList.FileName[index] = fileName;
-    }
     var combinePath = Path.Combine(Environment.CurrentDirectory, fileName);
     using var fs = File.Create(combinePath);
     fs.Close();
@@ -266,19 +260,15 @@ internal class ReleaseProcessStepTests : GitBackedTests
   }
 
   [Test]
-  public void ResetItemsOfIgnoreList_WithWrongIgnoreList_DoesNotRevertAnythingHere()
+  public void ResetItemsOfIgnoreList_WithWrongIgnoreList_DoesNotRevertAnythingHere ()
   {
     var fileName = "File.txt";
     var otherFileName = "OtherFile.txt";
     for (var index = 0; index < _config.DevelopStableMergeIgnoreList.FileName.Length; index++)
-    {
       _config.DevelopStableMergeIgnoreList.FileName[index] = fileName;
-    }
 
     for (var index = 0; index < _config.TagStableMergeIgnoreList.FileName.Length; index++)
-    {
       _config.DevelopStableMergeIgnoreList.FileName[index] = "";
-    }
     var combinePath = Path.Combine(Environment.CurrentDirectory, fileName);
     using var fs = File.Create(combinePath);
     fs.Close();

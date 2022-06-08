@@ -18,12 +18,12 @@
 using System;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
-namespace ReleaseProcessAutomation.Jira.Utility
+namespace ReleaseProcessAutomation.Jira.Utility;
+
+public interface IJiraVersionMovePositioner<T>
+    where T : IComparable<T>
 {
-  public interface IJiraVersionMovePositioner<T> where T : IComparable<T>
-  {
-    JiraProjectVersionComparableAdapter<T> GetCreatedVersion ();
-    bool HasToBeMoved ();
-    JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ();
-  }
+  JiraProjectVersionComparableAdapter<T> GetCreatedVersion ();
+  bool HasToBeMoved ();
+  JiraProjectVersionComparableAdapter<T>? GetVersionBeforeCreatedVersionOrderedList ();
 }

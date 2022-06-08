@@ -47,7 +47,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
   private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseRCStep>();
-  
+
   public ReleaseRCStep (
       IGitClient gitClient,
       Config config,
@@ -77,9 +77,9 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
 
     if (string.IsNullOrEmpty(ancestor))
       ancestor = _ancestorFinder.GetAncestor("develop", "hotfix/v");
-    
+
     _log.Debug("Found/given ancestor is '{ancestor}'", ancestor);
-    
+
     var currentBranchName = GitClient.GetCurrentBranchName();
     if (string.IsNullOrEmpty(currentBranchName))
     {
@@ -95,7 +95,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
       nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
     }
     else if (ancestor.StartsWith("hotfix/"))
-    {      
+    {
       _log.Debug("Getting next possible jira versions for hotfix from '{NextVersion}'", nextVersion);
       nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
     }

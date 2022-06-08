@@ -47,10 +47,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetNextPossibleVersionsHotfix_WithNonPreRelease_ReturnsVersions()
+  public void GetNextPossibleVersionsHotfix_WithNonPreRelease_ReturnsVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.6-alpha.1"),
                                parser.ParseVersion("1.3.6-beta.1"),
@@ -64,10 +64,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetNextPossibleVersionsHotfix_WithPreReleaseAlpha_ReturnsThreeVersions()
+  public void GetNextPossibleVersionsHotfix_WithPreReleaseAlpha_ReturnsThreeVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-alpha.2"),
                                parser.ParseVersion("1.3.5-beta.1"),
@@ -81,10 +81,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetNextPossibleVersionsHotfix_WithPreReleaseBeta_ReturnsTwoVersions()
+  public void GetNextPossibleVersionsHotfix_WithPreReleaseBeta_ReturnsTwoVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-beta.2"),
                                parser.ParseVersion("1.3.6")
@@ -97,10 +97,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetNextPossibleVersionsHotfix_WithPreReleaseRC_ReturnsTwoVersions()
+  public void GetNextPossibleVersionsHotfix_WithPreReleaseRC_ReturnsTwoVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-rc.2"),
                                parser.ParseVersion("1.3.6")
@@ -113,10 +113,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetCurrentPossibleVersionsHotfix_FullRelease_ReturnsVersions()
+  public void GetCurrentPossibleVersionsHotfix_FullRelease_ReturnsVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-alpha.1"),
                                parser.ParseVersion("1.3.5-beta.1"),
@@ -130,10 +130,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseAlpha_ReturnsVersions()
+  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseAlpha_ReturnsVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-alpha.3"),
                                parser.ParseVersion("1.3.5-beta.1"),
@@ -147,11 +147,11 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseBeta_ReturnsVersions()
+  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseBeta_ReturnsVersions ()
 
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-beta.3"),
                                parser.ParseVersion("1.3.5")
@@ -164,10 +164,10 @@ public class SemanticVersionTests
   }
 
   [Test]
-  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseRC_ReturnsVersions()
+  public void GetCurrentPossibleVersionsHotfix_WithPreReleaseRC_ReturnsVersions ()
   {
     var parser = new SemanticVersionParser();
-    var expectedVersions = new SemanticVersion[]
+    var expectedVersions = new[]
                            {
                                parser.ParseVersion("1.3.5-rc.2"),
                                parser.ParseVersion("1.3.5")

@@ -17,7 +17,6 @@
 
 using System;
 using NUnit.Framework;
-using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.IntegrationTests;
 
@@ -46,7 +45,6 @@ internal class ReleaseFromMasterTests : IntegrationTestSetup
     ExecuteGitCommand("commit -m feature2 --allow-empty");
     ExecuteGitCommand("commit -m feature3 --allow-empty");
     ExecuteGitCommand("commit -m feature4 --allow-empty");
-
 
     //Get release version from user
     //Get next release version from user for jira

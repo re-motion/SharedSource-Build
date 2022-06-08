@@ -30,104 +30,99 @@ using ReleaseProcessAutomation.SemanticVersioning;
 using ReleaseProcessAutomation.Steps.PipelineSteps;
 using Spectre.Console;
 
-namespace ReleaseProcessAutomation.Tests.Steps.Releases
+namespace ReleaseProcessAutomation.Tests.Steps.Releases;
+
+internal class ReleaseAlphaBetaStepTests
 {
-  internal class ReleaseAlphaBetaStepTests
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  private Configuration.Data.Config _config;
+
+  private Mock<IAnsiConsole> _consoleMock;
+  private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<IInputReader> _inputReaderStub;
+  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+
+  [SetUp]
+  public void Setup ()
   {
-    [SetUp]
-    public void Setup()
-    {
-      _gitClientStub = new Mock<IGitClient>();
-      _inputReaderStub = new Mock<IInputReader>();
-      _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
-      _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
-      _consoleMock = new Mock<IAnsiConsole>();
-      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _gitClientStub = new Mock<IGitClient>();
+    _inputReaderStub = new Mock<IInputReader>();
+    _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
+    _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
+    _consoleMock = new Mock<IAnsiConsole>();
+    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
-      var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
-      _config = new ConfigReader().LoadConfig(path);
-
-    }
-
-    private Mock<IAnsiConsole> _consoleMock;
-    private Mock<IGitClient> _gitClientStub;
-    private Mock<IInputReader> _inputReaderStub;
-    private Configuration.Data.Config _config;
-    private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-    private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
-    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
-    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
-
-    [Test]
-    public void Execute_OnMasterWithoutErrors_CallsNextStep ()
-    {
-      var nextVersion = new SemanticVersion
-                       {
-                           Major = 1,
-                           Minor = 1,
-                           Patch = 1
-                       };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
-
-      var alphaBetaStep = new ReleaseAlphaBetaStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueAlphaBetaMock.Object,
-          _consoleMock.Object,
-          _jiraFunctionalityMock.Object);
-
-      Assert.That(
-          () => alphaBetaStep.Execute(nextVersion, "", false, false),
-          Throws.Nothing);
-      _continueAlphaBetaMock.Verify(_ => _.Execute(nextVersion, "develop", "develop", false));
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-    }
-    [Test]
-    public void Execute_OnMasterWithoutErrorsButWithPauseForCommit_CallsInvokeMBuildAndCommitButNotNextStep()
-    {
-      var nextVersion = new SemanticVersion
-                        {
-                            Major = 1,
-                            Minor = 1,
-                            Patch = 1
-                        };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
-      _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
-
-
-      var alphaBetaStep = new ReleaseAlphaBetaStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueAlphaBetaMock.Object,
-          _consoleMock.Object,
-          _jiraFunctionalityMock.Object);
-
-
-
-      Assert.That(
-          () => alphaBetaStep.Execute(nextVersion, "", true, false),
-          Throws.Nothing);
-      
-      _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-      _continueAlphaBetaMock.Verify(_=>_.Execute(nextVersion, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()),Times.Never);
-    }
+    var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
+    _config = new ConfigReader().LoadConfig(path);
   }
 
+  [Test]
+  public void Execute_OnMasterWithoutErrors_CallsNextStep ()
+  {
+    var nextVersion = new SemanticVersion
+                      {
+                          Major = 1,
+                          Minor = 1,
+                          Patch = 1
+                      };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+    _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
+    var alphaBetaStep = new ReleaseAlphaBetaStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueAlphaBetaMock.Object,
+        _consoleMock.Object,
+        _jiraFunctionalityMock.Object);
+
+    Assert.That(
+        () => alphaBetaStep.Execute(nextVersion, "", false, false),
+        Throws.Nothing);
+    _continueAlphaBetaMock.Verify(_ => _.Execute(nextVersion, "develop", "develop", false));
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+  }
+
+  [Test]
+  public void Execute_OnMasterWithoutErrorsButWithPauseForCommit_CallsInvokeMBuildAndCommitButNotNextStep ()
+  {
+    var nextVersion = new SemanticVersion
+                      {
+                          Major = 1,
+                          Minor = 1,
+                          Patch = 1
+                      };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsCommitHash("")).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("develop")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("develop");
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+    _inputReaderStub.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+
+    var alphaBetaStep = new ReleaseAlphaBetaStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueAlphaBetaMock.Object,
+        _consoleMock.Object,
+        _jiraFunctionalityMock.Object);
+
+    Assert.That(
+        () => alphaBetaStep.Execute(nextVersion, "", true, false),
+        Throws.Nothing);
+
+    _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+    _continueAlphaBetaMock.Verify(_ => _.Execute(nextVersion, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+  }
 }

@@ -19,7 +19,6 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using ReleaseProcessAutomation.Configuration;
-using ReleaseProcessAutomation.Git;
 
 namespace ReleaseProcessAutomation.Tests.Config;
 

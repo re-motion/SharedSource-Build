@@ -28,7 +28,7 @@ using Spectre.Console;
 namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
 public class JiraCredentialManager
-    : JiraWithPostfix,IJiraCredentialManager
+    : JiraWithPostfix, IJiraCredentialManager
 {
   private readonly Config _config;
   private readonly IInputReader _inputReader;
@@ -36,7 +36,13 @@ public class JiraCredentialManager
   private readonly IJiraAuthenticator _jiraAuthenticator;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJiraAuthenticator jiraAuthenticator,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraCredentialManager (
+      Config config,
+      IInputReader inputReader,
+      IAnsiConsole console,
+      IJiraAuthenticator jiraAuthenticator,
+      string jiraUrlPostfix)
+      : base(config, jiraUrlPostfix)
   {
     _config = config;
     _inputReader = inputReader;
@@ -49,16 +55,13 @@ public class JiraCredentialManager
     var cred = CredentialManager.GetCredentials(target);
 
     if (cred == null)
-    {
       return AskForCredentials(target);
-    }
-    
+
     var credentials = new Credentials
                       {
                           Username = cred.UserName,
                           Password = cred.Password
                       };
-
 
     try
     {
@@ -69,7 +72,7 @@ public class JiraCredentialManager
       _console.WriteLine("Invalid Jira Credentials saved.");
       return AskForCredentials(target);
     }
-    
+
     return credentials;
   }
 
@@ -91,12 +94,10 @@ public class JiraCredentialManager
       {
         _console.WriteLine("The input credentials didnt match, do you want to try again?");
         if (_inputReader.ReadConfirmation())
-        {
           continue;
-        }
         throw new JiraAuthenticationException("Authentication not successful, user does not want to try again.", e);
       }
-      
+
       _console.WriteLine("Do you want to save the login information to the credential manager?");
       if (_inputReader.ReadConfirmation())
       {
@@ -106,6 +107,7 @@ public class JiraCredentialManager
         _console.WriteLine(message);
         _log.Information(message);
       }
+
       return tmpCredentials;
     }
   }
@@ -140,6 +142,4 @@ public class JiraCredentialManager
       throw;
     }
   }
-
-  
 }

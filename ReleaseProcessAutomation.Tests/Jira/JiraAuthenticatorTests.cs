@@ -12,7 +12,7 @@ public class JiraAuthenticatorTests
   private const string c_jiraProjectKey = "SRCBLDTEST";
   private const string c_usernameEnvironmentVariableName = "JiraUsername";
   private const string c_passwordEnvironmentVariableName = "JiraPassword";
-  
+
   [Test]
   public void CheckAuthentication_WithCorrectCredentials_DoesNotThrow ()
   {
@@ -20,21 +20,16 @@ public class JiraAuthenticatorTests
     var jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
 
     if (string.IsNullOrEmpty(jiraUsername))
-    {
       throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
-    }
 
     if (string.IsNullOrEmpty(jiraPassword))
-    {
       throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
-    }
 
     var testCredentials = new Credentials { Username = jiraUsername, Password = jiraPassword };
 
     var authenticator = new JiraAuthenticator();
-    
-    Assert.That( ()=> authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Nothing);
 
+    Assert.That(() => authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Nothing);
   }
 
   [Test]
@@ -43,7 +38,7 @@ public class JiraAuthenticatorTests
     var testCredentials = new Credentials { Username = "DefinetlyNotAUsername", Password = "DefinetlyNotAPassword" };
 
     var authenticator = new JiraAuthenticator();
-    
-    Assert.That( ()=> authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Exception);
+
+    Assert.That(() => authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Exception);
   }
 }

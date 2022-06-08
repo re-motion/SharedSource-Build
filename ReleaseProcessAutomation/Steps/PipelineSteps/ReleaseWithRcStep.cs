@@ -113,14 +113,15 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
     }
     else
     {
-      var message = $"Could not get next possible Jira Versions from the next version '{nextVersion}', current branch is '{currentBranchName}' and ancestor is '{ancestor}'";
+      var message =
+          $"Could not get next possible Jira Versions from the next version '{nextVersion}', current branch is '{currentBranchName}' and ancestor is '{ancestor}'";
       throw new InvalidOperationException(message);
     }
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Choose next version (open JIRA issues get moved there):", nextPossibleVersions);
-    
+
     _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
-    
+
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 
     if (pauseForCommit)

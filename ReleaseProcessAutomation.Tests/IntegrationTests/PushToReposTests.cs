@@ -40,7 +40,7 @@ internal class PushToReposTests : IntegrationTestSetup
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
   }
-  
+
   [Test]
   public void PushToRepos_DevelopAheadWithTag_PushesDevelopWithTag ()
   {

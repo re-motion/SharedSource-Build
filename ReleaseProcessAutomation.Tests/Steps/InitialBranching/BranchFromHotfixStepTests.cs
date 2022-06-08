@@ -57,13 +57,14 @@ internal class BranchFromHotfixStepTests
         _releasePatchStepMock.Object,
         _releaseAlphaBetaStepMock.Object);
 
-    Assert.That(() => hotfixBranch.Execute("", true, false, false),
+    Assert.That(
+        () => hotfixBranch.Execute("", true, false, false),
         Throws.InstanceOf<InvalidOperationException>()
             .With.Message.EqualTo("Could not find the current branch while trying to get next hotfix version."));
   }
 
   [Test]
-  public void GetCurrentHotFixVersion_WithBranchAndWithStartReleasePhase_CallsPatchReleaseWithNextVersion()
+  public void GetCurrentHotFixVersion_WithBranchAndWithStartReleasePhase_CallsPatchReleaseWithNextVersion ()
   {
     _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("hotfix/v1.3.5");
     var version = new SemanticVersion
@@ -81,18 +82,17 @@ internal class BranchFromHotfixStepTests
         _semanticVersionedGitRepoStub.Object,
         _releasePatchStepMock.Object,
         _releaseAlphaBetaStepMock.Object);
-    
-    Assert.That(() => hotfixBranch.Execute("", true, false, false),
+
+    Assert.That(
+        () => hotfixBranch.Execute("", true, false, false),
         Throws.Nothing);
 
     _releasePatchStepMock.Verify();
-    
   }
 
   [Test]
-  public void Execute_CallsPreReleaseWithNextVersion()
+  public void Execute_CallsPreReleaseWithNextVersion ()
   {
-
     var version = new SemanticVersion
                   {
                       Major = 1,
@@ -105,10 +105,10 @@ internal class BranchFromHotfixStepTests
     nextVersion.Pre = PreReleaseStage.alpha;
     nextVersion.PreReleaseCounter = 1;
 
-    _inputReaderStub.Setup(_ => _.ReadVersionChoice("Please choose next Version:",It.IsAny<IReadOnlyCollection<SemanticVersion>>())).Returns(nextVersion);
+    _inputReaderStub.Setup(_ => _.ReadVersionChoice("Please choose next Version:", It.IsAny<IReadOnlyCollection<SemanticVersion>>()))
+        .Returns(nextVersion);
     _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("hotfix/v1.3.5");
     _semanticVersionedGitRepoStub.Setup(_ => _.GetMostRecentHotfixVersion()).Returns(new SemanticVersion());
-
 
     _releaseAlphaBetaStepMock.Setup(_ => _.Execute(version, "", false, false)).Verifiable();
 
@@ -119,10 +119,10 @@ internal class BranchFromHotfixStepTests
         _releasePatchStepMock.Object,
         _releaseAlphaBetaStepMock.Object);
 
-    Assert.That(() => hotfixBranch.Execute("", false, false, false),
+    Assert.That(
+        () => hotfixBranch.Execute("", false, false, false),
         Throws.Nothing);
 
     _releaseAlphaBetaStepMock.Verify();
-
   }
 }

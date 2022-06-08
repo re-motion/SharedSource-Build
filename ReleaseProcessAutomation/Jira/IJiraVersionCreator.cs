@@ -1,5 +1,3 @@
-using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
-
 namespace ReleaseProcessAutomation.Jira;
 
 public interface IJiraVersionCreator

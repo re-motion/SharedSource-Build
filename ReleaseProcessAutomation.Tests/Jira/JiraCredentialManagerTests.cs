@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using AdysTech.CredentialManager;
 using Moq;
@@ -14,16 +15,6 @@ namespace ReleaseProcessAutomation.Tests.Jira;
 [TestFixture]
 public class JiraCredentialManagerTests
 {
-  private Mock<IInputReader> _inputReaderMock;
-  private Mock<IJiraAuthenticator> _jiraAuthenticatorMock;
-  private TestConsole _console;
-  private Configuration.Data.Config _config;
-
-  private const string c_userName = "user";
-  private const string c_password = "password";
-  private const string c_target = "target";
-  private const string c_postfix = "postfix";
-
   [SetUp]
   public void Setup ()
   {
@@ -54,6 +45,16 @@ public class JiraCredentialManagerTests
     }
   }
 
+  private Mock<IInputReader> _inputReaderMock;
+  private Mock<IJiraAuthenticator> _jiraAuthenticatorMock;
+  private TestConsole _console;
+  private Configuration.Data.Config _config;
+
+  private const string c_userName = "user";
+  private const string c_password = "password";
+  private const string c_target = "target";
+  private const string c_postfix = "postfix";
+
   [Test]
   public void GetCredential_CredentialsInCredentialManager_ReturnsCredentials ()
   {
@@ -72,7 +73,7 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_NoCredentialsInCredentialManager_AsksUser ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticatorMock.Object, c_postfix);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticatorMock.Object, c_postfix);
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -88,7 +89,7 @@ public class JiraCredentialManagerTests
   [Test]
   public void GetCredential_AsksUser_SavesPassword ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticatorMock.Object, c_postfix);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticatorMock.Object, c_postfix);
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -110,25 +111,33 @@ public class JiraCredentialManagerTests
     var networkCredential = new NetworkCredential(username, password);
     CredentialManager.SaveCredentials(c_target, networkCredential);
 
-    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticatorMock.Object, c_postfix);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticatorMock.Object, c_postfix);
 
-    _jiraAuthenticatorMock.Setup(_ => _.CheckAuthentication(
-            It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL))
+    _jiraAuthenticatorMock.Setup(
+            _ => _.CheckAuthentication(
+                It.IsAny<Credentials>(),
+                _config.Jira.JiraProjectKey,
+                _config.Jira.JiraURL))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
-    
+
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
     _inputReaderMock.Setup(_ => _.ReadConfirmation(It.IsAny<bool>())).Returns(false);
 
-    Assert.That(() => jiraCredentialManager.GetCredential(c_target), Throws.InstanceOf<JiraAuthenticationException>()
-        .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
+    Assert.That(
+        () => jiraCredentialManager.GetCredential(c_target),
+        Throws.InstanceOf<JiraAuthenticationException>()
+            .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
 
     _inputReaderMock.Verify(_ => _.ReadString(It.IsAny<string>()));
     _inputReaderMock.Verify(_ => _.ReadHiddenString(It.IsAny<string>()));
     _inputReaderMock.Verify(_ => _.ReadConfirmation(It.IsAny<bool>()));
 
-    _jiraAuthenticatorMock.Verify(_ => _.CheckAuthentication(
-        It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL));
+    _jiraAuthenticatorMock.Verify(
+        _ => _.CheckAuthentication(
+            It.IsAny<Credentials>(),
+            _config.Jira.JiraProjectKey,
+            _config.Jira.JiraURL));
   }
 
   [Test]
@@ -137,14 +146,18 @@ public class JiraCredentialManagerTests
     var networkCredential = new NetworkCredential("NotUserName", "NotPassword");
     CredentialManager.SaveCredentials(c_target, networkCredential);
 
-    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticatorMock.Object, c_postfix);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticatorMock.Object, c_postfix);
     var sequence = new MockSequence();
-    
-    _jiraAuthenticatorMock.InSequence(sequence).Setup(_ => _.CheckAuthentication(
-            It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL))
+
+    _jiraAuthenticatorMock.InSequence(sequence).Setup(
+            _ => _.CheckAuthentication(
+                It.IsAny<Credentials>(),
+                _config.Jira.JiraProjectKey,
+                _config.Jira.JiraURL))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
-    
-    _jiraAuthenticatorMock.InSequence(sequence).Setup(_ => _.CheckAuthentication(It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL));
+
+    _jiraAuthenticatorMock.InSequence(sequence)
+        .Setup(_ => _.CheckAuthentication(It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL));
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
     _inputReaderMock.Setup(_ => _.ReadHiddenString(It.IsAny<string>())).Returns(c_password);
@@ -156,17 +169,22 @@ public class JiraCredentialManagerTests
 
     Assert.That(output.UserName, Is.EqualTo(c_userName));
     Assert.That(output.Password, Is.EqualTo(c_password));
-    
-    _jiraAuthenticatorMock.Verify(_=> _.CheckAuthentication(It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL),Times.Exactly(2));
+
+    _jiraAuthenticatorMock.Verify(
+        _ => _.CheckAuthentication(It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL),
+        Times.Exactly(2));
   }
 
   [Test]
   public void GetCredential_WithWrongCredentialInput_RepeatsFiveTimes ()
   {
-    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console,  _jiraAuthenticatorMock.Object, c_postfix);
+    var jiraCredentialManager = new JiraCredentialManager(_config, _inputReaderMock.Object, _console, _jiraAuthenticatorMock.Object, c_postfix);
 
-    _jiraAuthenticatorMock.Setup(_ => _.CheckAuthentication(
-            It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL))
+    _jiraAuthenticatorMock.Setup(
+            _ => _.CheckAuthentication(
+                It.IsAny<Credentials>(),
+                _config.Jira.JiraProjectKey,
+                _config.Jira.JiraURL))
         .Throws(new JiraException("error") { HttpStatusCode = HttpStatusCode.Unauthorized });
 
     _inputReaderMock.Setup(_ => _.ReadString(It.IsAny<string>())).Returns(c_userName);
@@ -180,10 +198,16 @@ public class JiraCredentialManagerTests
         .Returns(true)
         .Returns(false);
 
-    Assert.That(() => jiraCredentialManager.GetCredential(c_target), Throws.InstanceOf<JiraAuthenticationException>()
-        .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
+    Assert.That(
+        () => jiraCredentialManager.GetCredential(c_target),
+        Throws.InstanceOf<JiraAuthenticationException>()
+            .With.Message.EqualTo("Authentication not successful, user does not want to try again."));
 
-    _jiraAuthenticatorMock.Verify(_ => _.CheckAuthentication(
-        It.IsAny<Credentials>(), _config.Jira.JiraProjectKey, _config.Jira.JiraURL), Times.Exactly(callCount));
+    _jiraAuthenticatorMock.Verify(
+        _ => _.CheckAuthentication(
+            It.IsAny<Credentials>(),
+            _config.Jira.JiraProjectKey,
+            _config.Jira.JiraURL),
+        Times.Exactly(callCount));
   }
 }

@@ -24,51 +24,50 @@ using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.Jira.Utility;
 using RestSharp;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+
+public class JiraProjectVersionFinder : IJiraProjectVersionFinder
 {
-  public class JiraProjectVersionFinder : IJiraProjectVersionFinder
+  private readonly IJiraRestClientProvider _jiraRestClientProvider;
+
+  public JiraProjectVersionFinder (IJiraRestClientProvider jiraRestClientProvider)
   {
-    private readonly IJiraRestClientProvider _jiraRestClientProvider;
+    _jiraRestClientProvider = jiraRestClientProvider;
+  }
 
-    public JiraProjectVersionFinder(IJiraRestClientProvider jiraRestClientProvider)
-    {
-      _jiraRestClientProvider = jiraRestClientProvider;
-    }
-
-    public IEnumerable<JiraProjectVersion> FindVersions (string projectKey, string versionPattern)
-    {
-      var versions = GetVersions (projectKey);
-      return versions.Where (v =>
-      {
-        if (string.IsNullOrEmpty(v.name))
+  public IEnumerable<JiraProjectVersion> FindVersions (string projectKey, string versionPattern)
+  {
+    var versions = GetVersions(projectKey);
+    return versions.Where(
+        v =>
         {
-          throw new InvalidOperationException($"Could not get name from jira project version with id '{v.id}', maybe it was not initialized?");
-        }
-        return Regex.IsMatch(v.name, versionPattern);
-      });
-    }
-    
-    public IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern)
-    {
-      return FindVersions (projectKey, versionPattern).Where (v => v.released != true);
-    }
+          if (string.IsNullOrEmpty(v.name))
+            throw new InvalidOperationException($"Could not get name from jira project version with id '{v.id}', maybe it was not initialized?");
 
-    public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
-    {
-      var resource = $"project/{projectKey}/versions";
-      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
+          return Regex.IsMatch(v.name, versionPattern);
+        });
+  }
 
-      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
-      return response.Data;
-    }
+  public IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern)
+  {
+    return FindVersions(projectKey, versionPattern).Where(v => v.released != true);
+  }
 
-    public JiraProjectVersion GetVersionById (string versionId)
-    {
-      var resource = $"version/{versionId}";
-      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
+  public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
+  {
+    var resource = $"project/{projectKey}/versions";
+    var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest(resource, Method.GET);
 
-      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
-      return response.Data;
-    }
+    var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
+    return response.Data;
+  }
+
+  public JiraProjectVersion GetVersionById (string versionId)
+  {
+    var resource = $"version/{versionId}";
+    var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest(resource, Method.GET);
+
+    var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraProjectVersion>(request, HttpStatusCode.OK);
+    return response.Data;
   }
 }

@@ -20,33 +20,32 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
+
+public interface IJiraProjectVersionFinder
 {
-  public interface IJiraProjectVersionFinder
-  {
-    /// <summary>
-    /// Returns all versions of the project.
-    /// </summary
-    /// <returns>List of project versions or empty sequence</returns>
-    IEnumerable<JiraProjectVersion> GetVersions (string projectKey);
+  /// <summary>
+  /// Returns all versions of the project.
+  /// </summary
+  /// <returns>List of project versions or empty sequence</returns>
+  IEnumerable<JiraProjectVersion> GetVersions (string projectKey);
 
-    /// <summary>
-    /// Returns all versions of the project.
-    /// Filters by Regex.IsMatch(name, versionPattern) if versionPattern is not null.
-    /// </summary
-    /// <returns>List of project versions or empty sequence</returns>
-    IEnumerable<JiraProjectVersion> FindVersions (string projectKey, [CanBeNull] string versionPattern);
+  /// <summary>
+  /// Returns all versions of the project.
+  /// Filters by Regex.IsMatch(name, versionPattern) if versionPattern is not null.
+  /// </summary
+  /// <returns>List of project versions or empty sequence</returns>
+  IEnumerable<JiraProjectVersion> FindVersions (string projectKey, [CanBeNull] string versionPattern);
 
-    /// <summary>
-    /// Returns all unreleased versions of the project.
-    /// Filters by Regex.IsMatch(name, versionPattern) if versionPattern is not null.
-    /// </summary
-    /// <returns>List of project versions or empty sequence</returns>
-    IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern);
+  /// <summary>
+  /// Returns all unreleased versions of the project.
+  /// Filters by Regex.IsMatch(name, versionPattern) if versionPattern is not null.
+  /// </summary
+  /// <returns>List of project versions or empty sequence</returns>
+  IEnumerable<JiraProjectVersion> FindUnreleasedVersions (string projectKey, string versionPattern);
 
-    /// <summary>
-    /// Returns a specific version by id
-    /// </summary>
-    JiraProjectVersion GetVersionById (string versionId);
-  }
+  /// <summary>
+  /// Returns a specific version by id
+  /// </summary>
+  JiraProjectVersion GetVersionById (string versionId);
 }

@@ -17,14 +17,12 @@
 
 using System;
 using NUnit.Framework;
-using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.IntegrationTests;
 
 [TestFixture]
 internal class ReleaseFromReleaseTests : IntegrationTestSetup
 {
-  
   [Test]
   public void ReleaseWithRC_FromSupportHotfixRelease_ReleasesToSupport ()
   {
@@ -62,7 +60,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
   }
-  
+
   [Test]
   public void ReleaseRC_FromSupportHotfixRelease_ReleasesNewPreReleaseIntoRelease ()
   {
@@ -78,10 +76,10 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
           * ConfigAndBuildProject
           *  (origin/master)Initial CommitAll
           ";
-    
+
     ExecuteGitCommand("commit -m feature --allow-empty");
     ExecuteGitCommand("tag v1.0.0");
-    
+
     ExecuteGitCommand("checkout -b support/v1.3");
     ExecuteGitCommand("checkout -b hotfix/v1.3.5");
 
@@ -95,13 +93,13 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     TestConsole.Input.PushTextWithEnter("1.3.5-rc.1");
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.3.6");
-    
+
     var act = Program.Main(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
   }
-  
+
   [Test]
   public void ReleaseRC_FromDevelopRelease_ReleasesNewRCToRelease ()
   {
@@ -227,7 +225,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
           *  (master, develop)ConfigAndBuildProject
           *  (origin/master)Initial CommitAll
           ";
-    
+
     ExecuteGitCommand("checkout -b develop");
     ExecuteGitCommand("checkout -b release/v1.2.0");
     ExecuteGitCommand("checkout -b prerelease/v1.2.0");
@@ -236,7 +234,6 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     ExecuteGitCommand("tag -a v1.2.0-rc1 -m v1.2.0-rc1");
     ExecuteGitCommand("checkout release/v1.2.0");
     ExecuteGitCommand("merge prerelease/v1.2.0-rc1 --no-ff");
-
 
     //Get release version from user
     TestConsole.Input.PushTextWithEnter("2");

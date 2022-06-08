@@ -29,227 +29,220 @@ using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
 using ReleaseProcessAutomation.Steps.PipelineSteps;
 using Spectre.Console;
-using Spectre.Console.Testing;
 
-namespace ReleaseProcessAutomation.Tests.Steps.Releases
+namespace ReleaseProcessAutomation.Tests.Steps.Releases;
+
+[TestFixture]
+internal class ReleaseWithRcStepTests
 {
-  [TestFixture]
-  internal class ReleaseWithRcStepTests
+  [SetUp]
+  public void Setup ()
   {
+    _gitClientStub = new Mock<IGitClient>();
+    _inputReaderMock = new Mock<IInputReader>();
+    _ancestorStub = new Mock<IAncestorFinder>();
+    _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
+    _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
+    _continueReleasePatchMock = new Mock<IContinueReleasePatchStep>();
+    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
-    [SetUp]
-    public void Setup()
-    {
-      _gitClientStub = new Mock<IGitClient>();
-      _inputReaderMock = new Mock<IInputReader>();
-      _ancestorStub = new Mock<IAncestorFinder>();
-      _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
-      _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
-      _continueReleasePatchMock = new Mock<IContinueReleasePatchStep>();
-      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _consoleStub = new Mock<IAnsiConsole>();
 
-      _consoleStub = new Mock<IAnsiConsole>();
+    var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
+    _config = new ConfigReader().LoadConfig(path);
+  }
 
-      var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
-      _config = new ConfigReader().LoadConfig(path);
+  private Mock<IAnsiConsole> _consoleStub;
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<IInputReader> _inputReaderMock;
+  private Configuration.Data.Config _config;
+  private Mock<IAncestorFinder> _ancestorStub;
+  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+  private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
+  private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
+  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
-    }
+  [Test]
+  public void Execute_FromHotfix_CreatesHotfixPossibleVersions ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
 
-    private Mock<IAnsiConsole> _consoleStub;
-    private Mock<IGitClient> _gitClientStub;
-    private Mock<IInputReader> _inputReaderMock;
-    private Configuration.Data.Config _config;
-    private Mock<IAncestorFinder> _ancestorStub;
-    private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-    private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
-    private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
-    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
-    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-    [Test]
-    public void Execute_FromHotfix_CreatesHotfixPossibleVersions()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
+    Assert.That(
+        () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
+        Throws.Nothing);
+    _inputReaderMock.Verify();
+  }
 
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
+  [Test]
+  public void Execute_FromDevelop_CreatesDevelopPossibleVersions ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
 
-      Assert.That(
-          () => withRcStep.Execute(false,false, "hotfix/v1.3.5"),
-          Throws.Nothing);
-      _inputReaderMock.Verify();
-    }
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-    [Test]
-    public void Execute_FromDevelop_CreatesDevelopPossibleVersions()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion).Verifiable();
+    Assert.That(
+        () => withRcStep.Execute(false, false, "develop"),
+        Throws.Nothing);
+    _inputReaderMock.Verify();
+  }
 
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
+  [Test]
+  public void Execute_ThrowsNothing_CallsMBuildInvokeAndCommitAndJira ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
-      Assert.That(
-          () => withRcStep.Execute(false, false, "develop"),
-          Throws.Nothing);
-      _inputReaderMock.Verify();
-    }
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-    [Test]
-    public void Execute_ThrowsNothing_CallsMBuildInvokeAndCommitAndJira()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+    Assert.That(
+        () => withRcStep.Execute(false, false, "develop"),
+        Throws.Nothing);
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+    _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion));
+  }
 
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
+  [Test]
+  public void Execute_ThrowsNothingFromHotfix_CallsNextStepAndJira ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
-      Assert.That(
-          () => withRcStep.Execute(false, false, "develop"),
-          Throws.Nothing);
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-      _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion));
-    }
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-    [Test]
-    public void Execute_ThrowsNothingFromHotfix_CallsNextStepAndJira()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.0")).Returns(false);
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsHotfix();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+    Assert.That(
+        () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
+        Throws.Nothing);
 
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+    _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, false, false));
+  }
 
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
+  [Test]
+  public void Execute_ThrowsNothingFromDevelop_CallsNextStepAndJira ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
+    var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
-      Assert.That(
-          () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
-          Throws.Nothing);
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-      _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, false, false));
-    }
+    Assert.That(
+        () => withRcStep.Execute(false, false, "develop"),
+        Throws.Nothing);
 
-    [Test]
-    public void Execute_ThrowsNothingFromDevelop_CallsNextStepAndJira()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
-      var nextPossibleVersions = nextVersion.GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+    _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, false));
+  }
 
+  [Test]
+  public void Execute_ThrowsNothingFromDevelopWithPause_DoesNotCallNextStepDoesCallMsBuildAndJira ()
+  {
+    var nextVersion = new SemanticVersion { Patch = 1 };
+    var nextJiraVersion = new SemanticVersion();
+    _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
+    _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
+    _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
+    _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
+    var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
+    _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
 
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
+    var withRcStep = new ReleaseWithRcStep(
+        _gitClientStub.Object,
+        _config,
+        _inputReaderMock.Object,
+        _ancestorStub.Object,
+        _msBuildInvokerMock.Object,
+        _continueReleaseOnMasterMock.Object,
+        _continueReleasePatchMock.Object,
+        _consoleStub.Object,
+        _jiraFunctionalityMock.Object);
 
-      Assert.That(
-          () => withRcStep.Execute(false, false, "develop"),
-          Throws.Nothing);
+    Assert.That(
+        () => withRcStep.Execute(true, false, "develop"),
+        Throws.Nothing);
 
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-      _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, false));
-    }
-
-    [Test]
-    public void Execute_ThrowsNothingFromDevelopWithPause_DoesNotCallNextStepDoesCallMsBuildAndJira()
-    {
-      var nextVersion = new SemanticVersion { Patch = 1 };
-      var nextJiraVersion = new SemanticVersion();
-      _gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
-      _gitClientStub.Setup(_ => _.IsOnBranch("release/")).Returns(true);
-      _gitClientStub.Setup(_ => _.GetCurrentBranchName()).Returns("release/v0.0.1");
-      _gitClientStub.Setup(_ => _.DoesBranchExist("prerelease/v0.0.1")).Returns(false);
-      var nextPossibleVersions = new SemanticVersion().GetNextPossibleVersionsDevelop();
-      _inputReaderMock.Setup(_ => _.ReadVersionChoice(It.IsAny<string>(), nextPossibleVersions)).Returns(nextJiraVersion);
-
-
-      var withRcStep = new ReleaseWithRcStep(
-          _gitClientStub.Object,
-          _config,
-          _inputReaderMock.Object,
-          _ancestorStub.Object,
-          _msBuildInvokerMock.Object,
-          _continueReleaseOnMasterMock.Object,
-          _continueReleasePatchMock.Object,
-          _consoleStub.Object,
-          _jiraFunctionalityMock.Object);
-
-      Assert.That(
-          () => withRcStep.Execute(true, false, "develop"),
-          Throws.Nothing);
-
-      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
-      _msBuildInvokerMock.Verify(_=> _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
-      _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()),Times.Never);
-      _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), false),Times.Never);
-    }
+    _jiraFunctionalityMock.Verify(_ => _.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion, false), Times.Exactly(1));
+    _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
+    _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()), Times.Never);
+    _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), false), Times.Never);
   }
 }

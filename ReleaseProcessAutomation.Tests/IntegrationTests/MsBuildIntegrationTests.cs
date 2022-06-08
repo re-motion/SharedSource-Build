@@ -17,7 +17,6 @@
 
 using System;
 using NUnit.Framework;
-using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.IntegrationTests;
 

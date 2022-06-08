@@ -22,52 +22,49 @@ using ReleaseProcessAutomation.Git;
 using ReleaseProcessAutomation.SemanticVersioning;
 using ReleaseProcessAutomation.Steps.PipelineSteps;
 
-namespace ReleaseProcessAutomation.Tests.Steps.InitialBranching
+namespace ReleaseProcessAutomation.Tests.Steps.InitialBranching;
+
+[TestFixture]
+internal class BranchFromMasterStepTests
 {
-  [TestFixture]
-  internal class BranchFromMasterStepTests
+  [SetUp]
+  public void Setup ()
   {
-    [SetUp]
-    public void Setup()
-    {
-      _gitClientStub = new Mock<IGitClient>();
-      _semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
-      _releasePatchStepMock = new Mock<IReleasePatchStep>();
-    }
+    _gitClientStub = new Mock<IGitClient>();
+    _semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
+    _releasePatchStepMock = new Mock<IReleasePatchStep>();
+  }
 
-    private Mock<IGitClient> _gitClientStub;
-    private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
-    private Mock<IReleasePatchStep> _releasePatchStepMock;
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
+  private Mock<IReleasePatchStep> _releasePatchStepMock;
 
-    [Test]
-    public void FindNextPatch_WithSeveralTags_ReturnsProperVersionAndCallsReleasePatchStepWithIt ()
-    {
-      var currVersion = new SemanticVersion
-                        {
-        Major = 1,
-        Minor = 3,
-        Patch = 3
-                        };
+  [Test]
+  public void FindNextPatch_WithSeveralTags_ReturnsProperVersionAndCallsReleasePatchStepWithIt ()
+  {
+    var currVersion = new SemanticVersion
+                      {
+                          Major = 1,
+                          Minor = 3,
+                          Patch = 3
+                      };
 
-      var version = new SemanticVersion
-                    {
-                        Major = 1,
-                        Minor = 3,
-                        Patch = 6
-                    };
-      _semanticVersionedGitRepoStub.Setup(_ => _.TryGetCurrentVersion(out currVersion,"master", ""));
-      _gitClientStub.Setup(_ => _.DoesTagExist("v1.3.4")).Returns(true);
-      _gitClientStub.Setup(_ => _.DoesTagExist("v1.3.5")).Returns(true);
-      _releasePatchStepMock.Setup(_ => _.Execute(version, "", false, false, false, true)).Verifiable();
+    var version = new SemanticVersion
+                  {
+                      Major = 1,
+                      Minor = 3,
+                      Patch = 6
+                  };
+    _semanticVersionedGitRepoStub.Setup(_ => _.TryGetCurrentVersion(out currVersion, "master", ""));
+    _gitClientStub.Setup(_ => _.DoesTagExist("v1.3.4")).Returns(true);
+    _gitClientStub.Setup(_ => _.DoesTagExist("v1.3.5")).Returns(true);
+    _releasePatchStepMock.Setup(_ => _.Execute(version, "", false, false, false, true)).Verifiable();
 
-      var branchStep = new BranchFromMasterStep(_gitClientStub.Object, _semanticVersionedGitRepoStub.Object, _releasePatchStepMock.Object);
+    var branchStep = new BranchFromMasterStep(_gitClientStub.Object, _semanticVersionedGitRepoStub.Object, _releasePatchStepMock.Object);
 
-      Assert.That(() => branchStep.Execute("", false, false, false),
-          Throws.Nothing);
-      _releasePatchStepMock.Verify();
-      
-
-    }
+    Assert.That(
+        () => branchStep.Execute("", false, false, false),
+        Throws.Nothing);
+    _releasePatchStepMock.Verify();
   }
 }
-

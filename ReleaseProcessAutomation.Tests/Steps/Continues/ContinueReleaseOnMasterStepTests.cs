@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.IO;
 using Moq;
 using NUnit.Framework;
@@ -112,7 +111,7 @@ internal class ContinueReleaseOnMasterStepTests
   [Test]
   public void ResetItemsOfIgnoreList_WithEmptyIgnoreList_ThrowsException ()
   {
-      var version = new SemanticVersionParser().ParseVersion("1.0.0");
+    var version = new SemanticVersionParser().ParseVersion("1.0.0");
     var gitClientMock = new Mock<IGitClient>();
     gitClientMock.Setup(_ => _.IsWorkingDirectoryClean()).Returns(true);
     gitClientMock.Setup(_ => _.GetCurrentBranchName()).Returns("release/v1.0.0");
@@ -137,7 +136,7 @@ internal class ContinueReleaseOnMasterStepTests
     );
 
     Assert.That(() => step.Execute(version, false), Throws.Nothing);
-    
+
     gitClientMock.Verify(_ => _.Reset(It.IsAny<string>()), Times.Never);
   }
 

@@ -1,12 +1,11 @@
+using System;
 using JetBrains.Annotations;
-using Moq;
 using NUnit.Framework;
-using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.Utility;
-using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Tests.Jira;
+
 [TestFixture]
 public class JiraTests
 {
@@ -31,15 +30,14 @@ public class JiraTests
     var config = new Configuration.Data.Config();
     config.Jira = new JiraConfig();
     config.Jira.JiraURL = "JIRA_URL/";
-    
-    
+
     var jira = new JiraTest(config, c_postFix);
 
     var output = jira.JiraUrlWithPostfixWrapper(config.Jira.JiraURL);
-    
+
     Assert.That(output, Is.EqualTo($"{config.Jira.JiraURL}{c_postFix}"));
   }
-  
+
   [Test]
   public void JiraUrlWithPostfix_WithoutSlash_ReturnsProperUrl ()
   {
@@ -48,9 +46,8 @@ public class JiraTests
     config.Jira.JiraURL = "JIRA_URL";
     var jira = new JiraTest(config, c_postFix);
 
-
     var output = jira.JiraUrlWithPostfixWrapper(config.Jira.JiraURL);
-    
+
     Assert.That(output, Is.EqualTo($"{config.Jira.JiraURL}/{c_postFix}"));
   }
 }

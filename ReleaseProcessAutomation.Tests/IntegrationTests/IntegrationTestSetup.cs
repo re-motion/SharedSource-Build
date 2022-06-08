@@ -18,7 +18,6 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using Spectre.Console;
 using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.IntegrationTests;
@@ -34,7 +33,7 @@ public abstract class IntegrationTestSetup : GitBackedTests
 
     Assert.That(logs, Is.EqualTo(expectedLogs));
   }
-  
+
   protected void AssertValidLogs (string expectedLogs1, string expectedLogs2)
   {
     expectedLogs1 = expectedLogs1.Replace(" ", "").Replace("\r", "");
@@ -56,7 +55,7 @@ public abstract class IntegrationTestSetup : GitBackedTests
   {
     TestConsole = new TestConsole();
     Program.Console = TestConsole;
-    
+
     var pathToBuildProject = Path.Combine(PreviousWorkingDirectory, c_buildProject);
     var destBuildProject = Path.Combine(Environment.CurrentDirectory, c_buildProject);
     File.Copy(pathToBuildProject, destBuildProject);

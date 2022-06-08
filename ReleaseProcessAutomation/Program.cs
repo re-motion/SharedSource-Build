@@ -47,17 +47,15 @@ public static class Program
   public static int Main (string[] args)
   {
     ConfigureLogger();
-    
+
     var services = ConfigureServices();
     var app = ConfigureCommandApp(services);
 
-   
-    
     try
     {
       app.Run(args);
     }
-    catch (Exception e) 
+    catch (Exception e)
     {
       Console.WriteException(e, ExceptionFormats.ShortenEverything);
       var log = Log.ForContext(e.TargetSite!.DeclaringType);
@@ -68,6 +66,7 @@ public static class Program
     {
       (Log.Logger as IDisposable)?.Dispose();
     }
+
     return 0;
   }
 
@@ -96,9 +95,9 @@ public static class Program
         .AddTransient<IMSBuildCallAndCommit, MSBuildCallAndCommit>()
         .AddTransient<ISemanticVersionedGitRepository, SemanticVersionedGitRepository>()
         .AddTransient<IAncestorFinder, AncestorFinder>()
-        
+
         //Jira things
-        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x,"rest/api/2/"))
+        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x, "rest/api/2/"))
         .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
         .AddTransient<IJira, Jira.Jira>()
         .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))

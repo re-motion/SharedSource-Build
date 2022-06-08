@@ -12,13 +12,13 @@ public abstract class JiraWithPostfix
     _config = config;
     _jiraUrlPostfix = jiraUrlPostfix;
   }
-  
+
   protected string JiraUrlWithPostfix (string url)
   {
     return url.EndsWith("/") ? $"{url}{_jiraUrlPostfix}" : $"{url}/{_jiraUrlPostfix}";
   }
-  
-  protected string JiraUrlWithPostfix()
+
+  protected string JiraUrlWithPostfix ()
   {
     return JiraUrlWithPostfix(_config.Jira.JiraURL);
   }

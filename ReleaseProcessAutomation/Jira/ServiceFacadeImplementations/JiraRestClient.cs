@@ -20,48 +20,43 @@ using System.Net;
 using RestSharp;
 using RestSharp.Authenticators;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+
+public class JiraRestClient
 {
-  public class JiraRestClient
+  private readonly RestClient _client;
+
+  public RestClient RestClient => _client;
+
+  public JiraRestClient (string jiraUrl, IAuthenticator authenticator)
   {
-    private readonly RestClient _client;
+    _client = new RestClient(jiraUrl) { Authenticator = authenticator };
+  }
 
-    public RestClient RestClient
-    {
-      get { return _client; }
-    }
+  public IRestRequest CreateRestRequest (string resource, Method method)
+  {
+    var request = new RestRequest() { Method = method, RequestFormat = DataFormat.Json, Resource = resource };
+    return request;
+  }
 
-    public JiraRestClient(string jiraUrl, IAuthenticator authenticator)
-    {
-      _client = new RestClient (jiraUrl) { Authenticator = authenticator };
-    }
+  public void DoRequest (IRestRequest request, HttpStatusCode successCode)
+  {
+    DoRequest<object>(request, successCode);
+  }
 
-    public IRestRequest CreateRestRequest (string resource, Method method)
-    {
-      var request = new RestRequest () { Method = method, RequestFormat = DataFormat.Json, Resource = resource };
-      return request;
-    }
+  public IRestResponse<T> DoRequest<T> (IRestRequest request, HttpStatusCode successCode)
+      where T : new()
+  {
+    var response = _client.Execute<T>(request);
+    if (response.StatusCode != successCode)
+      throw new JiraException(
+                string.Format(
+                    "Error calling REST service '{0}', HTTP response is: {1}\nReturned content: {2}",
+                    response.ResponseUri,
+                    response.StatusCode,
+                    response.Content))
+            { HttpStatusCode = response.StatusCode };
 
-    public void DoRequest (IRestRequest request, HttpStatusCode successCode)
-    {
-      DoRequest<object> (request, successCode);
-    }
-
-    public IRestResponse<T> DoRequest<T> (IRestRequest request, HttpStatusCode successCode) where T : new ()
-    {
-      var response = _client.Execute<T> (request);
-      if (response.StatusCode != successCode)
-      {
-        throw new JiraException (
-              string.Format (
-                  "Error calling REST service '{0}', HTTP response is: {1}\nReturned content: {2}",
-                  response.ResponseUri,
-                  response.StatusCode,
-                  response.Content))
-              { HttpStatusCode = response.StatusCode };
-      }
-
-      return response;
-    }
+    return response;
   }
 }

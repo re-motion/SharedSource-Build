@@ -19,9 +19,9 @@ using System;
 
 namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
-  public struct Credentials
-  {
-    public string Username { get; set; } 
-    
-    public string Password { get; set; }
-  }
+public struct Credentials
+{
+  public string Username { get; set; }
+
+  public string Password { get; set; }
+}

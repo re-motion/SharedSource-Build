@@ -118,9 +118,7 @@ public class InputReader
     promptBuilder.AppendLine();
 
     foreach (var (v, oneBasedIndex) in versions.Select((v, i) => (v, i + 1)))
-    {
       promptBuilder.Append("[orangered1](").Append(oneBasedIndex).Append(") ").Append(v).AppendLine("[/]");
-    }
 
     promptBuilder.Append("Your version: ");
 

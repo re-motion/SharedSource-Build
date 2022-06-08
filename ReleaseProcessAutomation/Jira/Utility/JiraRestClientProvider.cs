@@ -20,11 +20,11 @@ public class JiraRestClientProvider
     _config = config;
   }
 
-  public JiraRestClient GetJiraRestClient()
+  public JiraRestClient GetJiraRestClient ()
   {
     if (_jiraRestClient != null)
       return _jiraRestClient;
-    
+
     if (_config.Jira.UseNTLM)
     {
       _jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new NtlmAuthenticator());
@@ -34,6 +34,7 @@ public class JiraRestClientProvider
       var credentials = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
       _jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     }
+
     return _jiraRestClient;
   }
 }

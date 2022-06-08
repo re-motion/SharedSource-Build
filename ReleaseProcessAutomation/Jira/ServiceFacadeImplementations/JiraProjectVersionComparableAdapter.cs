@@ -17,11 +17,11 @@
 
 using System;
 
-namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
+namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+
+public class JiraProjectVersionComparableAdapter<T>
+    where T : IComparable<T>
 {
-  public class JiraProjectVersionComparableAdapter<T> where T : IComparable<T>
-  {
-    public JiraProjectVersion? JiraProjectVersion { get; set; }
-    public T? ComparableVersion { get; set; }
-  }
+  public JiraProjectVersion? JiraProjectVersion { get; set; }
+  public T? ComparableVersion { get; set; }
 }

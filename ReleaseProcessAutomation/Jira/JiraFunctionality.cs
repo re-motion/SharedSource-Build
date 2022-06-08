@@ -31,31 +31,30 @@ public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
   private readonly IJira _jira;
   private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
-  public JiraFunctionality (Config config, IAnsiConsole console, IJira jira, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraFunctionality (Config config, IAnsiConsole console, IJira jira, string jiraUrlPostfix)
+      : base(config, jiraUrlPostfix)
   {
     _config = config;
     _console = console;
     _jira = jira;
   }
-  
+
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
   {
-    
     var currentVersionID = CreateVersion(currentVersion);
     var nextVersionID = CreateVersion(nextVersion);
 
     var releaseMessage = $"Releasing version '{currentVersion}' on JIRA. ";
     _log.Information(releaseMessage);
     _console.WriteLine(releaseMessage);
-    
+
     var moveMessage = $"Moving open issues to '{nextVersion}'.";
     _log.Information(moveMessage);
     _console.WriteLine(moveMessage);
 
     ReleaseVersion(currentVersionID, nextVersionID, squashUnreleased);
-    
   }
-  
+
   private string CreateVersion (SemanticVersion version)
   {
     return _jira.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
@@ -64,13 +63,8 @@ public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
     if (squashUnreleased)
-    {
       _jira.VersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
-    }
     else
-    {
       _jira.VersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
-    }
   }
-  
 }

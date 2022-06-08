@@ -73,7 +73,7 @@ public class BranchFromDevelopStep
 
     else if (preVersion == PreReleaseStage.alpha || preVersion == PreReleaseStage.beta)
     {
-      _log.Debug("Prerelease version was '{PreVersion}', calling release alpha beta step",preVersion);
+      _log.Debug("Prerelease version was '{PreVersion}', calling release alpha beta step", preVersion);
       _releaseAlphaBetaStep.Execute(nextVersion, commitHash, pauseForCommit, noPush);
     }
   }

@@ -1,18 +1,8 @@
-using ReleaseProcessAutomation.Jira.CredentialManagement;
-using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
-
 namespace ReleaseProcessAutomation.Jira;
 
 public interface IJira
 {
+  IJiraVersionCreator VersionCreator { get; }
 
-  IJiraVersionCreator VersionCreator
-  {
-    get;
-  }
-
-  IJiraVersionReleaser VersionReleaser
-  {
-    get;
-  }
+  IJiraVersionReleaser VersionReleaser { get; }
 }

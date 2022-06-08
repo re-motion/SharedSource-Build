@@ -27,96 +27,101 @@ using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Spectre.Console;
 
-namespace ReleaseProcessAutomation.Tests.MSBuild
+namespace ReleaseProcessAutomation.Tests.MSBuild;
+
+[TestFixture]
+internal class MSBuildInvokerTests
 {
-  [TestFixture]
-  internal class MSBuildInvokerTests
+  [SetUp]
+  public void Setup ()
   {
+    var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
+    _config = new ConfigReader().LoadConfig(path);
+    _consoleStub = new Mock<IAnsiConsole>();
+  }
 
-    [SetUp]
-    public void Setup()
-    {
-      var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
-      _config = new ConfigReader().LoadConfig(path);
-      _consoleStub = new Mock<IAnsiConsole>();
-    }
+  private Mock<IAnsiConsole> _consoleStub;
+  private Configuration.Data.Config _config;
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
-    private Mock<IAnsiConsole> _consoleStub;
-    private Configuration.Data.Config _config;
-    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  [Test]
+  public void InvokeMSBuildAndCommit_NoMSBuildPathSpecified_EndsEarly ()
+  {
+    var version = new SemanticVersion
+                  {
+                      Major = 1,
+                      Minor = 1,
+                      Patch = 1
+                  };
 
-    [Test]
-    public void InvokeMSBuildAndCommit_NoMSBuildPathSpecified_EndsEarly()
-    {
-      var version = new SemanticVersion
-                    {
-                        Major = 1,
-                        Minor = 1,
-                        Patch = 1,
-                    };
+    _config.MSBuildSettings.MSBuildPath = "";
+    var gitClientStub = new Mock<IGitClient>();
+    var msBuildMock = new Mock<IMSBuild>();
+    msBuildMock.Setup(_ => _.CallMSBuild("", It.IsAny<string>())).Verifiable();
 
-      _config.MSBuildSettings.MSBuildPath = "";
-      var gitClientStub = new Mock<IGitClient>();
-      var msBuildMock = new Mock<IMSBuild>();
-      msBuildMock.Setup(_ => _.CallMSBuild("", It.IsAny<string>())).Verifiable();
+    var msBuildInvoker = new MSBuildCallAndCommit(
+        gitClientStub.Object,
+        _config,
+        msBuildMock.Object,
+        _consoleStub.Object);
 
-      var msBuildInvoker = new MSBuildCallAndCommit(gitClientStub.Object, _config, msBuildMock.Object,
-          _consoleStub.Object);
+    var act = msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version);
 
-      var act = msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version);
+    Assert.That(act, Is.EqualTo(-1));
+    msBuildMock.Verify(n => n.CallMSBuild("", It.IsAny<string>()), Times.Never);
+  }
 
-      Assert.That(act, Is.EqualTo(-1));
-      msBuildMock.Verify(n => n.CallMSBuild("", It.IsAny<string>()),Times.Never);
-    }
+  [Test]
+  public void InvokeMSBuildAndCommit_WorkingDirectoryNotCleanWithOutCommitMessage_ThrowsException ()
+  {
+    _config.PrepareNextVersionMSBuildSteps.Steps[0].CommitMessage = string.Empty;
+    var version = new SemanticVersion
+                  {
+                      Major = 1,
+                      Minor = 1,
+                      Patch = 1
+                  };
 
-    [Test]
-    public void InvokeMSBuildAndCommit_WorkingDirectoryNotCleanWithOutCommitMessage_ThrowsException()
-    {
-      _config.PrepareNextVersionMSBuildSteps.Steps[0].CommitMessage = string.Empty;
-      var version = new SemanticVersion
-                    {
-                        Major = 1,
-                        Minor = 1,
-                        Patch = 1,
-                    };
-      
-      var gitClientStub = new Mock<IGitClient>();
-      gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(false);
-      var msBuildStub = new Mock<IMSBuild>();
+    var gitClientStub = new Mock<IGitClient>();
+    gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(false);
+    var msBuildStub = new Mock<IMSBuild>();
 
-      var msBuildInvoker = new MSBuildCallAndCommit(gitClientStub.Object, _config, msBuildStub.Object,
-          _consoleStub.Object);
+    var msBuildInvoker = new MSBuildCallAndCommit(
+        gitClientStub.Object,
+        _config,
+        msBuildStub.Object,
+        _consoleStub.Object);
 
+    Assert.That(
+        () => msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version),
+        Throws.InstanceOf<InvalidOperationException>()
+            .With.Message.EqualTo(
+                "Working directory not clean after call to msbuild.exe without commit message. Check your targets in the config and make sure they do not create new files."));
+  }
 
+  [Test]
+  public void InvokeMSBuildAndCommit_WorkingDirectoryNotCleanWithCommitMessage_ThrowsException ()
+  {
+    _config.PrepareNextVersionMSBuildSteps.Steps[0].CommitMessage = "CommitAll";
+    var version = new SemanticVersion
+                  {
+                      Major = 1,
+                      Minor = 1,
+                      Patch = 1
+                  };
+    var gitClientStub = new Mock<IGitClient>();
+    gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(false);
+    var msBuildStub = new Mock<IMSBuild>();
 
-      Assert.That(() => msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version),
-          Throws.InstanceOf<InvalidOperationException>()
-              .With.Message.EqualTo("Working directory not clean after call to msbuild.exe without commit message. Check your targets in the config and make sure they do not create new files."));
+    var msBuildInvoker = new MSBuildCallAndCommit(
+        gitClientStub.Object,
+        _config,
+        msBuildStub.Object,
+        _consoleStub.Object);
 
-    }
-    [Test]
-    public void InvokeMSBuildAndCommit_WorkingDirectoryNotCleanWithCommitMessage_ThrowsException()
-    {
-      _config.PrepareNextVersionMSBuildSteps.Steps[0].CommitMessage = "CommitAll";
-      var version = new SemanticVersion
-                    {
-                        Major = 1,
-                        Minor = 1,
-                        Patch = 1,
-                    };
-      var gitClientStub = new Mock<IGitClient>();
-      gitClientStub.Setup(_ => _.IsWorkingDirectoryClean()).Returns(false);
-      var msBuildStub = new Mock<IMSBuild>();
-
-      var msBuildInvoker = new MSBuildCallAndCommit(gitClientStub.Object, _config, msBuildStub.Object,
-          _consoleStub.Object);
-
-
-
-      Assert.That(() => msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version),
-          Throws.InstanceOf<InvalidOperationException>()
-              .With.Message.EqualTo("Working directory not clean before a call to msBuild.exe with a commit message defined in config"));
-
-    }
+    Assert.That(
+        () => msBuildInvoker.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, version),
+        Throws.InstanceOf<InvalidOperationException>()
+            .With.Message.EqualTo("Working directory not clean before a call to msBuild.exe with a commit message defined in config"));
   }
 }

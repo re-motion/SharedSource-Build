@@ -68,7 +68,7 @@ public class ReleaseAlphaBetaStep
     EnsureWorkingDirectoryClean();
 
     var currentBranchName = GitClient.GetCurrentBranchName();
-    
+
     IReadOnlyCollection<SemanticVersion> nextPossibleJiraVersions;
     if (GitClient.IsOnBranch("develop"))
     {
@@ -88,9 +88,7 @@ public class ReleaseAlphaBetaStep
 
     var branchName = $"prerelease/v{nextVersion}";
     if (GitClient.DoesBranchExist(branchName))
-    {
       throw new InvalidOperationException($"The branch '{branchName}' already exists.");
-    }
 
     GitClient.CheckoutCommitWithNewBranch(commitHash, branchName);
 

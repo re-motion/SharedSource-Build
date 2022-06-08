@@ -16,7 +16,6 @@
 //
 
 using System;
-using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Extensions;
 using ReleaseProcessAutomation.Git;
@@ -86,7 +85,8 @@ public class MSBuildCallAndCommit
       {
         if (!_gitClient.IsWorkingDirectoryClean())
         {
-          const string message = "Working directory not clean after call to msbuild.exe without commit message. Check your targets in the config and make sure they do not create new files.";
+          const string message =
+              "Working directory not clean after call to msbuild.exe without commit message. Check your targets in the config and make sure they do not create new files.";
           throw new InvalidOperationException(message);
         }
       }

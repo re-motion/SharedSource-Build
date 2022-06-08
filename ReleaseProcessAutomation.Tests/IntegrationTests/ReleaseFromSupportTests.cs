@@ -17,7 +17,6 @@
 
 using System;
 using NUnit.Framework;
-using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Tests.IntegrationTests;
 
@@ -32,8 +31,7 @@ internal class ReleaseFromSupportTests : IntegrationTestSetup
 
     Program.Main(new[] { "Release-Version" });
     var output = TestConsole.Output.Replace("\n", "");
-    
-    
+
     Assert.That(output, Does.Contain("You have to be on either a 'hotfix/*' or 'release/*' or 'develop' or 'master' branch to release a version"));
   }
 }

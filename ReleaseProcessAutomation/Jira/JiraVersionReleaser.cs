@@ -16,8 +16,6 @@
 //
 
 using System;
-using System.IO;
-using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
@@ -37,15 +35,12 @@ public class JiraVersionReleaser
 
   public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion)
   {
-    
-    _projectVersionService.ReleaseVersion (versionID, nextVersionID);
+    _projectVersionService.ReleaseVersion(versionID, nextVersionID);
 
     if (sortReleasedVersion)
-    {
-      _projectVersionRepairer.RepairVersionPosition (versionID);
-    }
+      _projectVersionRepairer.RepairVersionPosition(versionID);
   }
-  
+
   public void ReleaseVersionAndSquashUnreleased (string jiraUrl, string jiraProjectKey, string versionID, string nextVersionID)
   {
     _projectVersionService.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
