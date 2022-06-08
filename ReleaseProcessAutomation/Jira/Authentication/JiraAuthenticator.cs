@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using RestSharp;
 using RestSharp.Authenticators;
 
-namespace ReleaseProcessAutomation.Jira.CredentialManagement;
+namespace ReleaseProcessAutomation.Jira.Authentication;
 
-public class JiraAuthenticationWrapper
-    : IJiraAuthenticationWrapper
+public class JiraAuthenticator
+    : IJiraAuthenticator
 {
     public void CheckAuthentication (Credentials credentials, string projectKey, string jiraURL)
     {

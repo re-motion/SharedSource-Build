@@ -1,11 +1,12 @@
 using System;
 using NUnit.Framework;
+using ReleaseProcessAutomation.Jira.Authentication;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 
 namespace ReleaseProcessAutomation.Tests.Jira;
 
 [TestFixture]
-public class JiraAuthenticationWrapperTests
+public class JiraAuthenticatorTests
 {
   private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
   private const string c_jiraProjectKey = "SRCBLDTEST";
@@ -30,9 +31,9 @@ public class JiraAuthenticationWrapperTests
 
     var testCredentials = new Credentials { Username = jiraUsername, Password = jiraPassword };
 
-    var testClass = new JiraAuthenticationWrapper();
+    var authenticator = new JiraAuthenticator();
     
-    Assert.That( ()=> testClass.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Nothing);
+    Assert.That( ()=> authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Nothing);
 
   }
 
@@ -41,8 +42,8 @@ public class JiraAuthenticationWrapperTests
   {
     var testCredentials = new Credentials { Username = "DefinetlyNotAUsername", Password = "DefinetlyNotAPassword" };
 
-    var testClass = new JiraAuthenticationWrapper();
+    var authenticator = new JiraAuthenticator();
     
-    Assert.That( ()=> testClass.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Exception);
+    Assert.That( ()=> authenticator.CheckAuthentication(testCredentials, c_jiraProjectKey, c_jiraUrl), Throws.Exception);
   }
 }

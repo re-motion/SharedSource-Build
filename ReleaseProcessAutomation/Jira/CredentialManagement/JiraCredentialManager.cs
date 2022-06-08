@@ -19,6 +19,7 @@ using System;
 using System.Net;
 using AdysTech.CredentialManager;
 using ReleaseProcessAutomation.Configuration.Data;
+using ReleaseProcessAutomation.Jira.Authentication;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.ReadInput;
 using Serilog;
@@ -32,15 +33,15 @@ public class JiraCredentialManager
   private readonly Config _config;
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
-  private readonly IJiraAuthenticationWrapper _jiraAuthenticationWrapper;
+  private readonly IJiraAuthenticator _jiraAuthenticator;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJiraAuthenticationWrapper jiraAuthenticationWrapper,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJiraAuthenticator jiraAuthenticator,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _inputReader = inputReader;
     _console = console;
-    _jiraAuthenticationWrapper = jiraAuthenticationWrapper;
+    _jiraAuthenticator = jiraAuthenticator;
   }
 
   public Credentials GetCredential (string target)
@@ -128,7 +129,7 @@ public class JiraCredentialManager
   {
     try
     {
-      _jiraAuthenticationWrapper.CheckAuthentication(credentials, _config.Jira.JiraProjectKey, _config.Jira.JiraURL);
+      _jiraAuthenticator.CheckAuthentication(credentials, _config.Jira.JiraProjectKey, _config.Jira.JiraURL);
     }
     catch (Exception e)
     {

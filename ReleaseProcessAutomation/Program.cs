@@ -23,6 +23,7 @@ using ReleaseProcessAutomation.Commands;
 using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Git;
 using ReleaseProcessAutomation.Jira;
+using ReleaseProcessAutomation.Jira.Authentication;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.MSBuild;
@@ -96,7 +97,7 @@ public static class Program
         
         //Jira things
         .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x,"rest/api/2/"))
-        .AddTransient<IJiraAuthenticationWrapper, JiraAuthenticationWrapper>()
+        .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
         .AddTransient<IJira, Jira.Jira>()
         .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
         .AddTransient<IJiraRestClientProvider, JiraRestClientProvider>()
