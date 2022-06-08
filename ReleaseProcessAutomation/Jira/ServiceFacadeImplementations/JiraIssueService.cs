@@ -43,8 +43,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         {
           throw new InvalidOperationException($"Could not get fields from issue '{issue}");
         }
-        var newFixVersions = issue.Fields!.FixVersions;
-        newFixVersions!.RemoveAll (v =>
+        var newFixVersions = issue.Fields.FixVersions;
+        newFixVersions.RemoveAll (v =>
         {
           if (string.IsNullOrEmpty(v.ID))
           {

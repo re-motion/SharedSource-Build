@@ -22,16 +22,16 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
   public class JiraProjectVersion
   {
     // ReSharper disable InconsistentNaming
-    public string? self { get; set; }
-    public string? id { get; set; }
-    public string? description { get; set; }
-    public string? name { get; set; }
-    public bool? archived { get; set; }
-    public bool? released { get; set; }
+    public string self { get; set; } = default!;
+    public string id { get; set; } = default!;
+    public string description { get; set; } = default!;
+    public string name { get; set; } = default!;
+    public bool archived { get; set; }
+    public bool released { get; set; }
     public DateTime? releaseDate { get; set; }
-    public bool? overdue { get; set; }
-    public string? project { get; set; }
-    public string? projectId { get; set; }
+    public bool overdue { get; set; }
+    public string project { get; set; } = default!;
+    public string projectId { get; set; } = default!;
     
     // ReSharper restore InconsistentNaming
 

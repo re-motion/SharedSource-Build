@@ -93,7 +93,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         Func<string, T?> parseVersion)
       where T : IComparable<T>
     {
-      var parsedVersion = parseVersion (toBeRepairedVersion.name!);
+      var parsedVersion = parseVersion (toBeRepairedVersion.name);
 
       var versionList = versions.Select (
           x => new JiraProjectVersionComparableAdapter<T>()

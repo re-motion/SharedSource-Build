@@ -67,7 +67,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var nextVersionName = IncrementVersion (lastUnreleasedVersion.name, versionComponentToIncrement);
 
       // Determine next release day
-      if (!lastUnreleasedVersion.releaseDate.HasValue)
+      if (lastUnreleasedVersion.releaseDate == null)
         throw new JiraException ("releaseDate of lastUnreleasedVersion must have a value but is null");
 
       var nextReleaseDay = lastUnreleasedVersion.releaseDate.Value.AddDays (1);
@@ -146,7 +146,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           {
             versionList.Add(new JiraProjectVersionSemVerAdapter()
             {
-              JiraProjectVersion = version,
+              JiraProjectVersion = version ?? throw new InvalidOperationException("The version did not have a proper jira project version assigned."),
               SemanticVersion = _semanticVersionParser.ParseVersion(version.name ?? throw new InvalidOperationException("The version did not have a name assigned."))
             });
           }
@@ -156,19 +156,12 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
           }
         }
 
-        var currentVersion = versionList.Single (v =>
-        {
-          if (v.JiraProjectVersion == null)
-          {
-            throw new InvalidOperationException("The version did not have a proper jira project version assigned.");
-          }
-          return v.JiraProjectVersion!.id == versionID;
-        }).JiraProjectVersion;
-        var nextVersion = versionList.Single (v => v.JiraProjectVersion!.id == nextVersionID).JiraProjectVersion;
+        var currentVersion = versionList.Single (v => v.JiraProjectVersion.id == versionID).JiraProjectVersion;
+        var nextVersion = versionList.Single (v => v.JiraProjectVersion.id == nextVersionID).JiraProjectVersion;
 
         var orderedVersions = versionList.OrderBy (x => x.SemanticVersion).ToList();
-        var currentVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion!.id == versionID));
-        var nextVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion!.id == nextVersionID));
+        var currentVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion.id == versionID));
+        var nextVersionIndex = orderedVersions.IndexOf (orderedVersions.Single (x => x.JiraProjectVersion.id == nextVersionID));
         
         //There are versions between the currentVersion and the next version
         if (nextVersionIndex != currentVersionIndex + 1)
@@ -178,26 +171,26 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           if (toBeSquashedVersions.Any (IsReleased))
             throw new JiraException (
-                $"Version '{currentVersion!.name}' cannot be released, as there is already one or multiple released version(s) ({string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion!.name))}) before the next version '{nextVersion!.name}'.");
+                $"Version '{currentVersion.name}' cannot be released, as there is already one or multiple released version(s) ({string.Join (",", toBeSquashedVersions.Where (IsReleased).Select (t => t.JiraProjectVersion.name))}) before the next version '{nextVersion!.name}'.");
 
           var allClosedIssues = new List<JiraToBeMovedIssue>();
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {
-            allClosedIssues.AddRange(jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion!.id!));
+            allClosedIssues.AddRange(jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion.id));
           }
 
           if (allClosedIssues.Count != 0)
             throw new JiraException(
-                $"Version '{currentVersion!.name}' cannot be released, as one  or multiple versions contain closed issues ({string.Join(", ", allClosedIssues.Select(aci => aci.Key))})");
+                $"Version '{currentVersion.name}' cannot be released, as one  or multiple versions contain closed issues ({string.Join(", ", allClosedIssues.Select(aci => aci.Key))})");
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {
             var toBeSquashedJiraProjectVersion = toBeSquashedVersion.JiraProjectVersion;
 
-            if (toBeSquashedJiraProjectVersion!.released == null || toBeSquashedJiraProjectVersion.released == false)
+            if (toBeSquashedJiraProjectVersion.released == false)
             {
-              var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id!;
+              var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id;
               
               var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID);
               jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID, nextVersionID);
@@ -217,7 +210,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       {
         throw new InvalidOperationException("The version did not have a proper jira project version assigned.");
       }
-      return jiraVersion.JiraProjectVersion.released.HasValue && jiraVersion.JiraProjectVersion.released.Value;
+      return jiraVersion.JiraProjectVersion.released;
         
     }
 

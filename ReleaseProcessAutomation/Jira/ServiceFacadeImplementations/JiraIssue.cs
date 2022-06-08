@@ -18,42 +18,44 @@
 using System;
 using System.Collections.Generic;
 
+#nullable disable
+
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraIssue
   {
-    public string? ID { get; set; }
-    public string? Summary { get; set; }
-    public List<string>? FixVersions { get; set; }
+    public string ID { get; set; }
+    public string Summary { get; set; }
+    public List<string> FixVersions { get; set; }
 
-    public string? Issuetype { get; set; }
-    public string? Project { get; set; }
+    public string Issuetype { get; set; }
+    public string Project { get; set; }
 
-    public string? Key { get; set; }
+    public string Key { get; set; }
   }
 
   public class JiraNonClosedIssues
   {
-    public List<JiraToBeMovedIssue>? Issues { get; set; }
+    public List<JiraToBeMovedIssue> Issues { get; set; }
   }
 
   public class JiraToBeMovedIssue
   {
-    public string? ID { get; set; }
+    public string ID { get; set; }
     
-    public string? Key { get; set; }
+    public string Key { get; set; }
 
-    public JiraNonClosedIssueFields? Fields { get; set; }
+    public JiraNonClosedIssueFields Fields { get; set; }
     
   }
 
   public class JiraNonClosedIssueFields
   {
-    public List<JiraVersion>? FixVersions { get; set; }
+    public List<JiraVersion> FixVersions { get; set; }
   }
 
   public class JiraVersion
   {
-    public string? ID { get; set; }
+    public string ID { get; set; }
   }
 }

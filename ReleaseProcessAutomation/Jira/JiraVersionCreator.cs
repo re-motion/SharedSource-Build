@@ -16,13 +16,9 @@
 //
 
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
-using JetBrains.Annotations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
-using RestSharp.Authenticators;
 
 namespace ReleaseProcessAutomation.Jira;
 
@@ -54,11 +50,8 @@ public class JiraVersionCreator
     
     if (jiraProjectVersion != null)
     {
-      if (jiraProjectVersion.released != null)
-      {
-        if (jiraProjectVersion.released.Value)
-          throw new JiraException ("The Version '" + versionNumber + "' got already released in Jira.");
-      }
+      if (jiraProjectVersion.released)
+        throw new JiraException ("The Version '" + versionNumber + "' got already released in Jira.");
 
       if (string.IsNullOrEmpty(jiraProjectVersion.id))
       {

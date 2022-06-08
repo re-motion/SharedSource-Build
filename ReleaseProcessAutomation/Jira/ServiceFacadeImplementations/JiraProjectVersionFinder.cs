@@ -43,7 +43,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         {
           throw new InvalidOperationException($"Could not get name from jira project version with id '{v.id}', maybe it was not initialized?");
         }
-        return Regex.IsMatch(v.name!, versionPattern);
+        return Regex.IsMatch(v.name, versionPattern);
       });
     }
     

@@ -20,9 +20,10 @@ using ReleaseProcessAutomation.SemanticVersioning;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
+  #nullable disable
   public class JiraProjectVersionSemVerAdapter
   {
-    public JiraProjectVersion? JiraProjectVersion { get; set; }
-    public SemanticVersion? SemanticVersion { get; set; }
+    public JiraProjectVersion JiraProjectVersion { get; set; }
+    public SemanticVersion SemanticVersion { get; set; }
   }
 }

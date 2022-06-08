@@ -1,9 +1,7 @@
 using System;
-using System.Net;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
-using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using RestSharp.Authenticators;
 
 namespace ReleaseProcessAutomation.Jira;
@@ -42,7 +40,7 @@ public class Jira
                 }
             }
 
-            return _jiraRestClient!;
+            return _jiraRestClient;
         }
     }
 
