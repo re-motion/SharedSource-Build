@@ -42,7 +42,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
       _consoleMock = new Mock<IAnsiConsole>();
-      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
+      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
       var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
       _config = new ConfigReader().LoadConfig(path);
@@ -55,7 +55,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Configuration.Data.Config _config;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
-    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
+    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -82,13 +82,13 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => alphaBetaStep.Execute(nextVersion, "", false, false),
           Throws.Nothing);
       _continueAlphaBetaMock.Verify(_ => _.Execute(nextVersion, "develop", "develop", false));
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
     }
     [Test]
     public void Execute_OnMasterWithoutErrorsButWithPauseForCommit_CallsInvokeMBuildAndCommitButNotNextStep()
@@ -115,7 +115,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _continueAlphaBetaMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
 
@@ -124,7 +124,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           Throws.Nothing);
       
       _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _continueAlphaBetaMock.Verify(_=>_.Execute(nextVersion, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()),Times.Never);
     }
   }

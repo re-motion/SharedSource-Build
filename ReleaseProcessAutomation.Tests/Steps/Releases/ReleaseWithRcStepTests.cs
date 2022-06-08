@@ -46,7 +46,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
       _continueReleasePatchMock = new Mock<IContinueReleasePatchStep>();
-      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
+      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
       _consoleStub = new Mock<IAnsiConsole>();
 
@@ -63,7 +63,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
     private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
-    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
+    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -87,7 +87,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false,false, "hotfix/v1.3.5"),
@@ -116,7 +116,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
@@ -145,12 +145,12 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
           Throws.Nothing);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion));
     }
 
@@ -176,13 +176,13 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "hotfix/v1.3.5"),
           Throws.Nothing);
 
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, false, false));
     }
 
@@ -208,13 +208,13 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(false, false, "develop"),
           Throws.Nothing);
 
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, false));
     }
 
@@ -240,13 +240,13 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _continueReleaseOnMasterMock.Object,
           _continueReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(
           () => withRcStep.Execute(true, false, "develop"),
           Throws.Nothing);
 
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _msBuildInvokerMock.Verify(_=> _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), nextVersion));
       _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()),Times.Never);
       _continueReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), false),Times.Never);

@@ -29,16 +29,16 @@ using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public class JiraEntrancePoint : JiraWithPostfix, IJiraEntrancePoint
+public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
 {
   private readonly JiraRestClient _jiraRestClient;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly IJiraVersionReleaser _jiraVersionReleaser;
   private readonly IJiraVersionCreator _jiraVersionCreator;
-  private readonly ILogger _log = Log.ForContext<JiraEntrancePoint>();
+  private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
-  public JiraEntrancePoint (Config config, IAnsiConsole console,IJiraVersionReleaser jiraVersionReleaser,IJiraVersionCreator jiraVersionCreator, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraFunctionality (Config config, IAnsiConsole console,IJiraVersionReleaser jiraVersionReleaser,IJiraVersionCreator jiraVersionCreator, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _console = console;

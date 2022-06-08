@@ -44,7 +44,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
 {
   private readonly IAncestorFinder _ancestorFinder;
   private readonly IContinueAlphaBetaStep _continueAlphaBetaStep;
-  private readonly IJiraEntrancePoint _jiraEntrancePoint;
+  private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseRCStep>();
   
@@ -56,13 +56,13 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueAlphaBetaStep continueAlphaBetaStep,
       IAnsiConsole console,
-      IJiraEntrancePoint jiraEntrancePoint)
+      IJIraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _ancestorFinder = ancestorFinder;
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueAlphaBetaStep = continueAlphaBetaStep;
-    _jiraEntrancePoint = jiraEntrancePoint;
+    _ijIraFunctionality = ijIraFunctionality;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool pauseForCommit, bool noPush, string ancestor = "")
@@ -106,7 +106,7 @@ public class ReleaseRCStep : ReleaseProcessStepBase, IReleaseRCStep
     }
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Please choose next version (open JIRA issues get moved there): ", nextPossibleVersions);
-    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     var preReleaseBranchName = $"prerelease/v{nextVersion}";
     _log.Debug("Will try to create pre release branch with name '{PrereleaseBranchName}'", preReleaseBranchName);

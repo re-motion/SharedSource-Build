@@ -47,7 +47,7 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
   private readonly IAncestorFinder _ancestorFinder;
   private readonly IContinueReleaseOnMasterStep _continueReleaseOnMasterStep;
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
-  private readonly IJiraEntrancePoint _jiraEntrancePoint;
+  private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseWithRcStep>();
 
@@ -60,14 +60,14 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
       IContinueReleaseOnMasterStep continueReleaseOnMasterStep,
       IContinueReleasePatchStep continueReleasePatchStep,
       IAnsiConsole console,
-      IJiraEntrancePoint jiraEntrancePoint)
+      IJIraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _ancestorFinder = ancestorFinder;
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueReleaseOnMasterStep = continueReleaseOnMasterStep;
     _continueReleasePatchStep = continueReleasePatchStep;
-    _jiraEntrancePoint = jiraEntrancePoint;
+    _ijIraFunctionality = ijIraFunctionality;
   }
 
   public void Execute (bool pauseForCommit, bool noPush, string ancestor)
@@ -119,7 +119,7 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Choose next version (open JIRA issues get moved there):", nextPossibleVersions);
     
-    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
     
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 

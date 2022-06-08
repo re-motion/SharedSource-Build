@@ -11,7 +11,7 @@ using Spectre.Console.Testing;
 namespace ReleaseProcessAutomation.Tests.Jira;
 
 [TestFixture]
-public class JiraEntrancePointTests
+public class JiraFunctionalityTests
 {
   
   private Mock<IJiraVersionReleaser> _jiraVersionReleaserMock;
@@ -44,7 +44,7 @@ public class JiraEntrancePointTests
 
     var currentVersion = new SemanticVersion();
     var nextVersion = new SemanticVersion { Patch = 1 };
-    var JiraEntrancePoint = new JiraEntrancePoint(
+    var jiraFunctionality = new JiraFunctionality(
         _config,
         _console,
         _jiraVersionReleaserMock.Object,
@@ -52,7 +52,7 @@ public class JiraEntrancePointTests
         _jiraCredentialManagerStub.Object,
         c_postfix);
     
-    Assert.That(() => JiraEntrancePoint.CreateAndReleaseJiraVersion(currentVersion, nextVersion, false), Throws.Nothing);
+    Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion, false), Throws.Nothing);
     
     _jiraVersionCreatorMock.Verify(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString(), It.IsAny<JiraRestClient>()), Times.Once);
     _jiraVersionCreatorMock.Verify(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString(), It.IsAny<JiraRestClient>()), Times.Once);
@@ -69,7 +69,7 @@ public class JiraEntrancePointTests
     _jiraVersionCreatorMock.Setup(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString(), It.IsAny<JiraRestClient>())).Returns(versionID);
     _jiraVersionCreatorMock.Setup(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString(), It.IsAny<JiraRestClient>())).Returns(nextID);
 
-    var jiraEntrancePoint = new JiraEntrancePoint(
+    var jiraFunctionality = new JiraFunctionality(
         _config,
         _console,
         _jiraVersionReleaserMock.Object,
@@ -77,7 +77,7 @@ public class JiraEntrancePointTests
         _jiraCredentialManagerStub.Object,
         c_postfix);
     
-    Assert.That(() => jiraEntrancePoint.CreateAndReleaseJiraVersion(currentVersion, nextVersion, false), Throws.Nothing);
+    Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion, false), Throws.Nothing);
     
     _jiraVersionReleaserMock.Verify(_=>_.ReleaseVersion(
           It.IsAny<string>(),
@@ -107,7 +107,7 @@ public class JiraEntrancePointTests
     _jiraVersionCreatorMock.Setup(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString(), It.IsAny<JiraRestClient>())).Returns(versionID);
     _jiraVersionCreatorMock.Setup(_=>_.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString(), It.IsAny<JiraRestClient>())).Returns(nextID);
 
-    var jiraEntrancePoint = new JiraEntrancePoint(
+    var jiraFunctionality = new JiraFunctionality(
         _config,
         _console,
         _jiraVersionReleaserMock.Object,
@@ -115,7 +115,7 @@ public class JiraEntrancePointTests
         _jiraCredentialManagerStub.Object,
         c_postfix);
     
-    Assert.That(() => jiraEntrancePoint.CreateAndReleaseJiraVersion(currentVersion, nextVersion, true), Throws.Nothing);
+    Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion, true), Throws.Nothing);
     
     _jiraVersionReleaserMock.Verify(_=>_.ReleaseVersion(
             It.IsAny<string>(),

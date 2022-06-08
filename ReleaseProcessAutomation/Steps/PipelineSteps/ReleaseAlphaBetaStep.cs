@@ -44,7 +44,7 @@ public class ReleaseAlphaBetaStep
     : ReleaseProcessStepBase, IReleaseAlphaBetaStep
 {
   private readonly IContinueAlphaBetaStep _continueAlphaBetaStep;
-  private readonly IJiraEntrancePoint _jiraEntrancePoint;
+  private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseAlphaBetaStep>();
 
@@ -55,12 +55,12 @@ public class ReleaseAlphaBetaStep
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueAlphaBetaStep continueAlphaBetaStep,
       IAnsiConsole console,
-      IJiraEntrancePoint jiraEntrancePoint)
+      IJIraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueAlphaBetaStep = continueAlphaBetaStep;
-    _jiraEntrancePoint = jiraEntrancePoint;
+    _ijIraFunctionality = ijIraFunctionality;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool pauseForCommit, bool noPush)
@@ -96,7 +96,7 @@ public class ReleaseAlphaBetaStep
 
     var nextJiraVersion = InputReader.ReadVersionChoice("Please choose next version (open JIRA issues get moved there):", nextPossibleJiraVersions);
 
-    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 

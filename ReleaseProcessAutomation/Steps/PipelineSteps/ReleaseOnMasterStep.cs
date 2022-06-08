@@ -44,7 +44,7 @@ public class ReleaseOnMasterStep
 {
   private readonly IContinueReleaseOnMasterStep _continueReleaseOnMasterStep;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
-  private readonly IJiraEntrancePoint _jiraEntrancePoint;
+  private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly ILogger _log = Log.ForContext<ReleaseOnMasterStep>();
 
   public ReleaseOnMasterStep (
@@ -54,12 +54,12 @@ public class ReleaseOnMasterStep
       Config config,
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IAnsiConsole console,
-      IJiraEntrancePoint jiraEntrancePoint)
+      IJIraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _continueReleaseOnMasterStep = continueReleaseOnMasterStep;
     _msBuildCallAndCommit = msBuildCallAndCommit;
-    _jiraEntrancePoint = jiraEntrancePoint;
+    _ijIraFunctionality = ijIraFunctionality;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool startReleasePhase, bool pauseForCommit, bool noPush)
@@ -102,7 +102,7 @@ public class ReleaseOnMasterStep
     if (startReleasePhase)
       return;
 
-    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 

@@ -3,7 +3,7 @@ using ReleaseProcessAutomation.SemanticVersioning;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public interface IJiraEntrancePoint
+public interface IJIraFunctionality
 {
   void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false);
 

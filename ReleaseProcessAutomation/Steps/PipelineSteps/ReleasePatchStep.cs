@@ -42,7 +42,7 @@ public interface IReleasePatchStep
 public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
 {
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
-  private readonly IJiraEntrancePoint _jiraEntrancePoint;
+  private readonly IJIraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleasePatchStep>();
 
@@ -53,12 +53,12 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueReleasePatchStep continueReleasePatchStep,
       IAnsiConsole console,
-      IJiraEntrancePoint jiraEntrancePoint)
+      IJIraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _msBuildCallAndCommit = msBuildCallAndCommit;
     _continueReleasePatchStep = continueReleasePatchStep;
-    _jiraEntrancePoint = jiraEntrancePoint;
+    _ijIraFunctionality = ijIraFunctionality;
   }
 
   public void Execute (SemanticVersion nextVersion, string? commitHash, bool startReleasePhase, bool pauseForCommit, bool noPush, bool onMaster)
@@ -117,7 +117,7 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
     if (startReleasePhase)
       return;
 
-    _jiraEntrancePoint.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
+    _ijIraFunctionality.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion);
 
     _msBuildCallAndCommit.CallMSBuildStepsAndCommit(MSBuildMode.PrepareNextVersion, nextVersion);
 

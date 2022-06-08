@@ -42,7 +42,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
       _consoleMock = new Mock<IAnsiConsole>();
-      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
+      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
     }
 
@@ -50,7 +50,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Configuration.Data.Config _config;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
-    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
+    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -71,7 +71,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _config,
           _msBuildInvokerMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
       
       Assert.That(() => step.Execute(new SemanticVersion(), "", false, false, false),
           Throws.InstanceOf<Exception>()
@@ -101,7 +101,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _config,
           _msBuildInvokerMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
       Assert.That(() => step.Execute(nextVersion, "commitHash", false, false, false),
           Throws.InstanceOf<Exception>()
@@ -133,12 +133,12 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _config,
           _msBuildInvokerMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
       step.Execute(nextVersion, "commitHash", false, false, false);
 
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _continueReleaseOnMasterMock.Verify(_=>_.Execute(nextVersion, It.IsAny<bool>()));
     }
 
@@ -167,12 +167,12 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _config,
           _msBuildInvokerMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
       step.Execute(nextVersion, "commitHash", true, false, false);
       
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
 
       _continueReleaseOnMasterMock.Verify(_=> _.Execute(nextVersion, It.IsAny<bool>()),Times.Never);
 
@@ -204,11 +204,11 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _config,
           _msBuildInvokerMock.Object,
           _consoleMock.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
       step.Execute(nextVersion, "commitHash", false, true, false);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
 
       _continueReleaseOnMasterMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>()), Times.Never);
     }

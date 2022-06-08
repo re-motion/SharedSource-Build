@@ -44,7 +44,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
       _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
       _contineReleasePatchMock = new Mock<IContinueReleasePatchStep>();
       _consoleStub = new Mock<IAnsiConsole>();
-      _jiraEntrancePointMock = new Mock<IJiraEntrancePoint>();
+      _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
 
 
       var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
@@ -58,7 +58,7 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
     private Configuration.Data.Config _config;
     private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
     private Mock<IContinueReleasePatchStep> _contineReleasePatchMock;
-    private Mock<IJiraEntrancePoint> _jiraEntrancePointMock;
+    private Mock<IJIraFunctionality> _jiraFunctionalityMock;
     private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
     [Test]
@@ -81,14 +81,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _contineReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
 
       Assert.That(
           () => patchStep.Execute(nextVersion, "" , false, false, false, true),
           Throws.Nothing);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _contineReleasePatchMock.Verify();
     }
 
@@ -112,14 +112,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _contineReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
 
       Assert.That(
           () => patchStep.Execute(nextVersion, "", false, false, false, false),
           Throws.Nothing);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _contineReleasePatchMock.Verify();
     }
 
@@ -143,14 +143,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _contineReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
 
       Assert.That(
           () => patchStep.Execute(nextVersion, "", true, false, false, false),
           Throws.Nothing);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Never);
       _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>()), Times.Never);
       _contineReleasePatchMock.Verify(_=>_.Execute(It.IsAny<SemanticVersion>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
     }
@@ -173,14 +173,14 @@ namespace ReleaseProcessAutomation.Tests.Steps.Releases
           _msBuildInvokerMock.Object,
           _contineReleasePatchMock.Object,
           _consoleStub.Object,
-          _jiraEntrancePointMock.Object);
+          _jiraFunctionalityMock.Object);
 
 
 
       Assert.That(
           () => patchStep.Execute(nextVersion, "", false, true, false, false),
           Throws.Nothing);
-      _jiraEntrancePointMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
+      _jiraFunctionalityMock.Verify(_=>_.CreateAndReleaseJiraVersion(nextVersion, nextJiraVersion,false),Times.Exactly(1));
       _msBuildInvokerMock.Verify(_ => _.CallMSBuildStepsAndCommit(It.IsAny<MSBuildMode>(), It.IsAny<SemanticVersion>()));
       _contineReleasePatchMock.Verify(_ => _.Execute(nextVersion, It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
     }

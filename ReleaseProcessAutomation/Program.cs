@@ -96,7 +96,7 @@ public static class Program
         .AddTransient<IAncestorFinder, AncestorFinder>()
         
         //Jira things
-        .AddTransient<IJiraEntrancePoint>(x => ActivatorUtilities.CreateInstance<JiraEntrancePoint>(x, "rest/api/2/"))
+        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
         .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x,"rest/api/2/"))
         .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
         .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
