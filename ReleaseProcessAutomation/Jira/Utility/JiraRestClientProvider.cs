@@ -9,8 +9,16 @@ public class JiraRestClientProvider
     : IJiraRestClientProvider
 {
   private JiraRestClient? _jiraRestClient;
+
   private readonly Config _config;
+
   private readonly IJiraCredentialManager _jiraCredentialManager;
+
+  public JiraRestClientProvider (Config config, IJiraCredentialManager jiraCredentialManager)
+  {
+    _jiraCredentialManager = jiraCredentialManager;
+    _config = config;
+  }
 
   public JiraRestClient GetJiraRestClient()
   {
@@ -27,11 +35,5 @@ public class JiraRestClientProvider
       _jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     }
     return _jiraRestClient;
-}
-
-  public JiraRestClientProvider (Config config, IJiraCredentialManager jiraCredentialManager)
-  {
-    _jiraCredentialManager = jiraCredentialManager;
-    _config = config;
   }
 }

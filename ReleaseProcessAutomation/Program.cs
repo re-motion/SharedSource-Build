@@ -18,21 +18,19 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using ReleaseProcessAutomation.Commands;
 using ReleaseProcessAutomation.Configuration;
-using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Git;
 using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
+using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.MSBuild;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;
 using ReleaseProcessAutomation.Steps;
 using ReleaseProcessAutomation.Steps.PipelineSteps;
 using Serilog;
-using Serilog.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -97,12 +95,12 @@ public static class Program
         .AddTransient<IAncestorFinder, AncestorFinder>()
         
         //Jira things
-        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
         .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x,"rest/api/2/"))
-        .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
-        .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
         .AddTransient<IJiraAuthenticationWrapper, JiraAuthenticationWrapper>()
-        
+        .AddTransient<IJira, Jira.Jira>()
+        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
+        .AddTransient<IJiraRestClientProvider, JiraRestClientProvider>()
+
         //Different invoked methods
         .AddTransient<IStartReleaseStep, StartReleaseStep>()
         .AddTransient<IContinueRelease, ContinueReleaseStep>()

@@ -15,9 +15,4 @@ public interface IJira
   {
     get;
   }
-
-  IJiraAuthenticationWrapper AuthenticationWrapper
-  {
-    get;
-  }
 }
