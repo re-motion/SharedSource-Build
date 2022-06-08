@@ -25,6 +25,8 @@ using ReleaseProcessAutomation.Git;
 using ReleaseProcessAutomation.Jira;
 using ReleaseProcessAutomation.Jira.Authentication;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
+using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.MSBuild;
 using ReleaseProcessAutomation.ReadInput;
@@ -101,6 +103,12 @@ public static class Program
         .AddTransient<IJira, Jira.Jira>()
         .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
         .AddTransient<IJiraRestClientProvider, JiraRestClientProvider>()
+        .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
+        .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
+        .AddTransient<IJiraProjectVersionFinder, JiraProjectVersionFinder>()
+        .AddTransient<IJiraProjectVersionService, JiraProjectVersionService>()
+        .AddTransient<IJiraProjectVersionRepairer, JiraProjectVersionRepairer>()
+        .AddTransient<IJiraIssueService, JiraIssueService>()
 
         //Different invoked methods
         .AddTransient<IStartReleaseStep, StartReleaseStep>()
