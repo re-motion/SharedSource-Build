@@ -17,7 +17,7 @@
 
 using System;
 
-namespace ReleaseProcessAutomation.Jira;
+namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
 public class JiraAuthenticationException : Exception
 {

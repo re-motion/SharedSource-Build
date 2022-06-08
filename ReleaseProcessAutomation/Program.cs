@@ -25,6 +25,7 @@ using ReleaseProcessAutomation.Configuration;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Git;
 using ReleaseProcessAutomation.Jira;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.MSBuild;
 using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.Scripting;

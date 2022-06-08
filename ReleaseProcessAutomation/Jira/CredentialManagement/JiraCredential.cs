@@ -15,7 +15,9 @@
 // under the License.
 //
 
-namespace ReleaseProcessAutomation.Jira;
+using System;
+
+namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
   public struct Credentials
   {

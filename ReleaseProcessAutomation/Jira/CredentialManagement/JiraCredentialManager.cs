@@ -26,7 +26,7 @@ using RestSharp.Authenticators;
 using Serilog;
 using Spectre.Console;
 
-namespace ReleaseProcessAutomation.Jira;
+namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
 public class JiraCredentialManager
     : JiraWithPostfix,IJiraCredentialManager
@@ -34,15 +34,15 @@ public class JiraCredentialManager
   private readonly Config _config;
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
-  private readonly IJiraAuthenticationWrapper _jiraAuthenticationWrapper;
+  private readonly IJira _jira;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
-  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJiraAuthenticationWrapper jiraAuthenticationWrapper,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraCredentialManager (Config config, IInputReader inputReader, IAnsiConsole console, IJira jira,string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _inputReader = inputReader;
     _console = console;
-    _jiraAuthenticationWrapper = jiraAuthenticationWrapper;
+    _jira = jira;
   }
 
   public Credentials GetCredential (string target)
@@ -128,10 +128,9 @@ public class JiraCredentialManager
 
   private void CheckJiraCredentials (Credentials credentials)
   {
-    var jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     try
     {
-      _jiraAuthenticationWrapper.CheckAuthentication(jiraRestClient, _config.Jira.JiraProjectKey);
+      _jira.AuthenticationWrapper.CheckAuthentication(credentials, _config.Jira.JiraProjectKey, _config.Jira.JiraURL);
     }
     catch (Exception e)
     {

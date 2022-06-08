@@ -1,6 +1,6 @@
 using System;
 
-namespace ReleaseProcessAutomation.Jira;
+namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
 public interface IJiraCredentialManager
 {

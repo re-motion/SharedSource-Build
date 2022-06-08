@@ -16,14 +16,9 @@
 //
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.X509Certificates;
-using System.Xml.Schema;
 using ReleaseProcessAutomation.Configuration.Data;
-using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
-using RestSharp.Authenticators;
 using Serilog;
 using Spectre.Console;
 
@@ -31,30 +26,16 @@ namespace ReleaseProcessAutomation.Jira;
 
 public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
 {
-  private readonly JiraRestClient _jiraRestClient;
   private readonly Config _config;
   private readonly IAnsiConsole _console;
-  private readonly IJiraVersionReleaser _jiraVersionReleaser;
-  private readonly IJiraVersionCreator _jiraVersionCreator;
+  private readonly IJira _jira;
   private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
-  public JiraFunctionality (Config config, IAnsiConsole console,IJiraVersionReleaser jiraVersionReleaser,IJiraVersionCreator jiraVersionCreator, IJiraCredentialManager jiraCredentialManager, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
+  public JiraFunctionality (Config config, IAnsiConsole console, IJira jira, string jiraUrlPostfix) : base(config, jiraUrlPostfix)
   {
     _config = config;
     _console = console;
-    _jiraVersionReleaser = jiraVersionReleaser;
-    _jiraVersionCreator = jiraVersionCreator;
-
-    if (config.Jira.UseNTLM)
-    {
-      _jiraRestClient = new JiraRestClient(config.Jira.JiraURL, new NtlmAuthenticator());
-    }
-    else
-    {
-      var credentials = jiraCredentialManager.GetCredential(config.Jira.JiraURL);
-      //var credentials = new Credentials { Username = "user", Password = "password" };
-      _jiraRestClient = new JiraRestClient(config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
-    }
+    _jira = jira;
   }
   
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -77,18 +58,18 @@ public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
   
   private string CreateVersion (SemanticVersion version)
   {
-    return _jiraVersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString(), _jiraRestClient);
+    return _jira.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
     if (squashUnreleased)
     {
-      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID, _jiraRestClient);
+      _jira.VersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
     }
     else
     {
-      _jiraVersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false,_jiraRestClient);
+      _jira.VersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
     }
   }
   

@@ -27,11 +27,11 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersionFinder : IJiraProjectVersionFinder
   {
-    private readonly JiraRestClient jiraClient;
+    private readonly JiraRestClient _jiraClient;
 
     public JiraProjectVersionFinder(JiraRestClient restClient)
     {
-      jiraClient = restClient;
+      _jiraClient = restClient;
     }
 
     public IEnumerable<JiraProjectVersion> FindVersions (string projectKey, string versionPattern)
@@ -55,18 +55,18 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
     {
       var resource = $"project/{projectKey}/versions";
-      var request = jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraClient.CreateRestRequest (resource, Method.GET);
 
-      var response = jiraClient.DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
+      var response = _jiraClient.DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
       return response.Data;
     }
 
     public JiraProjectVersion GetVersionById (string versionId)
     {
       var resource = $"version/{versionId}";
-      var request = jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraClient.CreateRestRequest (resource, Method.GET);
 
-      var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
+      var response = _jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
       return response.Data;
     }
   }
