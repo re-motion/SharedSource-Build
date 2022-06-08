@@ -8,15 +8,14 @@ public class Jira
 {
     private readonly IJiraRestClientProvider _jiraRestClientProvider;
 
-    private JiraVersionCreator? _versionCreator;
+    public IJiraVersionCreator VersionCreator { get; }
+    
+    public IJiraVersionReleaser VersionReleaser { get; }
 
-    public IJiraVersionCreator VersionCreator => _versionCreator ??= new JiraVersionCreator(_jiraRestClientProvider.GetJiraRestClient());
-
-    private JiraVersionReleaser? _versionReleaser;
-    public IJiraVersionReleaser VersionReleaser => _versionReleaser ??= new JiraVersionReleaser(_jiraRestClientProvider.GetJiraRestClient());
-
-    public Jira (IJiraRestClientProvider jiraRestClientProvider)
+    public Jira (IJiraRestClientProvider jiraRestClientProvider, IJiraVersionCreator versionCreator, IJiraVersionReleaser versionReleaser)
     {
         _jiraRestClientProvider = jiraRestClientProvider;
+        VersionCreator = versionCreator;
+        VersionReleaser = versionReleaser;
     }
 }

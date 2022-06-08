@@ -26,30 +26,28 @@ namespace ReleaseProcessAutomation.Jira;
 public class JiraVersionReleaser
     : IJiraVersionReleaser
 {
-  private readonly JiraRestClient _jiraRestClient;
+  private readonly IJiraProjectVersionRepairer _projectVersionRepairer;
+  private readonly IJiraProjectVersionService _projectVersionService;
 
-  public JiraVersionReleaser (JiraRestClient jiraRestClient)
+  public JiraVersionReleaser (IJiraProjectVersionRepairer projectVersionRepairer, IJiraProjectVersionService projectVersionService)
   {
-    _jiraRestClient = jiraRestClient;
+    _projectVersionRepairer = projectVersionRepairer;
+    _projectVersionService = projectVersionService;
   }
 
   public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion)
   {
-    IJiraProjectVersionService service = new JiraProjectVersionService (_jiraRestClient);
-    var jiraProjectVersionFinder = new JiraProjectVersionFinder (_jiraRestClient);
-    var jiraProjectVersionRepairer = new JiraProjectVersionRepairer (service, jiraProjectVersionFinder);
-
-    service.ReleaseVersion (versionID, nextVersionID);
+    
+    _projectVersionService.ReleaseVersion (versionID, nextVersionID);
 
     if (sortReleasedVersion)
     {
-      jiraProjectVersionRepairer.RepairVersionPosition (versionID);
+      _projectVersionRepairer.RepairVersionPosition (versionID);
     }
   }
   
   public void ReleaseVersionAndSquashUnreleased (string jiraUrl, string jiraProjectKey, string versionID, string nextVersionID)
   {
-    IJiraProjectVersionService service = new JiraProjectVersionService(_jiraRestClient);
-    service.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
+    _projectVersionService.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
   }
 }

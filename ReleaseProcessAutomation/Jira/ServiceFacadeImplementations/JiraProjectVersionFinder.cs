@@ -21,17 +21,18 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
+using ReleaseProcessAutomation.Jira.Utility;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersionFinder : IJiraProjectVersionFinder
   {
-    private readonly JiraRestClient _jiraClient;
+    private readonly IJiraRestClientProvider _jiraRestClientProvider;
 
-    public JiraProjectVersionFinder(JiraRestClient restClient)
+    public JiraProjectVersionFinder(IJiraRestClientProvider jiraRestClientProvider)
     {
-      _jiraClient = restClient;
+      _jiraRestClientProvider = jiraRestClientProvider;
     }
 
     public IEnumerable<JiraProjectVersion> FindVersions (string projectKey, string versionPattern)
@@ -55,18 +56,18 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public IEnumerable<JiraProjectVersion> GetVersions (string projectKey)
     {
       var resource = $"project/{projectKey}/versions";
-      var request = _jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
 
-      var response = _jiraClient.DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
+      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<List<JiraProjectVersion>> (request, HttpStatusCode.OK);
       return response.Data;
     }
 
     public JiraProjectVersion GetVersionById (string versionId)
     {
       var resource = $"version/{versionId}";
-      var request = _jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
 
-      var response = _jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
+      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
       return response.Data;
     }
   }

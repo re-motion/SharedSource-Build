@@ -19,17 +19,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using ReleaseProcessAutomation.Jira.Utility;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraIssueService
+      : IJiraIssueService
   {
-    private readonly JiraRestClient jiraClient;
+    private readonly IJiraRestClientProvider _jiraRestClientProvider;
 
-    public JiraIssueService (JiraRestClient restClient)
+    public JiraIssueService (IJiraRestClientProvider jiraRestClientProvider)
     {
-      jiraClient = restClient;
+      _jiraRestClientProvider = jiraRestClientProvider;
     }
 
     public void MoveIssuesToVersion (IEnumerable<JiraToBeMovedIssue> issues, string oldVersionId, string newVersionId)
@@ -37,7 +39,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       foreach (var issue in issues)
       {
         var resource = $"issue/{issue.ID}";
-        var request = jiraClient.CreateRestRequest (resource, Method.PUT);
+        var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.PUT);
 
         if (issue.Fields == null)
         {
@@ -57,7 +59,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
         var body = new { fields = new { fixVersions = newFixVersions.Select (v => new { id = v.ID }) } };
         request.AddBody (body);
 
-        jiraClient.DoRequest<JiraIssue> (request, HttpStatusCode.NoContent);
+        _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraIssue> (request, HttpStatusCode.NoContent);
       }
     }
 
@@ -65,9 +67,9 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var jql = $"fixVersion={versionId} and resolution = \"unresolved\"";
       var resource = $"search?jql={jql}&fields=id,fixVersions";
-      var request = jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
 
-      var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
+      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
       return response.Data.Issues ?? throw new InvalidOperationException($"Could not get non closed issue data from jira with request '{resource}'");
     }
 
@@ -75,9 +77,9 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       var jql = $"fixVersion={versionId} and resolution != \"unresolved\"";
       var resource = $"search?jql={jql}&fields=id,fixVersions";
-      var request = jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
 
-      var response = jiraClient.DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
+      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraNonClosedIssues> (request, HttpStatusCode.OK);
       return response.Data.Issues ?? throw new InvalidOperationException($"Could not get closed issue data from jira with request '{resource}'");
 
     }

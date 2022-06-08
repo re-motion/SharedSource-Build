@@ -25,6 +25,7 @@ using ReleaseProcessAutomation.SemanticVersioning;
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersionRepairer
+      : IJiraProjectVersionRepairer
   {
     private readonly IJiraProjectVersionService _jiraProjectVersionService;
     private readonly IJiraProjectVersionFinder _jiraProjectVersionFinder;

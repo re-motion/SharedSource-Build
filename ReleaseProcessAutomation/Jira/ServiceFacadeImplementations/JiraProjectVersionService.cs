@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
+using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
 using RestSharp;
 
@@ -27,21 +28,21 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 {
   public class JiraProjectVersionService : IJiraProjectVersionService
   {
-    private readonly JiraRestClient jiraClient;
-    private readonly JiraIssueService jiraIssueService;
-    private readonly IJiraProjectVersionFinder jiraProjectVersionFinder;
+    private readonly IJiraRestClientProvider _jiraRestClientProvider;
+    private readonly IJiraIssueService _jiraIssueService;
+    private readonly IJiraProjectVersionFinder _jiraProjectVersionFinder;
 
-    public JiraProjectVersionService (JiraRestClient restClient)
+    public JiraProjectVersionService (IJiraRestClientProvider jiraRestClientProvider, IJiraIssueService jiraIssueService, IJiraProjectVersionFinder jiraProjectVersionFinder)
     {
-      jiraClient = restClient;
-      jiraIssueService = new JiraIssueService (restClient);
-      jiraProjectVersionFinder = new JiraProjectVersionFinder (restClient);
+      _jiraRestClientProvider = jiraRestClientProvider;
+      _jiraIssueService = jiraIssueService;
+      _jiraProjectVersionFinder = jiraProjectVersionFinder;
     }
 
     public string CreateVersion (string projectKey, string versionName, DateTime? releaseDate)
     {
       
-      var request = jiraClient.CreateRestRequest ("version", Method.POST);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest ("version", Method.POST);
 
       if (releaseDate != null)
       {
@@ -51,7 +52,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
       var projectVersion = new JiraProjectVersion { name = versionName, project = projectKey, releaseDate = releaseDate };
       request.AddBody (projectVersion);
 
-      var newProjectVersion = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.Created);
+      var newProjectVersion = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraProjectVersion> (request, HttpStatusCode.Created);
 
       return newProjectVersion.Data.id ?? throw new InvalidOperationException("The created version id was not assigned.");
     }
@@ -59,7 +60,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     public string CreateSubsequentVersion (string projectKey, string versionPattern, int versionComponentToIncrement, DayOfWeek versionReleaseWeekday)
     {
       // Determine next version name
-      var lastUnreleasedVersion = jiraProjectVersionFinder.FindUnreleasedVersions (projectKey, versionPattern).Last();
+      var lastUnreleasedVersion = _jiraProjectVersionFinder.FindUnreleasedVersions (projectKey, versionPattern).Last();
       if (lastUnreleasedVersion.name == null)
       {
         throw new InvalidOperationException("The last found unreleased version did not have a name assigned.");
@@ -82,28 +83,28 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
     public void MoveVersion(string versionId, string afterVersionUrl)
     {
-      var request = jiraClient.CreateRestRequest ($"version/{versionId}/move", Method.POST);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest ($"version/{versionId}/move", Method.POST);
 
       request.AddBody (new { after = afterVersionUrl });
 
-      jiraClient.DoRequest (request, HttpStatusCode.OK);
+      _jiraRestClientProvider.GetJiraRestClient().DoRequest (request, HttpStatusCode.OK);
     }
 
     public void MoveVersionByPosition (string versionId, string position)
     {
-      var request = jiraClient.CreateRestRequest ($"version/{versionId}/move", Method.POST);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest ($"version/{versionId}/move", Method.POST);
 
       request.AddBody (new { position = position });
 
-      jiraClient.DoRequest (request, HttpStatusCode.OK);
+      _jiraRestClientProvider.GetJiraRestClient().DoRequest (request, HttpStatusCode.OK);
     }
 
     public JiraProjectVersion GetVersionById (string versionId)
     {
       var resource = $"version/{versionId}";
-      var request = jiraClient.CreateRestRequest (resource, Method.GET);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.GET);
 
-      var response = jiraClient.DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
+      var response = _jiraRestClientProvider.GetJiraRestClient().DoRequest<JiraProjectVersion> (request, HttpStatusCode.OK);
       return response.Data;
     }
 
@@ -124,8 +125,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       if (versionID != nextVersionID)
       {
-        var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (versionID);
-        jiraIssueService.MoveIssuesToVersion (nonClosedIssues, versionID, nextVersionID);
+        var nonClosedIssues = _jiraIssueService.FindAllNonClosedIssues (versionID);
+        _jiraIssueService.MoveIssuesToVersion (nonClosedIssues, versionID, nextVersionID);
       }
 
       ReleaseVersion (versionID);
@@ -135,7 +136,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     {
       if (versionID != nextVersionID)
       {
-        var versions = jiraProjectVersionFinder.GetVersions (projectKey);
+        var versions = _jiraProjectVersionFinder.GetVersions (projectKey);
 
         SemanticVersionParser _semanticVersionParser = new SemanticVersionParser();
         List<JiraProjectVersionSemVerAdapter> versionList = new List<JiraProjectVersionSemVerAdapter>();
@@ -177,7 +178,7 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
 
           foreach (var toBeSquashedVersion in toBeSquashedVersions)
           {
-            allClosedIssues.AddRange(jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion.id));
+            allClosedIssues.AddRange(_jiraIssueService.FindAllClosedIssues(toBeSquashedVersion.JiraProjectVersion.id));
           }
 
           if (allClosedIssues.Count != 0)
@@ -192,8 +193,8 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
             {
               var toBeSquashedVersionID = toBeSquashedJiraProjectVersion.id;
               
-              var nonClosedIssues = jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID);
-              jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID, nextVersionID);
+              var nonClosedIssues = _jiraIssueService.FindAllNonClosedIssues (toBeSquashedVersionID);
+              _jiraIssueService.MoveIssuesToVersion (nonClosedIssues, toBeSquashedVersionID, nextVersionID);
 
               DeleteVersion(projectKey, toBeSquashedJiraProjectVersion.name ?? throw new InvalidOperationException("The version did not have a proper name assigned."));
             }
@@ -217,25 +218,25 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations
     private void ReleaseVersion (string versionID)
     {
       var resource = $"version/{versionID}";
-      var request = jiraClient.CreateRestRequest (resource, Method.PUT);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.PUT);
 
       var adjustedReleaseDate = AdjustReleaseDateForJira (DateTime.Today);
       var projectVersion = new JiraProjectVersion { id = versionID, released = true, releaseDate = adjustedReleaseDate };
       request.AddBody (projectVersion);
 
-      jiraClient.DoRequest (request, HttpStatusCode.OK);
+      _jiraRestClientProvider.GetJiraRestClient().DoRequest (request, HttpStatusCode.OK);
     }
 
     public void DeleteVersion (string projectKey, string versionName)
     {
-      var versions = jiraProjectVersionFinder.GetVersions (projectKey);
+      var versions = _jiraProjectVersionFinder.GetVersions (projectKey);
       var versionToDelete = versions.SingleOrDefault (v => v.name == versionName);
       if (versionToDelete == null)
         throw new JiraException (string.Format ("Error, version with name '{0}' does not exist in project '{1}'.", versionName, projectKey));
 
       var resource = $"version/{versionToDelete.id}";
-      var request = jiraClient.CreateRestRequest (resource, Method.DELETE);
-      jiraClient.DoRequest (request, HttpStatusCode.NoContent);
+      var request = _jiraRestClientProvider.GetJiraRestClient().CreateRestRequest (resource, Method.DELETE);
+      _jiraRestClientProvider.GetJiraRestClient().DoRequest (request, HttpStatusCode.NoContent);
     }
 
     private static DateTime AdjustReleaseDateForJira (DateTime releaseDate)

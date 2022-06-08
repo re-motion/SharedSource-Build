@@ -3,11 +3,18 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Xml.Serialization;
+using AdysTech.CredentialManager;
+using Moq;
 using NUnit.Framework;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
+using ReleaseProcessAutomation.Jira.Utility;
+using ReleaseProcessAutomation.ReadInput;
 using RestSharp;
 using RestSharp.Authenticators;
+using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.Tests.Jira
 {
@@ -26,6 +33,7 @@ namespace ReleaseProcessAutomation.Tests.Jira
     private JiraProjectVersionRepairer _repairer;
     private JiraProjectVersionFinder _versionFinder;
     private JiraIssueService _issueService;
+    private Mock<IJiraRestClientProvider> _restClientMock;
     private JiraRestClient _restClient;
 
     [SetUp]
@@ -44,11 +52,14 @@ namespace ReleaseProcessAutomation.Tests.Jira
         throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
       }
 
-      IAuthenticator authenticator = new HttpBasicAuthenticator(_jiraUsername, _jiraPassword);
-      _restClient = new JiraRestClient (c_jiraUrl, authenticator);
-      _service = new JiraProjectVersionService (_restClient);
-      _versionFinder = new JiraProjectVersionFinder (_restClient);
-      _issueService = new JiraIssueService (_restClient);
+      _restClient = new JiraRestClient(c_jiraUrl, new HttpBasicAuthenticator(_jiraUsername, _jiraPassword));
+      
+      _restClientMock = new Mock<IJiraRestClientProvider>();
+      _restClientMock.Setup(_ => _.GetJiraRestClient()).Returns(_restClient);
+      
+      _versionFinder = new JiraProjectVersionFinder (_restClientMock.Object);
+      _issueService = new JiraIssueService (_restClientMock.Object);      
+      _service = new JiraProjectVersionService (_restClientMock.Object, _issueService, _versionFinder);
       _repairer = new JiraProjectVersionRepairer (_service, _versionFinder);
     }
 
