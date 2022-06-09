@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
@@ -25,17 +26,20 @@ namespace ReleaseProcessAutomation.Jira;
 public class JiraVersionCreator
     : IJiraVersionCreator
 {
+  private readonly Config _config;
   private readonly IJiraProjectVersionFinder _projectVersionFinder;
   private readonly IJiraProjectVersionService _jiraProjectVersionService;
 
-  public JiraVersionCreator (IJiraProjectVersionFinder projectVersionFinder, IJiraProjectVersionService jiraProjectVersionService)
+  public JiraVersionCreator (Config config, IJiraProjectVersionFinder projectVersionFinder, IJiraProjectVersionService jiraProjectVersionService)
   {
+    _config = config;
     _projectVersionFinder = projectVersionFinder;
     _jiraProjectVersionService = jiraProjectVersionService;
   }
 
-  public string CreateNewVersionWithVersionNumber (string jiraProject, string versionNumber)
+  public string CreateNewVersionWithVersionNumber (string versionNumber)
   {
+    var jiraProject = _config.Jira.JiraProjectKey;
     if (string.IsNullOrEmpty(jiraProject))
       throw new InvalidOperationException("Jira project was not assigned.");
 

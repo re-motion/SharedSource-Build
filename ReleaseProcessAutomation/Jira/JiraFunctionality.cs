@@ -61,13 +61,13 @@ public class JiraFunctionality : IJiraFunctionality
 
   private string CreateVersion (SemanticVersion version)
   {
-    return _jiraVersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
+    return _jiraVersionCreator.CreateNewVersionWithVersionNumber(version.ToString());
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
     if (squashUnreleased)
-      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(_config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
+      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(currentVersionID, nextVersionID);
     else
       _jiraVersionReleaser.ReleaseVersion(currentVersionID, nextVersionID, false);
   }

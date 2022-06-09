@@ -16,6 +16,7 @@
 //
 
 using System;
+using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 
@@ -24,11 +25,13 @@ namespace ReleaseProcessAutomation.Jira;
 public class JiraVersionReleaser
     : IJiraVersionReleaser
 {
+  private readonly Config _config;
   private readonly IJiraProjectVersionRepairer _projectVersionRepairer;
   private readonly IJiraProjectVersionService _projectVersionService;
 
-  public JiraVersionReleaser (IJiraProjectVersionRepairer projectVersionRepairer, IJiraProjectVersionService projectVersionService)
+  public JiraVersionReleaser (Config config, IJiraProjectVersionRepairer projectVersionRepairer, IJiraProjectVersionService projectVersionService)
   {
+    _config = config;
     _projectVersionRepairer = projectVersionRepairer;
     _projectVersionService = projectVersionService;
   }
@@ -41,8 +44,8 @@ public class JiraVersionReleaser
       _projectVersionRepairer.RepairVersionPosition(versionID);
   }
 
-  public void ReleaseVersionAndSquashUnreleased (string jiraProjectKey, string versionID, string nextVersionID)
+  public void ReleaseVersionAndSquashUnreleased (string versionID, string nextVersionID)
   {
-    _projectVersionService.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
+    _projectVersionService.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, _config.Jira.JiraProjectKey);
   }
 }
