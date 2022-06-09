@@ -42,14 +42,14 @@ internal class ReleaseNonPreReleaseFromDevelopTests
     _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
     _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
     _consoleMock = new Mock<IAnsiConsole>();
-    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _jiraFunctionalityMock = new Mock<IJiraFunctionality>();
   }
 
   private Mock<IAnsiConsole> _consoleMock;
   private Configuration.Data.Config _config;
   private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
   private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
-  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]

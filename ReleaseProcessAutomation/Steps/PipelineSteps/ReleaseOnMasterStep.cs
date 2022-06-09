@@ -44,7 +44,7 @@ public class ReleaseOnMasterStep
 {
   private readonly IContinueReleaseOnMasterStep _continueReleaseOnMasterStep;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
-  private readonly IJIraFunctionality _ijIraFunctionality;
+  private readonly IJiraFunctionality _ijIraFunctionality;
   private readonly ILogger _log = Log.ForContext<ReleaseOnMasterStep>();
 
   public ReleaseOnMasterStep (
@@ -54,7 +54,7 @@ public class ReleaseOnMasterStep
       Config config,
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IAnsiConsole console,
-      IJIraFunctionality ijIraFunctionality)
+      IJiraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _continueReleaseOnMasterStep = continueReleaseOnMasterStep;

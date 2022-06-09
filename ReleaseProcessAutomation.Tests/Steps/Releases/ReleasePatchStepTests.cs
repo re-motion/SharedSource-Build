@@ -43,7 +43,7 @@ internal class ReleasePatchStepTests
     _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
     _contineReleasePatchMock = new Mock<IContinueReleasePatchStep>();
     _consoleStub = new Mock<IAnsiConsole>();
-    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _jiraFunctionalityMock = new Mock<IJiraFunctionality>();
 
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
@@ -55,7 +55,7 @@ internal class ReleasePatchStepTests
   private Configuration.Data.Config _config;
   private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
   private Mock<IContinueReleasePatchStep> _contineReleasePatchMock;
-  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]

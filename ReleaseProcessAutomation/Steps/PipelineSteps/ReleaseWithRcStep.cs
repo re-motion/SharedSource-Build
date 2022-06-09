@@ -47,7 +47,7 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
   private readonly IAncestorFinder _ancestorFinder;
   private readonly IContinueReleaseOnMasterStep _continueReleaseOnMasterStep;
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
-  private readonly IJIraFunctionality _ijIraFunctionality;
+  private readonly IJiraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleaseWithRcStep>();
 
@@ -60,7 +60,7 @@ public class ReleaseWithRcStep : ReleaseProcessStepBase, IReleaseWithRcStep
       IContinueReleaseOnMasterStep continueReleaseOnMasterStep,
       IContinueReleasePatchStep continueReleasePatchStep,
       IAnsiConsole console,
-      IJIraFunctionality ijIraFunctionality)
+      IJiraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _ancestorFinder = ancestorFinder;

@@ -101,7 +101,7 @@ public static class Program
         //Jira things
         .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x, c_urlPostFix))
         .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
-        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, c_urlPostFix))
+        .AddTransient<IJiraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, c_urlPostFix))
         .AddSingleton<IJiraRestClientProvider, JiraRestClientProvider>()
         .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
         .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()

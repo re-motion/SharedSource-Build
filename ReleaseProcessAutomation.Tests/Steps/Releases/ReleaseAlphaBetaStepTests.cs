@@ -41,7 +41,7 @@ internal class ReleaseAlphaBetaStepTests
   private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
   private Mock<IGitClient> _gitClientStub;
   private Mock<IInputReader> _inputReaderStub;
-  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
   private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
 
   [SetUp]
@@ -52,7 +52,7 @@ internal class ReleaseAlphaBetaStepTests
     _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
     _continueAlphaBetaMock = new Mock<IContinueAlphaBetaStep>();
     _consoleMock = new Mock<IAnsiConsole>();
-    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _jiraFunctionalityMock = new Mock<IJiraFunctionality>();
 
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);

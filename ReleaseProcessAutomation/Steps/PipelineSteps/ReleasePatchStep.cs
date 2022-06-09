@@ -42,7 +42,7 @@ public interface IReleasePatchStep
 public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
 {
   private readonly IContinueReleasePatchStep _continueReleasePatchStep;
-  private readonly IJIraFunctionality _ijIraFunctionality;
+  private readonly IJiraFunctionality _ijIraFunctionality;
   private readonly IMSBuildCallAndCommit _msBuildCallAndCommit;
   private readonly ILogger _log = Log.ForContext<ReleasePatchStep>();
 
@@ -53,7 +53,7 @@ public class ReleasePatchStep : ReleaseProcessStepBase, IReleasePatchStep
       IMSBuildCallAndCommit msBuildCallAndCommit,
       IContinueReleasePatchStep continueReleasePatchStep,
       IAnsiConsole console,
-      IJIraFunctionality ijIraFunctionality)
+      IJiraFunctionality ijIraFunctionality)
       : base(gitClient, config, inputReader, console)
   {
     _msBuildCallAndCommit = msBuildCallAndCommit;

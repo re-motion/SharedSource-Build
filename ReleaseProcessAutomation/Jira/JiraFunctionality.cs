@@ -24,7 +24,7 @@ using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
+public class JiraFunctionality : JiraWithPostfix, IJiraFunctionality
 {
   private readonly Config _config;
   private readonly IAnsiConsole _console;

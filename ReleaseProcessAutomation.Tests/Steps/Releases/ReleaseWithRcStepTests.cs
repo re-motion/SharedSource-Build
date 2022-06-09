@@ -44,7 +44,7 @@ internal class ReleaseWithRcStepTests
     _msBuildInvokerMock = new Mock<IMSBuildCallAndCommit>();
     _continueReleaseOnMasterMock = new Mock<IContinueReleaseOnMasterStep>();
     _continueReleasePatchMock = new Mock<IContinueReleasePatchStep>();
-    _jiraFunctionalityMock = new Mock<IJIraFunctionality>();
+    _jiraFunctionalityMock = new Mock<IJiraFunctionality>();
 
     _consoleStub = new Mock<IAnsiConsole>();
 
@@ -60,7 +60,7 @@ internal class ReleaseWithRcStepTests
   private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
   private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
   private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
-  private Mock<IJIraFunctionality> _jiraFunctionalityMock;
+  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
