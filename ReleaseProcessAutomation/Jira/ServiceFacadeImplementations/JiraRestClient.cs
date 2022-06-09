@@ -17,6 +17,8 @@
 
 using System;
 using System.Net;
+using System.Threading;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using RestSharp;
 using RestSharp.Authenticators;
 
@@ -24,9 +26,19 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
 public class JiraRestClient
 {
+  public static JiraRestClient CreateWithNtlmAuthentication (string jiraUrl)
+  {
+    return new JiraRestClient(jiraUrl, new NtlmAuthenticator());
+  }
+
+  public static JiraRestClient CreateWithBasicAuthentication (string jiraUrl, Credentials credentials)
+  {
+    return new JiraRestClient(jiraUrl, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+  }
+  
   private readonly RestClient _client;
 
-  public JiraRestClient (string jiraUrl, IAuthenticator authenticator)
+  private JiraRestClient (string jiraUrl, IAuthenticator authenticator)
   {
     _client = new RestClient(jiraUrl) { Authenticator = authenticator };
   }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using Moq;
 using NUnit.Framework;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using ReleaseProcessAutomation.Jira.Utility;
 using RestSharp;
@@ -26,7 +27,7 @@ public class JiraProjectVersionServiceTest
     if (string.IsNullOrEmpty(_jiraPassword))
       throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
 
-    _restClient = new JiraRestClient(c_jiraUrl, new HttpBasicAuthenticator(_jiraUsername, _jiraPassword));
+    _restClient = JiraRestClient.CreateWithBasicAuthentication(c_jiraUrl, new Credentials(_jiraUsername, _jiraPassword));
 
     _restClientMock = new Mock<IJiraRestClientProvider>();
     _restClientMock.Setup(_ => _.GetJiraRestClient()).Returns(_restClient);

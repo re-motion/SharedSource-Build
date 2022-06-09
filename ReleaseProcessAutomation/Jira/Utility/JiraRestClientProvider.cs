@@ -31,12 +31,12 @@ public class JiraRestClientProvider
     
     if (_config.Jira.UseNTLM)
     {
-      _jiraRestClient = new JiraRestClient(jiraUrlWithPostfix, new NtlmAuthenticator());
+      _jiraRestClient = JiraRestClient.CreateWithNtlmAuthentication(jiraUrlWithPostfix);
     }
     else
     {
       var credentials = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
-      _jiraRestClient = new JiraRestClient(jiraUrlWithPostfix, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+      _jiraRestClient = JiraRestClient.CreateWithBasicAuthentication(jiraUrlWithPostfix, credentials);
     }
     
     return _jiraRestClient;
