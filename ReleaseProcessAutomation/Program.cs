@@ -43,7 +43,7 @@ namespace ReleaseProcessAutomation;
 public static class Program
 {
   public static IAnsiConsole Console { get; set; } = AnsiConsole.Console;
-  
+
   private const string c_urlPostFix = "rest/api/2/";
 
   public static int Main (string[] args)

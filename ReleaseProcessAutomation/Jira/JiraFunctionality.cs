@@ -32,7 +32,12 @@ public class JiraFunctionality : JiraWithPostfix, IJiraFunctionality
   private readonly IJiraVersionReleaser _jiraVersionReleaser;
   private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
-  public JiraFunctionality (Config config, IAnsiConsole console, IJiraVersionCreator jiraVersionCreator, IJiraVersionReleaser jiraVersionReleaser, string jiraUrlPostfix)
+  public JiraFunctionality (
+      Config config,
+      IAnsiConsole console,
+      IJiraVersionCreator jiraVersionCreator,
+      IJiraVersionReleaser jiraVersionReleaser,
+      string jiraUrlPostfix)
       : base(config, jiraUrlPostfix)
   {
     _config = config;
