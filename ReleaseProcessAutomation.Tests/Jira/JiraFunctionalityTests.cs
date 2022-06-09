@@ -11,14 +11,22 @@ namespace ReleaseProcessAutomation.Tests.Jira;
 [TestFixture]
 public class JiraFunctionalityTests
 {
+  private const string c_postfix = "postfix";
+  
+  private Mock<IJiraVersionReleaser> _jiraReleaserMock;
+  private Mock<IJiraVersionCreator> _jiraCreatorMock;
+  private TestConsole _console;
+  private Configuration.Data.Config _config;
+
   [SetUp]
   public void Setup ()
   {
-    _jiraMock = new Mock<IJira>();
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(It.IsAny<string>(), It.IsAny<string>()));
-    _jiraMock.Setup(_ => _.VersionReleaser.ReleaseVersion(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), false));
-    _jiraMock.Setup(
-        _ => _.VersionReleaser.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+    _jiraCreatorMock = new Mock<IJiraVersionCreator>();
+    _jiraReleaserMock = new Mock<IJiraVersionReleaser>();
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(It.IsAny<string>(), It.IsAny<string>()));
+    _jiraReleaserMock.Setup(_ => _.ReleaseVersion(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), false));
+    _jiraReleaserMock.Setup(
+        _ => _.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
     _console = new TestConsole();
     _config = new Configuration.Data.Config();
@@ -28,34 +36,27 @@ public class JiraFunctionalityTests
     _config.Jira.JiraProjectKey = "JiraProjectKey";
   }
 
-  private Mock<IJira> _jiraMock;
-  private TestConsole _console;
-  private Configuration.Data.Config _config;
-
-  private const string c_userName = "user";
-  private const string c_password = "password";
-  private const string c_target = "target";
-  private const string c_postfix = "postfix";
-
   [Test]
   public void CreateAndReleaseJiraVersion_CreatesTwoVersionsCorrectly_ThrowsNothing ()
   {
     var currentVersion = new SemanticVersion();
     var nextVersion = new SemanticVersion { Patch = 1 };
     var jiraFunctionality = new JiraFunctionality(
-        _config,
-        _console,
-        _jiraMock.Object,
-        c_postfix);
+            _config,
+            _console,
+            _jiraCreatorMock.Object,
+            _jiraReleaserMock.Object,
+            c_postfix);
 
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
+
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
         .Returns("current").Verifiable();
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString()))
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString()))
         .Returns("next").Verifiable();
 
     Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion), Throws.Nothing);
 
-    _jiraMock.Verify();
+    _jiraCreatorMock.Verify();
   }
 
   [Test]
@@ -66,21 +67,22 @@ public class JiraFunctionalityTests
 
     var currentVersion = new SemanticVersion();
     var nextVersion = new SemanticVersion { Patch = 1 };
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
         .Returns(versionID);
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString())).Returns(nextID);
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString())).Returns(nextID);
 
     var jiraFunctionality = new JiraFunctionality(
         _config,
         _console,
-        _jiraMock.Object,
+        _jiraCreatorMock.Object,
+        _jiraReleaserMock.Object,
         c_postfix);
 
     Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion), Throws.Nothing);
 
-    _jiraMock.Verify(_ => _.VersionReleaser.ReleaseVersion(It.IsAny<string>(), versionID, nextID, false), Times.Once);
-    _jiraMock.Verify(
-        _ => _.VersionReleaser.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), versionID, nextID),
+    _jiraReleaserMock.Verify(_ => _.ReleaseVersion(It.IsAny<string>(), versionID, nextID, false), Times.Once);
+    _jiraReleaserMock.Verify(
+        _ => _.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), versionID, nextID),
         Times.Never);
   }
 
@@ -92,19 +94,21 @@ public class JiraFunctionalityTests
 
     var currentVersion = new SemanticVersion();
     var nextVersion = new SemanticVersion { Patch = 1 };
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, currentVersion.ToString()))
         .Returns(versionID);
-    _jiraMock.Setup(_ => _.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString())).Returns(nextID);
+    _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, nextVersion.ToString())).Returns(nextID);
 
     var jiraFunctionality = new JiraFunctionality(
-        _config,
-        _console,
-        _jiraMock.Object,
-        c_postfix);
+            _config,
+            _console,
+            _jiraCreatorMock.Object,
+            _jiraReleaserMock.Object,
+            c_postfix);
+
 
     Assert.That(() => jiraFunctionality.CreateAndReleaseJiraVersion(currentVersion, nextVersion, true), Throws.Nothing);
 
-    _jiraMock.Verify(_ => _.VersionReleaser.ReleaseVersion(It.IsAny<string>(), versionID, nextID, false), Times.Never);
-    _jiraMock.Verify(_ => _.VersionReleaser.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), versionID, nextID), Times.Once);
+    _jiraReleaserMock.Verify(_ => _.ReleaseVersion(It.IsAny<string>(), versionID, nextID, false), Times.Never);
+    _jiraReleaserMock.Verify(_ => _.ReleaseVersionAndSquashUnreleased(It.IsAny<string>(), It.IsAny<string>(), versionID, nextID), Times.Once);
   }
 }

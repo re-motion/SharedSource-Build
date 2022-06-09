@@ -28,15 +28,17 @@ public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
 {
   private readonly Config _config;
   private readonly IAnsiConsole _console;
-  private readonly IJira _jira;
+  private readonly IJiraVersionCreator _jiraVersionCreator;
+  private readonly IJiraVersionReleaser _jiraVersionReleaser;
   private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
-  public JiraFunctionality (Config config, IAnsiConsole console, IJira jira, string jiraUrlPostfix)
+  public JiraFunctionality (Config config, IAnsiConsole console, IJiraVersionCreator jiraVersionCreator, IJiraVersionReleaser jiraVersionReleaser, string jiraUrlPostfix)
       : base(config, jiraUrlPostfix)
   {
     _config = config;
     _console = console;
-    _jira = jira;
+    _jiraVersionCreator = jiraVersionCreator;
+    _jiraVersionReleaser = jiraVersionReleaser;
   }
 
   public void CreateAndReleaseJiraVersion (SemanticVersion currentVersion, SemanticVersion nextVersion, bool squashUnreleased = false)
@@ -57,14 +59,14 @@ public class JiraFunctionality : JiraWithPostfix, IJIraFunctionality
 
   private string CreateVersion (SemanticVersion version)
   {
-    return _jira.VersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
+    return _jiraVersionCreator.CreateNewVersionWithVersionNumber(_config.Jira.JiraProjectKey, version.ToString());
   }
 
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
     if (squashUnreleased)
-      _jira.VersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
+      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
     else
-      _jira.VersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
+      _jiraVersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
   }
 }
