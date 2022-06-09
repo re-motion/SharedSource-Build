@@ -17,13 +17,19 @@
 
 using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Moq;
 using NUnit.Framework;
+using ReleaseProcessAutomation.Jira;
+using ReleaseProcessAutomation.Jira.Utility;
 using Spectre.Console.Testing;
 
 namespace ReleaseProcessAutomation.IntegrationTests;
 
 public abstract class IntegrationTestSetup : GitBackedTests
 {
+
   protected void AssertValidLogs (string expectedLogs)
   {
     expectedLogs = expectedLogs.Replace(" ", "").Replace("\r", "");
@@ -45,6 +51,26 @@ public abstract class IntegrationTestSetup : GitBackedTests
     Assert.That(logs, Is.EqualTo(expectedLogs1).Or.EqualTo(expectedLogs2));
   }
 
+  protected int RunProgram (string[] args)
+  {
+    var services = new ApplicationServiceCollectionFactory().CreateServiceCollection();
+    var jiraFunctionalityStub = new Mock<IJiraFunctionality>();
+    var jiraFunctionalityDescriptor = new ServiceDescriptor(typeof(IJiraFunctionality), x => jiraFunctionalityStub.Object, ServiceLifetime.Singleton);
+
+    var jiraRestClientProviderStub = new Mock<IJiraRestClientProvider>();
+    var jiraRestClientProviderDescriptor = new ServiceDescriptor(
+        typeof(IJiraRestClientProvider),
+        x => jiraRestClientProviderStub.Object,
+        ServiceLifetime.Singleton);
+    
+    services.Replace(jiraFunctionalityDescriptor);
+    services.Replace(jiraRestClientProviderDescriptor);
+
+    var app = new ApplicationCommandAppFactory().CreateConfiguredCommandApp(services);
+    
+    return app.Run(args);
+  }
+  
   private const string c_testConfigName = "ReleaseProcessScript.Test.config";
   private const string c_buildProject = ".BuildProject";
   private const string c_buildFileName = "TestBuild.build";

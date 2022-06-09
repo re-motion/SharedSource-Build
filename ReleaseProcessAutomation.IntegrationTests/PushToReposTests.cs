@@ -35,7 +35,7 @@ internal class PushToReposTests : IntegrationTestSetup
     ExecuteGitCommand("commit -m Commit on develop2 --allow-empty");
     ExecuteGitCommand("commit -m Commit on develop3 --allow-empty");
 
-    var act1 = Program.Main(new[] { "Push-Remote-Repos", "develop" });
+    var act1 = RunProgram(new[] { "Push-Remote-Repos", "develop" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
@@ -55,7 +55,7 @@ internal class PushToReposTests : IntegrationTestSetup
     ExecuteGitCommand("commit -m Commit on develop3 --allow-empty");
     ExecuteGitCommand("tag -a v1.0.0 -m v1.0.0");
 
-    var act1 = Program.Main(new[] { "Push-Remote-Repos", "develop", "-t v1.0.0" });
+    var act1 = RunProgram(new[] { "Push-Remote-Repos", "develop", "-t v1.0.0" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));

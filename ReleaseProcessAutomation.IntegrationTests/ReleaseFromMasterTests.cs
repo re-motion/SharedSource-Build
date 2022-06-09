@@ -50,7 +50,7 @@ internal class ReleaseFromMasterTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.0.2");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));

@@ -44,7 +44,7 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.1.2");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -71,9 +71,9 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.1.1-beta.2");
 
-    var act1 = Program.Main(new[] { "Release-Version", "-p" });
+    var act1 = RunProgram(new[] { "Release-Version", "-p" });
     ExecuteGitCommand("commit -m \"Commit on prerelease branch\" --allow-empty");
-    var act2 = Program.Main(new[] { "Close-Version" });
+    var act2 = RunProgram(new[] { "Close-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
@@ -103,7 +103,7 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.1.2");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -125,7 +125,7 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.3.0");
 
-    var act1 = Program.Main(new[] { "New-Release-Branch" });
+    var act1 = RunProgram(new[] { "New-Release-Branch" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
@@ -153,7 +153,7 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
 
     var logs = ExecuteGitCommandWithOutput("log --all --graph --oneline --decorate --pretty=%d%s");
 
-    var act1 = Program.Main(new[] { "New-Release-Branch", $"-c {releaseCommit}" });
+    var act1 = RunProgram(new[] { "New-Release-Branch", $"-c {releaseCommit}" });
 
     ExecuteGitCommand("commit -m \"Commit afterwards\" --allow-empty");
     AssertValidLogs(correctLogs);

@@ -18,24 +18,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Microsoft.Extensions.DependencyInjection;
-using ReleaseProcessAutomation.Commands;
-using ReleaseProcessAutomation.Configuration;
-using ReleaseProcessAutomation.Git;
-using ReleaseProcessAutomation.Jira;
-using ReleaseProcessAutomation.Jira.Authentication;
-using ReleaseProcessAutomation.Jira.CredentialManagement;
-using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
-using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
-using ReleaseProcessAutomation.Jira.Utility;
-using ReleaseProcessAutomation.MSBuild;
-using ReleaseProcessAutomation.ReadInput;
-using ReleaseProcessAutomation.Scripting;
-using ReleaseProcessAutomation.Steps;
-using ReleaseProcessAutomation.Steps.PipelineSteps;
 using Serilog;
 using Spectre.Console;
-using Spectre.Console.Cli;
 
 namespace ReleaseProcessAutomation;
 
@@ -48,8 +32,8 @@ public static class Program
   {
     ConfigureLogger();
 
-    var services = ConfigureServices();
-    var app = ConfigureCommandApp(services);
+    var services = new ApplicationServiceCollectionFactory().CreateServiceCollection();
+    var app = new ApplicationCommandAppFactory().CreateConfiguredCommandApp(services);
 
     try
     {
@@ -83,100 +67,5 @@ public static class Program
         .CreateLogger();
 
     Log.Logger = log;
-  }
-
-  private static ServiceCollection ConfigureServices ()
-  {
-    var services = new ServiceCollection();
-    services
-        .AddTransient<IGitClient, CommandLineGitClient>()
-        .AddTransient<IInputReader, InputReader>()
-        .AddTransient<IMSBuild, MSBuild.MSBuild>()
-        .AddTransient<IMSBuildCallAndCommit, MSBuildCallAndCommit>()
-        .AddTransient<ISemanticVersionedGitRepository, SemanticVersionedGitRepository>()
-        .AddTransient<IAncestorFinder, AncestorFinder>()
-
-        //Jira things
-        .AddTransient<IJiraCredentialManager, JiraCredentialManager>()
-        .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
-        .AddTransient<IJiraFunctionality, JiraFunctionality>()
-        .AddSingleton<IJiraRestClientProvider, JiraRestClientProvider>()
-        .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
-        .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
-        .AddTransient<IJiraProjectVersionFinder, JiraProjectVersionFinder>()
-        .AddTransient<IJiraProjectVersionService, JiraProjectVersionService>()
-        .AddTransient<IJiraProjectVersionRepairer, JiraProjectVersionRepairer>()
-        .AddTransient<IJiraIssueService, JiraIssueService>()
-
-        //Different invoked methods
-        .AddTransient<IStartReleaseStep, StartReleaseStep>()
-        .AddTransient<IContinueRelease, ContinueReleaseStep>()
-
-        //Initial branching for release version
-        .AddTransient<IBranchFromDevelopStep, BranchFromDevelopStep>()
-        .AddTransient<IBranchFromHotfixStep, BranchFromHotfixStep>()
-        .AddTransient<IBranchFromMasterStep, BranchFromMasterStep>()
-        .AddTransient<IBranchFromReleaseStep, BranchFromReleaseStep>()
-
-        //Initial Branching for continue version
-        .AddTransient<IBranchFromPreReleaseForContinueVersionStep, BranchFromPreReleaseForContinueVersionStep>()
-        .AddTransient<IBranchFromReleaseForContinueVersionStep, BranchFromReleaseForContinueVersionStep>()
-
-        //Actual release behaviour
-        .AddTransient<IReleasePatchStep, ReleasePatchStep>()
-        .AddTransient<IReleaseOnMasterStep, ReleaseOnMasterStep>()
-        .AddTransient<IReleaseAlphaBetaStep, ReleaseAlphaBetaStep>()
-        .AddTransient<IReleaseRCStep, ReleaseRCStep>()
-        .AddTransient<IReleaseWithRcStep, ReleaseWithRcStep>()
-
-        //Continuation of actual release behaviour
-        .AddTransient<IContinueReleaseOnMasterStep, ContinueReleaseOnMasterStep>()
-        .AddTransient<IContinueReleasePatchStep, ContinueReleasePatchStep>()
-        .AddTransient<IContinueAlphaBetaStep, ContinueAlphaBetaStep>()
-
-        //Push behaviour
-        .AddTransient<IPushMasterReleaseStep, PushMasterReleaseStep>()
-        .AddTransient<IPushPreReleaseStep, PushPreReleaseStep>()
-        .AddTransient<IPushPatchReleaseStep, PushPatchReleaseStep>()
-        .AddSingleton(
-            _ =>
-            {
-              var configReader = new ConfigReader();
-              var pathToConfig = configReader.GetConfigPathFromBuildProject(Environment.CurrentDirectory);
-              return configReader.LoadConfig(pathToConfig);
-            });
-    return services;
-  }
-
-  private static CommandApp ConfigureCommandApp (IServiceCollection services)
-  {
-    var app = new CommandApp(new TypeRegistrar(services));
-
-    app.Configure(
-        config =>
-        {
-          config.CaseSensitivity(CaseSensitivity.None);
-          config.ConfigureConsole(Console);
-          config.PropagateExceptions();
-          config.SetApplicationName("Release Process Script");
-
-          //Calls StartReleaseStep
-          config.AddCommand<ReleaseVersionCommand>("Release-Version")
-              .WithDescription("Releases a new Version");
-
-          //Calls ContinueReleaseStep
-          config.AddCommand<CloseVersionCommand>("Close-Version")
-              .WithDescription("Complete the Version process");
-
-          //Calls StartReleaseStep with StartReleasePhase set to true
-          config.AddCommand<ReleaseBranchCommand>("New-Release-Branch")
-              .WithDescription("Creates a new release Branch");
-
-          //Calls PushToRepos from the given GitClient
-          config.AddCommand<PushRemoteCommand>("Push-Remote-Repositories")
-              .WithAlias("Push-Remote-Repos")
-              .WithDescription("Push given branch to the remote repositories defined in releaseProcessScript.config");
-        });
-    return app;
   }
 }

@@ -34,7 +34,7 @@ internal class MSBuildIntegrationTests : IntegrationTestSetup
     TestConsole.Input.PushTextWithEnter("1.3.0");
     TestConsole.Input.PushTextWithEnter("3");
 
-    Program.Main(new[] { "Release-Version" });
+    RunProgram(new[] { "Release-Version" });
 
     var consoleOutput = TestConsole.Output;
     Assert.That(consoleOutput, Does.Contain("MSBuildCallTarget called!"));

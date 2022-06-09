@@ -55,7 +55,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.3.6");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -94,7 +94,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.3.6");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -131,7 +131,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.3.5");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -173,7 +173,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.4.0");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -205,7 +205,7 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.4.0");
 
-    var act = Program.Main(new[] { "Release-Version" });
+    var act = RunProgram(new[] { "Release-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act, Is.EqualTo(0));
@@ -242,9 +242,9 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get ancestor choice
     TestConsole.Input.PushTextWithEnter("release/v1.2.0");
 
-    var act1 = Program.Main(new[] { "Release-Version", "-p" });
+    var act1 = RunProgram(new[] { "Release-Version", "-p" });
     ExecuteGitCommand("commit -m \"Another commit on prerelease\" --allow-empty");
-    var act2 = Program.Main(new[] { "Close-Version" });
+    var act2 = RunProgram(new[] { "Close-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
@@ -274,9 +274,9 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     //Get ancestor choice
     TestConsole.Input.PushTextWithEnter("release/v1.2.0");
 
-    var act1 = Program.Main(new[] { "Release-Version", "-p" });
+    var act1 = RunProgram(new[] { "Release-Version", "-p" });
     ExecuteGitCommand("commit -m \"Commit on prerelease branch\" --allow-empty");
-    var act2 = Program.Main(new[] { "Close-Version" });
+    var act2 = RunProgram(new[] { "Close-Version" });
 
     AssertValidLogs(correctLogs);
     Assert.That(act1, Is.EqualTo(0));
