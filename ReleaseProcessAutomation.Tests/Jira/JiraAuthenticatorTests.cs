@@ -6,6 +6,7 @@ using ReleaseProcessAutomation.Jira.CredentialManagement;
 namespace ReleaseProcessAutomation.Tests.Jira;
 
 [TestFixture]
+[Explicit]
 public class JiraAuthenticatorTests
 {
   private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
@@ -21,7 +22,7 @@ public class JiraAuthenticatorTests
 
     if (string.IsNullOrEmpty(jiraUsername))
       throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
-
+    
     if (string.IsNullOrEmpty(jiraPassword))
       throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
 

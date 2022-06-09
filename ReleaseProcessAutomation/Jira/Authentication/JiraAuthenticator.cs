@@ -17,6 +17,6 @@ public class JiraAuthenticator
     var resource = $"project/{projectKey}/versions";
     var request = jiraRestClient.CreateRestRequest(resource, Method.GET);
 
-    var response = jiraRestClient.DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
+    jiraRestClient.DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
   }
 }

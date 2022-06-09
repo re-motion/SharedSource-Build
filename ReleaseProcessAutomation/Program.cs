@@ -43,6 +43,8 @@ namespace ReleaseProcessAutomation;
 public static class Program
 {
   public static IAnsiConsole Console { get; set; } = AnsiConsole.Console;
+  
+  private const string c_urlPostFix = "rest/api/2/";
 
   public static int Main (string[] args)
   {
@@ -97,11 +99,11 @@ public static class Program
         .AddTransient<IAncestorFinder, AncestorFinder>()
 
         //Jira things
-        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x, "rest/api/2/"))
+        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x, c_urlPostFix))
         .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
         .AddTransient<IJira, Jira.Jira>()
-        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, "rest/api/2/"))
-        .AddTransient<IJiraRestClientProvider, JiraRestClientProvider>()
+        .AddTransient<IJIraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, c_urlPostFix))
+        .AddSingleton<IJiraRestClientProvider, JiraRestClientProvider>()
         .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
         .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()
         .AddTransient<IJiraProjectVersionFinder, JiraProjectVersionFinder>()

@@ -26,8 +26,6 @@ public class JiraRestClient
 {
   private readonly RestClient _client;
 
-  public RestClient RestClient => _client;
-
   public JiraRestClient (string jiraUrl, IAuthenticator authenticator)
   {
     _client = new RestClient(jiraUrl) { Authenticator = authenticator };
