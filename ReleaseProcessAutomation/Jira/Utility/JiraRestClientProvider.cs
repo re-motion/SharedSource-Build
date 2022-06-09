@@ -8,6 +8,8 @@ namespace ReleaseProcessAutomation.Jira.Utility;
 public class JiraRestClientProvider
     : IJiraRestClientProvider
 {
+  private const string c_urlPostFix = "rest/api/2/";
+  
   private JiraRestClient? _jiraRestClient;
 
   private readonly Config _config;
@@ -25,16 +27,23 @@ public class JiraRestClientProvider
     if (_jiraRestClient != null)
       return _jiraRestClient;
 
+    var jiraUrlWithPostfix = JiraUrlWithPostfix(_config.Jira.JiraURL);
+    
     if (_config.Jira.UseNTLM)
     {
-      _jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new NtlmAuthenticator());
+      _jiraRestClient = new JiraRestClient(jiraUrlWithPostfix, new NtlmAuthenticator());
     }
     else
     {
       var credentials = _jiraCredentialManager.GetCredential(_config.Jira.JiraURL);
-      _jiraRestClient = new JiraRestClient(_config.Jira.JiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+      _jiraRestClient = new JiraRestClient(jiraUrlWithPostfix, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     }
-
+    
     return _jiraRestClient;
+  }
+  
+  private string JiraUrlWithPostfix (string url)
+  {
+    return url.EndsWith("/") ? $"{url}{c_urlPostFix}" : $"{url}/{c_urlPostFix}";
   }
 }

@@ -28,7 +28,7 @@ using Spectre.Console;
 namespace ReleaseProcessAutomation.Jira.CredentialManagement;
 
 public class JiraCredentialManager
-    : JiraWithPostfix, IJiraCredentialManager
+    : IJiraCredentialManager
 {
   private readonly Config _config;
   private readonly IInputReader _inputReader;
@@ -40,9 +40,7 @@ public class JiraCredentialManager
       Config config,
       IInputReader inputReader,
       IAnsiConsole console,
-      IJiraAuthenticator jiraAuthenticator,
-      string jiraUrlPostfix)
-      : base(config, jiraUrlPostfix)
+      IJiraAuthenticator jiraAuthenticator)
   {
     _config = config;
     _inputReader = inputReader;

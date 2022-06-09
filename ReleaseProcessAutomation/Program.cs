@@ -44,8 +44,6 @@ public static class Program
 {
   public static IAnsiConsole Console { get; set; } = AnsiConsole.Console;
 
-  private const string c_urlPostFix = "rest/api/2/";
-
   public static int Main (string[] args)
   {
     ConfigureLogger();
@@ -99,9 +97,9 @@ public static class Program
         .AddTransient<IAncestorFinder, AncestorFinder>()
 
         //Jira things
-        .AddTransient<IJiraCredentialManager>(x => ActivatorUtilities.CreateInstance<JiraCredentialManager>(x, c_urlPostFix))
+        .AddTransient<IJiraCredentialManager, JiraCredentialManager>()
         .AddTransient<IJiraAuthenticator, JiraAuthenticator>()
-        .AddTransient<IJiraFunctionality>(x => ActivatorUtilities.CreateInstance<JiraFunctionality>(x, c_urlPostFix))
+        .AddTransient<IJiraFunctionality, JiraFunctionality>()
         .AddSingleton<IJiraRestClientProvider, JiraRestClientProvider>()
         .AddTransient<IJiraVersionCreator, JiraVersionCreator>()
         .AddTransient<IJiraVersionReleaser, JiraVersionReleaser>()

@@ -33,7 +33,7 @@ public class JiraVersionReleaser
     _projectVersionService = projectVersionService;
   }
 
-  public void ReleaseVersion (string jiraUrl, string versionID, string nextVersionID, bool sortReleasedVersion)
+  public void ReleaseVersion (string versionID, string nextVersionID, bool sortReleasedVersion)
   {
     _projectVersionService.ReleaseVersion(versionID, nextVersionID);
 
@@ -41,7 +41,7 @@ public class JiraVersionReleaser
       _projectVersionRepairer.RepairVersionPosition(versionID);
   }
 
-  public void ReleaseVersionAndSquashUnreleased (string jiraUrl, string jiraProjectKey, string versionID, string nextVersionID)
+  public void ReleaseVersionAndSquashUnreleased (string jiraProjectKey, string versionID, string nextVersionID)
   {
     _projectVersionService.ReleaseVersionAndSquashUnreleased(versionID, nextVersionID, jiraProjectKey);
   }

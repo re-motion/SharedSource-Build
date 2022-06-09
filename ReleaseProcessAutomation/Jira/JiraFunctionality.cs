@@ -17,14 +17,13 @@
 
 using System;
 using ReleaseProcessAutomation.Configuration.Data;
-using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Serilog;
 using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira;
 
-public class JiraFunctionality : JiraWithPostfix, IJiraFunctionality
+public class JiraFunctionality : IJiraFunctionality
 {
   private readonly Config _config;
   private readonly IAnsiConsole _console;
@@ -36,9 +35,7 @@ public class JiraFunctionality : JiraWithPostfix, IJiraFunctionality
       Config config,
       IAnsiConsole console,
       IJiraVersionCreator jiraVersionCreator,
-      IJiraVersionReleaser jiraVersionReleaser,
-      string jiraUrlPostfix)
-      : base(config, jiraUrlPostfix)
+      IJiraVersionReleaser jiraVersionReleaser)
   {
     _config = config;
     _console = console;
@@ -70,8 +67,8 @@ public class JiraFunctionality : JiraWithPostfix, IJiraFunctionality
   private void ReleaseVersion (string currentVersionID, string nextVersionID, bool squashUnreleased)
   {
     if (squashUnreleased)
-      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(JiraUrlWithPostfix(), _config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
+      _jiraVersionReleaser.ReleaseVersionAndSquashUnreleased(_config.Jira.JiraProjectKey, currentVersionID, nextVersionID);
     else
-      _jiraVersionReleaser.ReleaseVersion(JiraUrlWithPostfix(), currentVersionID, nextVersionID, false);
+      _jiraVersionReleaser.ReleaseVersion(currentVersionID, nextVersionID, false);
   }
 }
