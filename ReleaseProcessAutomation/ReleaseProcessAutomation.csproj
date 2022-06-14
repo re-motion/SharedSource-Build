@@ -34,10 +34,5 @@
         <PackageReference Include="Spectre.Console" Version="0.43.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="Jira\Utility\IJiraRestClientProviderFactory.cs" />
-      <Compile Remove="Jira\Utility\JiraRestClientProviderFactory.cs" />
-    </ItemGroup>
-
 
 </Project>
