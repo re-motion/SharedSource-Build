@@ -13,7 +13,6 @@ public class JiraAuthenticator
 {
   public void CheckAuthentication (Credentials credentials, string projectKey, string jiraURL)
   {
-    //var jiraRestClient = new JiraRestClient(jiraURL, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
     var jiraRestClient = JiraRestClient.CreateWithBasicAuthentication(jiraURL, credentials);
     var resource = $"project/{projectKey}/versions";
     var request = jiraRestClient.CreateRestRequest(resource, Method.GET);
