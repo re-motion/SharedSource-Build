@@ -32,8 +32,6 @@ internal class BranchFromDevelopStepTests
   [SetUp]
   public void Setup ()
   {
-    ;
-
     _releaseAlphaBetaMock = new Mock<IReleaseAlphaBetaStep>();
     _releaseAlphaBetaMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<string>(), false, false)).Verifiable();
 
