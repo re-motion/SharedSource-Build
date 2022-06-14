@@ -113,7 +113,7 @@ public class JiraCredentialManager
     }
     catch
     {
-      // ignored
+      //catch the error that occurs when the credentials dont get deleted as this should only happen if there were no credentials to begin with
     }
 
     CredentialManager.SaveCredentials(target, cred);
