@@ -61,7 +61,7 @@ public class GitBackedTests
 
     var path = Path.Join(directoryPath, random.ToString());
 
-    using var fs = File.Create(path);
+    var fs = File.Create(path);
     fs.Dispose();
   }
 
