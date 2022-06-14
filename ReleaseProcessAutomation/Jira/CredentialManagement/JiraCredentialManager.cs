@@ -55,11 +55,7 @@ public class JiraCredentialManager
     if (cred == null)
       return AskForCredentials(target);
 
-    var credentials = new Credentials
-                      {
-                          Username = cred.UserName,
-                          Password = cred.Password
-                      };
+    var credentials = new Credentials(cred.UserName, cred.Password);
 
     try
     {
