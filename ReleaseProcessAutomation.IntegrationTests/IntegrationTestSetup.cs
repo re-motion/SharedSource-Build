@@ -29,7 +29,7 @@ namespace ReleaseProcessAutomation.IntegrationTests;
 
 public abstract class IntegrationTestSetup : GitBackedTests
 {
-  private const string c_testConfigName = "ReleaseProcessScript.Test.config";
+  protected const string c_testConfigName = "ReleaseProcessScript.Test.config";
   private const string c_buildProject = ".BuildProject";
   private const string c_buildFileName = "TestBuild.build";
 
