@@ -26,14 +26,16 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
 public class JiraRestClient
 {
+  private const string c_urlPostFix = "rest/api/2/";
+  
   public static JiraRestClient CreateWithNtlmAuthentication (string jiraUrl)
   {
-    return new JiraRestClient(jiraUrl, new NtlmAuthenticator());
+    return new JiraRestClient(JiraUrlWithPostfix(jiraUrl), new NtlmAuthenticator());
   }
 
   public static JiraRestClient CreateWithBasicAuthentication (string jiraUrl, Credentials credentials)
   {
-    return new JiraRestClient(jiraUrl, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+    return new JiraRestClient(JiraUrlWithPostfix(jiraUrl), new HttpBasicAuthenticator(credentials.Username, credentials.Password));
   }
   
   private readonly RestClient _client;
@@ -68,5 +70,11 @@ public class JiraRestClient
             { HttpStatusCode = response.StatusCode };
 
     return response;
+  }
+  
+  
+  private static string JiraUrlWithPostfix (string url)
+  {
+    return url.EndsWith("/") ? $"{url}{c_urlPostFix}" : $"{url}/{c_urlPostFix}";
   }
 }
