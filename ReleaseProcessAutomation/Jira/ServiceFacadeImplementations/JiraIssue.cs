@@ -26,7 +26,8 @@ public class JiraIssue
 {
   public string ID { get; set; }
   public string Summary { get; set; }
-  public List<string> FixVersions { get; set; }
+
+  public JiraFields fields { get; set; }
 
   public string Issuetype { get; set; }
   public string Project { get; set; }
@@ -56,4 +57,9 @@ public class JiraNonClosedIssueFields
 public class JiraVersion
 {
   public string ID { get; set; }
+}
+
+public class JiraFields
+{
+  public List<JiraVersion> FixVersions { get; set; }
 }
