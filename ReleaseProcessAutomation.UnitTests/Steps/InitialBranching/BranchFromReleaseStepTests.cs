@@ -29,6 +29,11 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.InitialBranching;
 [TestFixture]
 internal class BranchFromReleaseStepTests
 {
+  private Mock<IGitClient> _gitClient;
+  private Mock<IInputReader> _inputReader;
+  private Mock<IReleaseRCStep> _releaseRcStep;
+  private Mock<IReleaseWithRcStep> _releaseWithRcStep;
+
   [SetUp]
   public void Setup ()
   {
@@ -37,11 +42,6 @@ internal class BranchFromReleaseStepTests
     _releaseRcStep = new Mock<IReleaseRCStep>();
     _releaseWithRcStep = new Mock<IReleaseWithRcStep>();
   }
-
-  private Mock<IGitClient> _gitClient;
-  private Mock<IInputReader> _inputReader;
-  private Mock<IReleaseRCStep> _releaseRcStep;
-  private Mock<IReleaseWithRcStep> _releaseWithRcStep;
 
   [Test]
   public void FindNextRc_WithSeveralExistingTags_ReturnsProperVersionAndCallsRcStep ()

@@ -34,8 +34,16 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Releases;
 [TestFixture]
 internal class ReleaseNonPreReleaseFromDevelopTests
 {
-  [SetUp]
-  public void setup ()
+    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+    
+    private Mock<IAnsiConsole> _consoleMock;
+    private Configuration.Data.Config _config;
+    private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+    private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
+    private Mock<IJiraFunctionality> _jiraFunctionalityMock;
+
+    [SetUp]
+  public void Setup ()
   {
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
@@ -44,13 +52,6 @@ internal class ReleaseNonPreReleaseFromDevelopTests
     _consoleMock = new Mock<IAnsiConsole>();
     _jiraFunctionalityMock = new Mock<IJiraFunctionality>();
   }
-
-  private Mock<IAnsiConsole> _consoleMock;
-  private Configuration.Data.Config _config;
-  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-  private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
-  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
   public void Execute_WorkingDirectoryNotCleanWithoutConfirmation_ThrowsException ()

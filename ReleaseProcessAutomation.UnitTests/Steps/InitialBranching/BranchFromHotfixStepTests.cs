@@ -29,6 +29,12 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.InitialBranching;
 [TestFixture]
 internal class BranchFromHotfixStepTests
 {
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<IInputReader> _inputReaderStub;
+  private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
+  private Mock<IReleasePatchStep> _releasePatchStepMock;
+  private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaStepMock;
+
   [SetUp]
   public void Setup ()
   {
@@ -38,12 +44,6 @@ internal class BranchFromHotfixStepTests
     _releasePatchStepMock = new Mock<IReleasePatchStep>();
     _releaseAlphaBetaStepMock = new Mock<IReleaseAlphaBetaStep>();
   }
-
-  private Mock<IGitClient> _gitClientStub;
-  private Mock<IInputReader> _inputReaderStub;
-  private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
-  private Mock<IReleasePatchStep> _releasePatchStepMock;
-  private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaStepMock;
 
   [Test]
   public void GetCurrentHotFixVersion_WithoutBranchAndWithStartReleasePhase_ThrowsException ()

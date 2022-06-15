@@ -31,9 +31,9 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Continues;
 internal class ContinueAlphaBetaStepTests
 {
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  
   private Mock<IAncestorFinder> _ancestorMock;
   private Configuration.Data.Config _config;
-
   private Mock<IAnsiConsole> _consoleStub;
   private Mock<IGitClient> _gitClientMock;
   private Mock<IInputReader> _inputReaderStub;

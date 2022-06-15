@@ -28,17 +28,17 @@ namespace ReleaseProcessAutomation.UnitTests.Steps;
 [TestFixture]
 internal class ContinueReleaseStepTests
 {
+  private Mock<IBranchFromPreReleaseForContinueVersionStep> _continueFromPreRelease;
+  private Mock<IBranchFromReleaseForContinueVersionStep> _continueFromRelease;
+
   [SetUp]
-  public void setup ()
+  public void Setup ()
   {
     _continueFromPreRelease = new Mock<IBranchFromPreReleaseForContinueVersionStep>();
     _continueFromPreRelease.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<string>(), false)).Verifiable();
     _continueFromRelease = new Mock<IBranchFromReleaseForContinueVersionStep>();
     _continueFromRelease.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), It.IsAny<string>(), false)).Verifiable();
   }
-
-  private Mock<IBranchFromPreReleaseForContinueVersionStep> _continueFromPreRelease;
-  private Mock<IBranchFromReleaseForContinueVersionStep> _continueFromRelease;
 
   [Test]
   public void Execute_OnBranchReleaseWithAncestorEqualToDevelop_ShouldCallNonPreRelease ()

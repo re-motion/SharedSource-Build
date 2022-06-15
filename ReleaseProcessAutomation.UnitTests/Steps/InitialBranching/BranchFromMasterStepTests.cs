@@ -27,6 +27,10 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.InitialBranching;
 [TestFixture]
 internal class BranchFromMasterStepTests
 {
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
+  private Mock<IReleasePatchStep> _releasePatchStepMock;
+
   [SetUp]
   public void Setup ()
   {
@@ -34,10 +38,6 @@ internal class BranchFromMasterStepTests
     _semanticVersionedGitRepoStub = new Mock<ISemanticVersionedGitRepository>();
     _releasePatchStepMock = new Mock<IReleasePatchStep>();
   }
-
-  private Mock<IGitClient> _gitClientStub;
-  private Mock<ISemanticVersionedGitRepository> _semanticVersionedGitRepoStub;
-  private Mock<IReleasePatchStep> _releasePatchStepMock;
 
   [Test]
   public void FindNextPatch_WithSeveralTags_ReturnsProperVersionAndCallsReleasePatchStepWithIt ()

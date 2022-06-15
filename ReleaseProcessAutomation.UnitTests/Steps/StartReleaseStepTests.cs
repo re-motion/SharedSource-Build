@@ -27,6 +27,11 @@ namespace ReleaseProcessAutomation.UnitTests.Steps;
 [TestFixture]
 internal class StartReleaseStepTests
 {
+  private Mock<IBranchFromDevelopStep> _developBranchMock;
+  private Mock<IBranchFromReleaseStep> _releaseBranchStub;
+  private Mock<IBranchFromMasterStep> _masterBranchStub;
+  private Mock<IBranchFromHotfixStep> _hotfixBranchStub;
+
   [SetUp]
   public void Setup ()
   {
@@ -35,11 +40,6 @@ internal class StartReleaseStepTests
     _masterBranchStub = new Mock<IBranchFromMasterStep>();
     _hotfixBranchStub = new Mock<IBranchFromHotfixStep>();
   }
-
-  private Mock<IBranchFromDevelopStep> _developBranchMock;
-  private Mock<IBranchFromReleaseStep> _releaseBranchStub;
-  private Mock<IBranchFromMasterStep> _masterBranchStub;
-  private Mock<IBranchFromHotfixStep> _hotfixBranchStub;
 
   [Test]
   public void Execute_WithFaultyCommitHash_throwsException ()

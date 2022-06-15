@@ -35,6 +35,16 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Releases;
 [TestFixture]
 internal class ReleasePatchStepTests
 {
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  
+  private Mock<IAnsiConsole> _consoleStub;
+  private Mock<IGitClient> _gitClientStub;
+  private Mock<IInputReader> _inputReaderStub;
+  private Configuration.Data.Config _config;
+  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+  private Mock<IContinueReleasePatchStep> _contineReleasePatchMock;
+  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
+
   [SetUp]
   public void Setup ()
   {
@@ -48,15 +58,6 @@ internal class ReleasePatchStepTests
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
   }
-
-  private Mock<IAnsiConsole> _consoleStub;
-  private Mock<IGitClient> _gitClientStub;
-  private Mock<IInputReader> _inputReaderStub;
-  private Configuration.Data.Config _config;
-  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-  private Mock<IContinueReleasePatchStep> _contineReleasePatchMock;
-  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
   public void Execute_OnMasterWithoutErrors_CallsNextStep ()

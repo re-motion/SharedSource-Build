@@ -35,7 +35,19 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Releases;
 [TestFixture]
 internal class ReleaseWithRcStepTests
 {
-  [SetUp]
+    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+    
+    private Mock<IAnsiConsole> _consoleStub;
+    private Mock<IGitClient> _gitClientStub;
+    private Mock<IInputReader> _inputReaderMock;
+    private Configuration.Data.Config _config;
+    private Mock<IAncestorFinder> _ancestorStub;
+    private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+    private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
+    private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
+    private Mock<IJiraFunctionality> _jiraFunctionalityMock;
+
+    [SetUp]
   public void Setup ()
   {
     _gitClientStub = new Mock<IGitClient>();
@@ -51,17 +63,6 @@ internal class ReleaseWithRcStepTests
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
   }
-
-  private Mock<IAnsiConsole> _consoleStub;
-  private Mock<IGitClient> _gitClientStub;
-  private Mock<IInputReader> _inputReaderMock;
-  private Configuration.Data.Config _config;
-  private Mock<IAncestorFinder> _ancestorStub;
-  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-  private Mock<IContinueReleaseOnMasterStep> _continueReleaseOnMasterMock;
-  private Mock<IContinueReleasePatchStep> _continueReleasePatchMock;
-  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
   public void Execute_FromHotfix_CreatesHotfixPossibleVersions ()

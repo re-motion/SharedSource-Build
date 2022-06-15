@@ -26,7 +26,6 @@ namespace ReleaseProcessAutomation.UnitTests.Config;
 internal class ConfigReaderTests
 {
   private const string c_configFileName = "ReleaseProcessScript.Test.Config";
-  private const string c_buildProjectFileName = ".BuildProject";
 
   [Test]
   public void GetConfigPath_WithWrongPath_ThrowsException ()

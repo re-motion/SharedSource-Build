@@ -32,7 +32,13 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Continues;
 [TestFixture]
 internal class ContinueReleaseOnMasterStepTests
 {
-  [SetUp]
+    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+    
+    private Mock<IAnsiConsole> _consoleStub;
+    private Configuration.Data.Config _config;
+    private Mock<IPushMasterReleaseStep> _nextReleaseStepMock;
+
+    [SetUp]
   public void Setup ()
   {
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
@@ -42,11 +48,6 @@ internal class ContinueReleaseOnMasterStepTests
     _nextReleaseStepMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>())).Verifiable();
     _consoleStub = new Mock<IAnsiConsole>();
   }
-
-  private Mock<IAnsiConsole> _consoleStub;
-  private Configuration.Data.Config _config;
-  private Mock<IPushMasterReleaseStep> _nextReleaseStepMock;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
   public void CreateTagAndMerge_WithEmptyBranchName_ThrowsException ()

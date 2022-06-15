@@ -35,7 +35,18 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.Releases;
 [TestFixture]
 internal class ReleaseRcStepTests
 {
-  [SetUp]
+    private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+    
+    private Mock<IAnsiConsole> _consoleStub;
+    private Mock<IGitClient> _gitClientStub;
+    private Mock<IInputReader> _inputReaderMock;
+    private Configuration.Data.Config _config;
+    private Mock<IAncestorFinder> _ancestorStub;
+    private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
+    private Mock<IJiraFunctionality> _jiraFunctionalityMock;
+    private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
+
+    [SetUp]
   public void Setup ()
   {
     _gitClientStub = new Mock<IGitClient>();
@@ -50,16 +61,6 @@ internal class ReleaseRcStepTests
     var path = Path.Join(Environment.CurrentDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
   }
-
-  private Mock<IAnsiConsole> _consoleStub;
-  private Mock<IGitClient> _gitClientStub;
-  private Mock<IInputReader> _inputReaderMock;
-  private Configuration.Data.Config _config;
-  private Mock<IAncestorFinder> _ancestorStub;
-  private Mock<IMSBuildCallAndCommit> _msBuildInvokerMock;
-  private Mock<IJiraFunctionality> _jiraFunctionalityMock;
-  private Mock<IContinueAlphaBetaStep> _continueAlphaBetaMock;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
 
   [Test]
   public void Execute_callsNextVersionFromDevelop_WithProperVersionCollection ()

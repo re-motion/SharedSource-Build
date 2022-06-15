@@ -29,7 +29,10 @@ namespace ReleaseProcessAutomation.UnitTests.Steps.InitialBranching;
 [TestFixture]
 internal class BranchFromDevelopStepTests
 {
-  [SetUp]
+    private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaMock;
+    private Mock<IReleaseOnMasterStep> _releaseOnMasterMock;
+
+    [SetUp]
   public void Setup ()
   {
     _releaseAlphaBetaMock = new Mock<IReleaseAlphaBetaStep>();
@@ -38,9 +41,6 @@ internal class BranchFromDevelopStepTests
     _releaseOnMasterMock = new Mock<IReleaseOnMasterStep>();
     _releaseOnMasterMock.Setup(_ => _.Execute(It.IsAny<SemanticVersion>(), "", false, false, false)).Verifiable();
   }
-
-  private Mock<IReleaseAlphaBetaStep> _releaseAlphaBetaMock;
-  private Mock<IReleaseOnMasterStep> _releaseOnMasterMock;
 
   [Test]
   public void GetNextVersion_NoCurrentVersionExists_GetsReadInput ()

@@ -15,6 +15,16 @@ namespace ReleaseProcessAutomation.UnitTests.Jira;
 [TestFixture]
 public class JiraCredentialManagerTests
 {
+  private const string c_userName = "user";
+  private const string c_password = "password";
+  private const string c_target = "target";
+  private const string c_postfix = "postfix";  
+
+  private Mock<IInputReader> _inputReaderMock;
+  private Mock<IJiraAuthenticator> _jiraAuthenticatorMock;
+  private TestConsole _console;
+  private Configuration.Data.Config _config;
+
   [SetUp]
   public void Setup ()
   {
@@ -44,16 +54,6 @@ public class JiraCredentialManagerTests
       //ignore
     }
   }
-
-  private Mock<IInputReader> _inputReaderMock;
-  private Mock<IJiraAuthenticator> _jiraAuthenticatorMock;
-  private TestConsole _console;
-  private Configuration.Data.Config _config;
-
-  private const string c_userName = "user";
-  private const string c_password = "password";
-  private const string c_target = "target";
-  private const string c_postfix = "postfix";
 
   [Test]
   public void GetCredential_CredentialsInCredentialManager_ReturnsCredentials ()

@@ -25,11 +25,6 @@ namespace ReleaseProcessAutomation.UnitTests.SemanticVersioning;
 [TestFixture]
 public class SemanticVersionTests
 {
-  [SetUp]
-  public void Setup ()
-  {
-  }
-
   [Test]
   public void GetNextPossibleVersionsDevelop_WithPreReleaseAlpha_ReturnsSixVersions ()
   {
