@@ -50,6 +50,9 @@ public abstract class JiraTestBase
   }
   protected void DeleteVersionsIfExistent (string projectName, params string[] versionNames)
   {
-    JiraTestUtility.DeleteVersionsIfExistent(projectName, Service, versionNames);
+    foreach (var versionName in versionNames)
+    {
+      JiraTestUtility.DeleteVersionIfExistent(projectName, versionName, RestClient);
+    }
   }
 }

@@ -26,7 +26,7 @@ public class JiraProjectVersionServiceTest
   }
   
   [Test]
-  public void IntegrationTest ()
+  public void TestAllFunctionality ()
   {
     DeleteVersionsIfExistent(c_jiraProjectKey, "4.1.0", "4.1.1", "4.1.2", "4.2.0");
 
