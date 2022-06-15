@@ -107,4 +107,68 @@ public class JiraIntegrationTests : IntegrationTestSetup
     JiraTestUtility.DeleteIssue(closedIssue.ID, _testRestClient);
   }
   
+   [Test]
+  public void TestJiraRunThrough_WithManyDifferentVersionsWithCloseNames_ReleasesCorrectJiraVersions ()
+  {
+    
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.0.0", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.1.0", _testRestClient);
+    
+    var newVersionID = JiraTestUtility.CreateVersion(_testRestClient, "1.0.0", _config.Jira.JiraProjectKey);
+    JiraTestUtility.CreateVersion(_testRestClient, "1.0.1", _config.Jira.JiraProjectKey);
+    JiraTestUtility.CreateVersion(_testRestClient, "1.0.2", _config.Jira.JiraProjectKey);
+    
+    var openIssue = JiraTestUtility.AddTestIssueToVersion(
+        "Some open issue", 
+        false, 
+        _config.Jira.JiraProjectKey, 
+        _testRestClient, 
+      new JiraProjectVersion(){name = "1.0.0", id = newVersionID});
+    
+    var closedIssue = JiraTestUtility.AddTestIssueToVersion(
+      "Some closed issue",
+      true,
+      _config.Jira.JiraProjectKey,
+      _testRestClient,
+      new JiraProjectVersion() { name = "1.0.0", id = newVersionID});
+    
+    ExecuteGitCommand("commit -m feature --allow-empty");
+    ExecuteGitCommand("checkout -b develop");
+
+    //Get release version from user
+    TestConsole.Input.PushTextWithEnter("1.0.0");
+    //Get next release version from user for jira
+    TestConsole.Input.PushTextWithEnter("1.1.0");
+    
+    TestConsole.Input.PushTextWithEnter(_jiraUsername);
+    TestConsole.Input.PushTextWithEnter(_jiraPassword);
+    
+    TestConsole.Input.PushTextWithEnter("n");
+    
+
+    var act = Program.Main(new[] { "Release-Version" });
+
+    Assert.That(act, Is.EqualTo(0));
+    
+    var is110JiraVersion = JiraTestUtility.IsPartOfJiraVersions(_config.Jira.JiraProjectKey, "1.1.0", _testRestClient, out var version110);
+    Assert.That(is110JiraVersion, Is.True);
+    Assert.That(version110.released, Is.False);
+
+    openIssue = JiraTestUtility.GetIssue(openIssue.ID, _testRestClient);
+    Assert.That(openIssue.fields.FixVersions.First().ID , Is.EqualTo(version110.id));
+    
+    var is100JiraVersion = JiraTestUtility.IsPartOfJiraVersions(_config.Jira.JiraProjectKey, "1.0.0", _testRestClient, out var version100);
+    Assert.That(is100JiraVersion, Is.True);
+    Assert.That(version100.released, Is.True);
+    
+    closedIssue = JiraTestUtility.GetIssue(closedIssue.ID, _testRestClient);
+    Assert.That(closedIssue.fields.FixVersions.First().ID, Is.EqualTo(version100.id));
+    
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.0.0", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.1.0", _testRestClient);
+    
+    JiraTestUtility.DeleteIssue(openIssue.ID, _testRestClient);
+    JiraTestUtility.DeleteIssue(closedIssue.ID, _testRestClient);
+  }
+  
 }
