@@ -29,6 +29,35 @@ namespace ReleaseProcessAutomation.IntegrationTests;
 
 public abstract class IntegrationTestSetup : GitBackedTests
 {
+  private const string c_testConfigName = "ReleaseProcessScript.Test.config";
+  private const string c_buildProject = ".BuildProject";
+  private const string c_buildFileName = "TestBuild.build";
+
+  protected TestConsole TestConsole;
+  
+  [SetUp]
+  public void SetupI ()
+  {
+    TestConsole = new TestConsole();
+    Program.Console = TestConsole;
+
+    var pathToBuildProject = Path.Combine(PreviousWorkingDirectory, c_buildProject);
+    var destBuildProject = Path.Combine(Environment.CurrentDirectory, c_buildProject);
+    File.Copy(pathToBuildProject, destBuildProject);
+
+    var pathToConfig = Path.Combine(PreviousWorkingDirectory, c_testConfigName);
+    var destConfigFolder = Path.Combine(Environment.CurrentDirectory, "Build", "Customizations");
+    var destConfigFile = Path.Combine(destConfigFolder, c_testConfigName);
+    Directory.CreateDirectory(destConfigFolder);
+    File.Copy(pathToConfig, destConfigFile);
+
+    var pathToBuildFile = Path.Combine(PreviousWorkingDirectory, c_buildFileName);
+    var destBuildFile = Path.Combine(Environment.CurrentDirectory, c_buildFileName);
+    File.Copy(pathToBuildFile, destBuildFile);
+
+    ExecuteGitCommand("add --all --force");
+    ExecuteGitCommand("commit -m ConfigAndBuildProject");
+  }
 
   protected void AssertValidLogs (string expectedLogs)
   {
@@ -69,34 +98,5 @@ public abstract class IntegrationTestSetup : GitBackedTests
     var app = new ApplicationCommandAppFactory().CreateConfiguredCommandApp(services);
     
     return app.Run(args);
-  }
-  
-  private const string c_testConfigName = "ReleaseProcessScript.Test.config";
-  private const string c_buildProject = ".BuildProject";
-  private const string c_buildFileName = "TestBuild.build";
-  protected TestConsole TestConsole;
-
-  [SetUp]
-  public void SetupI ()
-  {
-    TestConsole = new TestConsole();
-    Program.Console = TestConsole;
-
-    var pathToBuildProject = Path.Combine(PreviousWorkingDirectory, c_buildProject);
-    var destBuildProject = Path.Combine(Environment.CurrentDirectory, c_buildProject);
-    File.Copy(pathToBuildProject, destBuildProject);
-
-    var pathToConfig = Path.Combine(PreviousWorkingDirectory, c_testConfigName);
-    var destConfigFolder = Path.Combine(Environment.CurrentDirectory, "Build", "Customizations");
-    var destConfigFile = Path.Combine(destConfigFolder, c_testConfigName);
-    Directory.CreateDirectory(destConfigFolder);
-    File.Copy(pathToConfig, destConfigFile);
-
-    var pathToBuildFile = Path.Combine(PreviousWorkingDirectory, c_buildFileName);
-    var destBuildFile = Path.Combine(Environment.CurrentDirectory, c_buildFileName);
-    File.Copy(pathToBuildFile, destBuildFile);
-
-    ExecuteGitCommand("add --all --force");
-    ExecuteGitCommand("commit -m ConfigAndBuildProject");
   }
 }

@@ -27,16 +27,17 @@ namespace ReleaseProcessAutomation.IntegrationTests.Git;
 [TestFixture]
 internal class CommandLineGitClientTests : GitBackedTests
 {
+
+  private Configuration.Data.Config _config;
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+  
   [SetUp]
   public void Isetup ()
   {
     var path = Path.Join(PreviousWorkingDirectory, c_configFileName);
     _config = new ConfigReader().LoadConfig(path);
   }
-
-  private Configuration.Data.Config _config;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
-
+  
   [Test]
   public void GetCurrentBranchName_WithOneBranch_ReturnsBranchName ()
   {

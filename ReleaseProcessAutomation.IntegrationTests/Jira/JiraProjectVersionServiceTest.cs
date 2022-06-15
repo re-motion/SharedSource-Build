@@ -14,6 +14,21 @@ namespace ReleaseProcessAutomation.IntegrationTests.Jira;
 [TestFixture]
 public class JiraProjectVersionServiceTest
 {
+  private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
+  private const string c_jiraProjectKey = "SRCBLDTEST";
+  private const string c_usernameEnvironmentVariableName = "JiraUsername";
+  private const string c_passwordEnvironmentVariableName = "JiraPassword";
+
+  private string _jiraUsername;
+  private string _jiraPassword;
+  private JiraProjectVersionService _service;
+  private JiraProjectVersionRepairer _repairer;
+  private JiraProjectVersionFinder _versionFinder;
+  private JiraIssueService _issueService;
+  private Mock<IJiraRestClientProvider> _restClientMock;
+  private JiraRestClient _restClient;
+
+  
   [SetUp]
   public void SetUp ()
   {
@@ -36,21 +51,7 @@ public class JiraProjectVersionServiceTest
     _service = new JiraProjectVersionService(_restClientMock.Object, _issueService, _versionFinder);
     _repairer = new JiraProjectVersionRepairer(_service, _versionFinder);
   }
-
-  private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
-  private const string c_jiraProjectKey = "SRCBLDTEST";
-  private const string c_usernameEnvironmentVariableName = "JiraUsername";
-  private const string c_passwordEnvironmentVariableName = "JiraPassword";
-
-  private string _jiraUsername;
-  private string _jiraPassword;
-  private JiraProjectVersionService _service;
-  private JiraProjectVersionRepairer _repairer;
-  private JiraProjectVersionFinder _versionFinder;
-  private JiraIssueService _issueService;
-  private Mock<IJiraRestClientProvider> _restClientMock;
-  private JiraRestClient _restClient;
-
+  
   [Test]
   public void IntegrationTest ()
   {

@@ -74,8 +74,8 @@ public class JiraCredentialManager
   {
     while (true)
     {
-     var username = _inputReader.ReadString("Please enter your Jira username"),
-     var password = _inputReader.ReadHiddenString("Please enter your Jira password")
+      var username = _inputReader.ReadString("Please enter your Jira username");
+      var password = _inputReader.ReadHiddenString("Please enter your Jira password");
       var tmpCredentials = new Credentials(username, password);
 
       try

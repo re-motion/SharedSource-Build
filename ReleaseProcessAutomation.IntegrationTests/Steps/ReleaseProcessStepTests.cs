@@ -32,13 +32,11 @@ namespace ReleaseProcessAutomation.IntegrationTests.Steps;
 [TestFixture]
 internal class ReleaseProcessStepTests : GitBackedTests
 {
-  [SetUp]
-  public void Setup ()
-  {
-    var path = Path.Join(PreviousWorkingDirectory, c_configFileName);
-    _config = new ConfigReader().LoadConfig(path);
-    _console = new TestConsole();
-  }
+  
+  private Configuration.Data.Config _config;
+  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
+
+  private IAnsiConsole _console;
 
   private class NestedReleaseProcessStepBase : ReleaseProcessStepBase
   {
@@ -67,10 +65,13 @@ internal class ReleaseProcessStepTests : GitBackedTests
     }
   }
 
-  private Configuration.Data.Config _config;
-  private const string c_configFileName = "ReleaseProcessScript.Test.Config";
-
-  private IAnsiConsole _console;
+  [SetUp]
+  public void Setup ()
+  {
+    var path = Path.Join(PreviousWorkingDirectory, c_configFileName);
+    _config = new ConfigReader().LoadConfig(path);
+    _console = new TestConsole();
+  }
 
   [Test]
   public void EnsureBranchUpToDate_WithoutProperConfig_ThrowsException ()

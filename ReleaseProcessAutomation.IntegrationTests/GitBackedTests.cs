@@ -24,6 +24,65 @@ namespace ReleaseProcessAutomation.IntegrationTests;
 
 public class GitBackedTests
 {
+  
+  protected const string RemoteName = "origin";
+
+  protected string PreviousWorkingDirectory;
+  protected string RepositoryPath;
+  private string _remotePath;
+
+  [SetUp]
+  public void GitTestSetup ()
+  {
+    PreviousWorkingDirectory = Environment.CurrentDirectory;
+    var temp = Path.GetTempPath();
+
+    var guid = Guid.NewGuid();
+    var path = Path.Combine(temp, guid.ToString());
+    _remotePath = Directory.CreateDirectory(path).FullName;
+
+    Environment.CurrentDirectory = _remotePath;
+
+    ExecuteGitCommand("--bare init");
+
+    guid = Guid.NewGuid();
+
+    path = Path.Combine(temp, guid.ToString());
+    RepositoryPath = Directory.CreateDirectory(path).FullName;
+
+    Environment.CurrentDirectory = RepositoryPath;
+
+    ExecuteGitCommand("init");
+    ExecuteGitCommand($"remote add {RemoteName} {_remotePath}");
+    ExecuteGitCommand("commit -m \"Initial CommitAll\" --allow-empty");
+    ExecuteGitCommand($"push {RemoteName} --all");
+  }
+
+  [TearDown]
+  public void TearDown ()
+  {
+    Environment.CurrentDirectory = PreviousWorkingDirectory;
+    DeleteDirectory(RepositoryPath);
+    DeleteDirectory(_remotePath);
+  }
+
+  private static void DeleteDirectory (string target_dir)
+  {
+    var files = Directory.GetFiles(target_dir);
+    var dirs = Directory.GetDirectories(target_dir);
+
+    foreach (var file in files)
+    {
+      File.SetAttributes(file, FileAttributes.Normal);
+      File.Delete(file);
+    }
+
+    foreach (var dir in dirs)
+      DeleteDirectory(dir);
+
+    Directory.Delete(target_dir, false);
+  }
+  
   protected static void ExecuteGitCommand (string argument)
   {
     using var command = Process.Start("git", argument);
@@ -81,61 +140,4 @@ public class GitBackedTests
     return currentLogs.Equals(otherLogs);
   }
 
-  protected const string RemoteName = "origin";
-
-  private string _remotePath;
-  protected string PreviousWorkingDirectory;
-  protected string RepositoryPath;
-
-  [SetUp]
-  public void GitTestSetup ()
-  {
-    PreviousWorkingDirectory = Environment.CurrentDirectory;
-    var temp = Path.GetTempPath();
-
-    var guid = Guid.NewGuid();
-    var path = Path.Combine(temp, guid.ToString());
-    _remotePath = Directory.CreateDirectory(path).FullName;
-
-    Environment.CurrentDirectory = _remotePath;
-
-    ExecuteGitCommand("--bare init");
-
-    guid = Guid.NewGuid();
-
-    path = Path.Combine(temp, guid.ToString());
-    RepositoryPath = Directory.CreateDirectory(path).FullName;
-
-    Environment.CurrentDirectory = RepositoryPath;
-
-    ExecuteGitCommand("init");
-    ExecuteGitCommand($"remote add {RemoteName} {_remotePath}");
-    ExecuteGitCommand("commit -m \"Initial CommitAll\" --allow-empty");
-    ExecuteGitCommand($"push {RemoteName} --all");
-  }
-
-  [TearDown]
-  public void TearDown ()
-  {
-    Environment.CurrentDirectory = PreviousWorkingDirectory;
-    DeleteDirectory(RepositoryPath);
-    DeleteDirectory(_remotePath);
-  }
-
-  private static void DeleteDirectory (string target_dir)
-  {
-    var files = Directory.GetFiles(target_dir);
-    var dirs = Directory.GetDirectories(target_dir);
-
-    foreach (var file in files)
-    {
-      File.SetAttributes(file, FileAttributes.Normal);
-      File.Delete(file);
-    }
-
-    foreach (var dir in dirs)
-      DeleteDirectory(dir);
-
-    Directory.Delete(target_dir, false);
-  }
 }

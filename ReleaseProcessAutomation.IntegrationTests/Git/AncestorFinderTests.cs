@@ -28,13 +28,13 @@ namespace ReleaseProcessAutomation.IntegrationTests.Git;
 [TestFixture]
 internal class AncestorFinderTests
 {
+  private IAnsiConsole _console;
+
   [SetUp]
   public void Setup ()
   {
     _console = new TestConsole();
   }
-
-  private IAnsiConsole _console;
 
   [Test]
   public void GetAncestor_EmptyFound_CallsReader ()
