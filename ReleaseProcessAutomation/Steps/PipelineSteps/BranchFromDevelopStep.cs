@@ -43,7 +43,6 @@ public class BranchFromDevelopStep
   private readonly IReleaseAlphaBetaStep _releaseAlphaBetaStep;
   private readonly IReleaseOnMasterStep _releaseOnMasterStep;
   private readonly ISemanticVersionedGitRepository _semanticVersionedGitRepository;
-
   private readonly ILogger _log = Log.ForContext<BranchFromDevelopStep>();
 
   public BranchFromDevelopStep (

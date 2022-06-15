@@ -16,7 +16,6 @@
 //
 
 using System;
-using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.SemanticVersioning;
 using Serilog;
 using Spectre.Console;
@@ -25,19 +24,16 @@ namespace ReleaseProcessAutomation.Jira;
 
 public class JiraFunctionality : IJiraFunctionality
 {
-  private readonly Config _config;
   private readonly IAnsiConsole _console;
   private readonly IJiraVersionCreator _jiraVersionCreator;
   private readonly IJiraVersionReleaser _jiraVersionReleaser;
   private readonly ILogger _log = Log.ForContext<JiraFunctionality>();
 
   public JiraFunctionality (
-      Config config,
       IAnsiConsole console,
       IJiraVersionCreator jiraVersionCreator,
       IJiraVersionReleaser jiraVersionReleaser)
   {
-    _config = config;
     _console = console;
     _jiraVersionCreator = jiraVersionCreator;
     _jiraVersionReleaser = jiraVersionReleaser;

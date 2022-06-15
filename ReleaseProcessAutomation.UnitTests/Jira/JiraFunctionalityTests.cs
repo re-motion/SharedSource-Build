@@ -40,8 +40,7 @@ public class JiraFunctionalityTests
     var currentVersion = new SemanticVersion();
     var nextVersion = new SemanticVersion { Patch = 1 };
     var jiraFunctionality = new JiraFunctionality(
-            _config,
-            _console,
+        _console,
             _jiraCreatorMock.Object,
             _jiraReleaserMock.Object);
 
@@ -69,7 +68,6 @@ public class JiraFunctionalityTests
     _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(nextVersion.ToString())).Returns(nextID);
 
     var jiraFunctionality = new JiraFunctionality(
-        _config,
         _console,
         _jiraCreatorMock.Object,
         _jiraReleaserMock.Object);
@@ -95,8 +93,7 @@ public class JiraFunctionalityTests
     _jiraCreatorMock.Setup(_ => _.CreateNewVersionWithVersionNumber(nextVersion.ToString())).Returns(nextID);
 
     var jiraFunctionality = new JiraFunctionality(
-            _config,
-            _console,
+        _console,
             _jiraCreatorMock.Object,
             _jiraReleaserMock.Object);
 

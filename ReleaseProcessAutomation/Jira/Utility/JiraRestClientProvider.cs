@@ -10,11 +10,10 @@ public class JiraRestClientProvider
 {
   private const string c_urlPostFix = "rest/api/2/";
   
-  private JiraRestClient? _jiraRestClient;
-
   private readonly Config _config;
-
   private readonly IJiraCredentialManager _jiraCredentialManager;
+
+  private JiraRestClient? _jiraRestClient;
 
   public JiraRestClientProvider (Config config, IJiraCredentialManager jiraCredentialManager)
   {
