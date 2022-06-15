@@ -10,7 +10,7 @@ namespace ReleaseProcessAutomation.IntegrationTests.Jira;
 public class JiraAuthenticatorTests
 {
   
-  private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
+  private const string c_jiraUrl = "https://re-motion.atlassian.net/";
   private const string c_jiraProjectKey = "SRCBLDTEST";
   private const string c_usernameEnvironmentVariableName = "JiraUsername";
   private const string c_passwordEnvironmentVariableName = "JiraPassword";
