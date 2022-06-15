@@ -4,7 +4,6 @@ using System.Net;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using RestSharp;
-using RestSharp.Authenticators;
 
 namespace ReleaseProcessAutomation.Jira.Authentication;
 
@@ -14,8 +13,7 @@ public class JiraAuthenticator
   public void CheckAuthentication (Credentials credentials, string projectKey, string jiraURL)
   {
     var jiraRestClient = JiraRestClient.CreateWithBasicAuthentication(jiraURL, credentials);
-    var resource = $"project/{projectKey}/versions";
-    var request = jiraRestClient.CreateRestRequest(resource, Method.GET);
+    var request = jiraRestClient.CreateAuthRequest("session", Method.GET);
 
     jiraRestClient.DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
   }

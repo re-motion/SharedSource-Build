@@ -17,6 +17,7 @@
 
 using System;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Threading;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 using RestSharp;
@@ -26,16 +27,17 @@ namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
 public class JiraRestClient
 {
-  private const string c_urlPostFix = "rest/api/2/";
+  private const string c_urlPostFix = "rest/api/2";
+  private const string c_authPostFix = "rest/auth/latest";
   
   public static JiraRestClient CreateWithNtlmAuthentication (string jiraUrl)
   {
-    return new JiraRestClient(JiraUrlWithPostfix(jiraUrl), new NtlmAuthenticator());
+    return new JiraRestClient(jiraUrl, new NtlmAuthenticator());
   }
 
   public static JiraRestClient CreateWithBasicAuthentication (string jiraUrl, Credentials credentials)
   {
-    return new JiraRestClient(JiraUrlWithPostfix(jiraUrl), new HttpBasicAuthenticator(credentials.Username, credentials.Password));
+    return new JiraRestClient(jiraUrl, new HttpBasicAuthenticator(credentials.Username, credentials.Password));
   }
   
   private readonly RestClient _client;
@@ -47,6 +49,17 @@ public class JiraRestClient
 
   public IRestRequest CreateRestRequest (string resource, Method method)
   {
+    return CreateRequest(c_urlPostFix, resource, method);
+  }
+
+  public IRestRequest CreateAuthRequest (string resource, Method method)
+  {
+    return CreateRequest(c_authPostFix, resource, method);
+  }
+
+  private static IRestRequest CreateRequest (string postFix, string resource, Method method)
+  {
+    resource = $"{postFix}/{resource}";
     var request = new RestRequest() { Method = method, RequestFormat = DataFormat.Json, Resource = resource };
     return request;
   }
@@ -70,11 +83,5 @@ public class JiraRestClient
             { HttpStatusCode = response.StatusCode };
 
     return response;
-  }
-  
-  
-  private static string JiraUrlWithPostfix (string url)
-  {
-    return url.EndsWith("/") ? $"{url}{c_urlPostFix}" : $"{url}/{c_urlPostFix}";
   }
 }
