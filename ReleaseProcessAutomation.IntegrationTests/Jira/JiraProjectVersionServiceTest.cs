@@ -1,55 +1,28 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using Moq;
 using NUnit.Framework;
-using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
-using ReleaseProcessAutomation.Jira.Utility;
-using RestSharp;
 
 namespace ReleaseProcessAutomation.IntegrationTests.Jira;
 
 [Explicit]
 [TestFixture]
 public class JiraProjectVersionServiceTest
+    : JiraTestBase
 {
-  private const string c_jiraUrl = "https://re-motion.atlassian.net/rest/api/2/";
   private const string c_jiraProjectKey = "SRCBLDTEST";
-  private const string c_usernameEnvironmentVariableName = "JiraUsername";
-  private const string c_passwordEnvironmentVariableName = "JiraPassword";
-
-  private string _jiraUsername;
-  private string _jiraPassword;
-  private JiraProjectVersionService _service;
   private JiraProjectVersionRepairer _repairer;
   private JiraProjectVersionFinder _versionFinder;
   private JiraIssueService _issueService;
-  private Mock<IJiraRestClientProvider> _restClientMock;
-  private JiraRestClient _restClient;
 
   
   [SetUp]
   public void SetUp ()
   {
-    _jiraUsername = Environment.GetEnvironmentVariable(c_usernameEnvironmentVariableName);
-    _jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
-
-    if (string.IsNullOrEmpty(_jiraUsername))
-      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
-
-    if (string.IsNullOrEmpty(_jiraPassword))
-      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
-
-    _restClient = JiraRestClient.CreateWithBasicAuthentication(c_jiraUrl, new Credentials(_jiraUsername, _jiraPassword));
-
-    _restClientMock = new Mock<IJiraRestClientProvider>();
-    _restClientMock.Setup(_ => _.GetJiraRestClient()).Returns(_restClient);
-
-    _versionFinder = new JiraProjectVersionFinder(_restClientMock.Object);
-    _issueService = new JiraIssueService(_restClientMock.Object);
-    _service = new JiraProjectVersionService(_restClientMock.Object, _issueService, _versionFinder);
-    _repairer = new JiraProjectVersionRepairer(_service, _versionFinder);
+    _versionFinder = new JiraProjectVersionFinder(RestClientMock.Object);
+    _issueService = new JiraIssueService(RestClientMock.Object);
+    Service = new JiraProjectVersionService(RestClientMock.Object, _issueService, _versionFinder);
+    _repairer = new JiraProjectVersionRepairer(Service, _versionFinder);
   }
   
   [Test]
@@ -58,10 +31,10 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "4.1.0", "4.1.1", "4.1.2", "4.2.0");
 
     // Create versions
-    _service.CreateVersion(c_jiraProjectKey, "4.1.0", DateTime.Today.AddDays(1));
-    _service.CreateSubsequentVersion(c_jiraProjectKey, "4\\.1\\..*", 3, DayOfWeek.Monday);
-    _service.CreateSubsequentVersion(c_jiraProjectKey, "4\\.1\\..*", 3, DayOfWeek.Tuesday);
-    _service.CreateVersion(c_jiraProjectKey, "4.2.0", DateTime.Today.AddDays(7));
+    Service.CreateVersion(c_jiraProjectKey, "4.1.0", DateTime.Today.AddDays(1));
+    Service.CreateSubsequentVersion(c_jiraProjectKey, "4\\.1\\..*", 3, DayOfWeek.Monday);
+    Service.CreateSubsequentVersion(c_jiraProjectKey, "4\\.1\\..*", 3, DayOfWeek.Tuesday);
+    Service.CreateVersion(c_jiraProjectKey, "4.2.0", DateTime.Today.AddDays(7));
 
     // Get latest unreleased version
     var versions = _versionFinder.FindUnreleasedVersions(c_jiraProjectKey, "4.1.").ToList();
@@ -80,12 +53,12 @@ public class JiraProjectVersionServiceTest
     Assert.That(additionalVersion.name, Is.EqualTo("4.2.0"));
 
     // Add issues to versionToRelease
-    AddTestIssueToVersion("My Test", false, versionToRelease);
-    AddTestIssueToVersion("My closed Test", true, versionToRelease);
-    AddTestIssueToVersion("My multiple fixVersion Test", false, versionToRelease, additionalVersion);
+    AddTestIssueToVersion("My Test", false, c_jiraProjectKey, RestClient, versionToRelease);
+    AddTestIssueToVersion("My closed Test", true, c_jiraProjectKey, RestClient, versionToRelease);
+    AddTestIssueToVersion("My multiple fixVersion Test", false, c_jiraProjectKey, RestClient, versionToRelease, additionalVersion);
 
     // Release version
-    _service.ReleaseVersion(versionToRelease.id, versionToFollow.id);
+    Service.ReleaseVersion(versionToRelease.id, versionToFollow.id);
 
     // Get latest unreleased version again
     versions = _versionFinder.FindUnreleasedVersions(c_jiraProjectKey, "4.1.").ToList();
@@ -106,44 +79,6 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "4.1.0", "4.1.1", "4.1.2", "4.2.0");
   }
 
-  private JiraIssue AddTestIssueToVersion (string summaryOfIssue, bool closed, params JiraProjectVersion[] toRelease)
-  {
-    // Create new issue
-    var resource = "issue";
-    var request = new RestRequest { Method = Method.POST, RequestFormat = DataFormat.Json, Resource = resource };
-
-    var body = new
-               {
-                   fields = new
-                            {
-                                project = new { key = c_jiraProjectKey }, issuetype = new { name = "Task" }, summary = summaryOfIssue,
-                                description = "testDescription", fixVersions = toRelease.Select(v => new { v.id })
-                            }
-               };
-    request.AddBody(body);
-
-    var response = _restClient.DoRequest<JiraIssue>(request, HttpStatusCode.Created);
-
-    // Close issue if necessary
-    if (closed)
-    {
-      var issue = response.Data;
-      CloseIssue(issue.ID);
-    }
-
-    return response.Data;
-  }
-
-  private void CloseIssue (string issueID)
-  {
-    var resource = "issue/" + issueID + "/transitions";
-    var request = new RestRequest { Method = Method.POST, RequestFormat = DataFormat.Json, Resource = resource };
-
-    var body = new { transition = new { id = 2 } };
-    request.AddBody(body);
-
-    _restClient.DoRequest(request, HttpStatusCode.NoContent);
-  }
 
   [Test]
   public void TestGetUnreleasedVersionsWithNonExistentPattern ()
@@ -161,10 +96,10 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "5.0.0");
 
     // Create version
-    _service.CreateVersion(c_jiraProjectKey, "5.0.0", DateTime.Today.AddDays(14));
+    Service.CreateVersion(c_jiraProjectKey, "5.0.0", DateTime.Today.AddDays(14));
 
     // Try to create same version again, should throw
-    Assert.Throws(typeof(JiraException), () => _service.CreateVersion(c_jiraProjectKey, "5.0.0", DateTime.Today.AddDays(14 + 1)));
+    Assert.Throws(typeof(JiraException), () => Service.CreateVersion(c_jiraProjectKey, "5.0.0", DateTime.Today.AddDays(14 + 1)));
 
     DeleteVersionsIfExistent(c_jiraProjectKey, "5.0.0");
   }
@@ -174,8 +109,8 @@ public class JiraProjectVersionServiceTest
   {
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.0.0");
 
-    _service.CreateVersion(c_jiraProjectKey, "6.0.0.0", DateTime.Today.AddDays(21));
-    _service.DeleteVersion(c_jiraProjectKey, "6.0.0.0");
+    Service.CreateVersion(c_jiraProjectKey, "6.0.0.0", DateTime.Today.AddDays(21));
+    Service.DeleteVersion(c_jiraProjectKey, "6.0.0.0");
   }
 
   [Test]
@@ -183,7 +118,7 @@ public class JiraProjectVersionServiceTest
   {
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.0.0");
 
-    Assert.Throws(typeof(JiraException), () => _service.DeleteVersion(c_jiraProjectKey, "6.0.0.0"));
+    Assert.Throws(typeof(JiraException), () => Service.DeleteVersion(c_jiraProjectKey, "6.0.0.0"));
   }
 
   [Test]
@@ -192,18 +127,18 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-beta.1");
 
     //Create versions mangled to verify they are ordered before squashed
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
 
     var alpha1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.1").Single(x => x.name == "6.0.1-alpha.1");
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    _service.ReleaseVersion(alpha2Version.id, beta1Version.id);
+    Service.ReleaseVersion(alpha2Version.id, beta1Version.id);
 
     Assert.That(
-        () => { _service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
+        () => { Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
         Throws.Exception.TypeOf<JiraException>().With.Message.EqualTo(
             "Version '" + alpha1Version.name + "' cannot be released, as there is already one or multiple released version(s) (" + alpha2Version.name
             + ") before the next version '" + beta1Version.name + "'."));
@@ -219,18 +154,18 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-beta.1");
 
     //Create versions mangled to verify they are ordered before squashed
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
 
     var alpha1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.1").Single(x => x.name == "6.0.1-alpha.1");
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    var jiraIssue = AddTestIssueToVersion("Closed issues", true, alpha2Version);
+    var jiraIssue = AddTestIssueToVersion("Closed issues", true, c_jiraProjectKey, RestClient, alpha2Version);
 
     Assert.That(
-        () => { _service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
+        () => { Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
         Throws.Exception.TypeOf<JiraException>().With.Message.EqualTo(
             "Version '" + alpha1Version.name + "' cannot be released, as one  or multiple versions contain closed issues (" + jiraIssue.Key + ")"));
 
@@ -245,17 +180,17 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-beta.1");
 
     //Create versions mangled to verify they are ordered before squashed
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
 
     var alpha1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.1").Single(x => x.name == "6.0.1-alpha.1");
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    AddTestIssueToVersion("Open issues", false, alpha2Version);
+    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
 
-    _service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
+    Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
 
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.2").SingleOrDefault(x => x.name == "6.0.1-alpha.2"), Is.Null);
 
@@ -271,20 +206,20 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-alpha.3", "6.0.1-beta.1");
 
     //Create versions mangled to verify they are ordered before squashed
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.3", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-beta.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.3", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "6.0.1-alpha.2", null);
 
     var alpha1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.1").Single(x => x.name == "6.0.1-alpha.1");
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var alpha3Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.3").Single(x => x.name == "6.0.1-alpha.3");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    AddTestIssueToVersion("Open issues", false, alpha2Version);
-    AddTestIssueToVersion("Open issues", false, alpha3Version);
+    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
+    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha3Version);
 
-    _service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
+    Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
 
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.2").SingleOrDefault(x => x.name == "6.0.1-alpha.2"), Is.Null);
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.3").SingleOrDefault(x => x.name == "6.0.1-alpha.3"), Is.Null);
@@ -301,15 +236,15 @@ public class JiraProjectVersionServiceTest
     DeleteVersionsIfExistent(c_jiraProjectKey, "2.2.0", "3.0.0-alpha.1", "3.0.0-alpha.2", "3.0.0");
 
     //Create versions mangled to verify they are ordered before squashed
-    _service.CreateVersion(c_jiraProjectKey, "3.0.0-alpha.1", null);
-    _service.CreateVersion(c_jiraProjectKey, "2.2.0", null);
-    _service.CreateVersion(c_jiraProjectKey, "3.0.0-alpha.2", null);
-    _service.CreateVersion(c_jiraProjectKey, "3.0.0", null);
+    Service.CreateVersion(c_jiraProjectKey, "3.0.0-alpha.1", null);
+    Service.CreateVersion(c_jiraProjectKey, "2.2.0", null);
+    Service.CreateVersion(c_jiraProjectKey, "3.0.0-alpha.2", null);
+    Service.CreateVersion(c_jiraProjectKey, "3.0.0", null);
 
     var version3alpha1 = _versionFinder.FindVersions(c_jiraProjectKey, "3.0.0-alpha.1").Single(x => x.name == "3.0.0-alpha.1");
     var version3alpha2 = _versionFinder.FindVersions(c_jiraProjectKey, "3.0.0-alpha.2").Single(x => x.name == "3.0.0-alpha.2");
 
-    _service.ReleaseVersionAndSquashUnreleased(version3alpha1.id, version3alpha2.id, c_jiraProjectKey);
+    Service.ReleaseVersionAndSquashUnreleased(version3alpha1.id, version3alpha2.id, c_jiraProjectKey);
 
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "2.2.0").SingleOrDefault(x => x.name == "2.2.0"), Is.Not.Null);
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "3.0.0").SingleOrDefault(x => x.name == "3.0.0"), Is.Not.Null);
@@ -326,9 +261,9 @@ public class JiraProjectVersionServiceTest
 
     DeleteVersionsIfExistent(c_jiraProjectKey, firstVersion, secondVersion, thirdVersion);
 
-    _service.CreateVersion(c_jiraProjectKey, firstVersion, null);
-    _service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
-    var toBeRepairedVersionId = _service.CreateVersion(c_jiraProjectKey, secondVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, firstVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
+    var toBeRepairedVersionId = Service.CreateVersion(c_jiraProjectKey, secondVersion, null);
     _repairer.RepairVersionPosition(toBeRepairedVersionId);
 
     var versions = _versionFinder.FindVersions(c_jiraProjectKey, "(?s).*").ToList();
@@ -350,9 +285,9 @@ public class JiraProjectVersionServiceTest
 
     DeleteVersionsIfExistent(c_jiraProjectKey, firstVersion, secondVersion, thirdVersion);
 
-    _service.CreateVersion(c_jiraProjectKey, firstVersion, null);
-    _service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
-    var toBeRepairedVersionId = _service.CreateVersion(c_jiraProjectKey, secondVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, firstVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
+    var toBeRepairedVersionId = Service.CreateVersion(c_jiraProjectKey, secondVersion, null);
     _repairer.RepairVersionPosition(toBeRepairedVersionId);
 
     var versions = _versionFinder.FindVersions(c_jiraProjectKey, "(?s).*").ToList();
@@ -375,10 +310,10 @@ public class JiraProjectVersionServiceTest
 
     DeleteVersionsIfExistent(c_jiraProjectKey, firstVersion, secondVersion, thirdVersion, betweenFirstAndSecondVersion);
 
-    _service.CreateVersion(c_jiraProjectKey, firstVersion, null);
-    _service.CreateVersion(c_jiraProjectKey, secondVersion, null);
-    _service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
-    var toBeRepairedVersionId = _service.CreateVersion(c_jiraProjectKey, betweenFirstAndSecondVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, firstVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, secondVersion, null);
+    Service.CreateVersion(c_jiraProjectKey, thirdVersion, null);
+    var toBeRepairedVersionId = Service.CreateVersion(c_jiraProjectKey, betweenFirstAndSecondVersion, null);
     _repairer.RepairVersionPosition(toBeRepairedVersionId);
 
     var versions = _versionFinder.FindVersions(c_jiraProjectKey, "(?s).*").ToList();
@@ -391,18 +326,5 @@ public class JiraProjectVersionServiceTest
     Assert.That(positionFirstVersion < positionbetweenFirstAndSecondVersion, Is.True);
     Assert.That(positionbetweenFirstAndSecondVersion < positionSecondVersion, Is.True);
     Assert.That(positionSecondVersion < positionThirdVersion, Is.True);
-  }
-
-  private void DeleteVersionsIfExistent (string projectName, params string[] versionNames)
-  {
-    foreach (var versionName in versionNames)
-      try
-      {
-        _service.DeleteVersion(projectName, versionName);
-      }
-      catch
-      {
-        // ignore
-      }
   }
 }
