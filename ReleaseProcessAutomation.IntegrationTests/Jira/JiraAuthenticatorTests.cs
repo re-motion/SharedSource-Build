@@ -12,22 +12,11 @@ public class JiraAuthenticatorTests
   
   private const string c_jiraUrl = "https://re-motion.atlassian.net/";
   private const string c_jiraProjectKey = "SRCBLDTEST";
-  private const string c_usernameEnvironmentVariableName = "JiraUsername";
-  private const string c_passwordEnvironmentVariableName = "JiraPassword";
 
   [Test]
   public void CheckAuthentication_WithCorrectCredentials_DoesNotThrow ()
   {
-    var jiraUsername = Environment.GetEnvironmentVariable(c_usernameEnvironmentVariableName);
-    var jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
-
-    if (string.IsNullOrEmpty(jiraUsername))
-      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
-    
-    if (string.IsNullOrEmpty(jiraPassword))
-      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
-
-    var testCredentials = new Credentials { Username = jiraUsername, Password = jiraPassword };
+    var testCredentials = JiraTestUtility.GetLocallySavedCredentials();
 
     var authenticator = new JiraAuthenticator();
 

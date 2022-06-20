@@ -1,15 +1,66 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using RestSharp;
 
 namespace ReleaseProcessAutomation.IntegrationTests.Jira;
 
-public class JiraTestUtility
+public static class JiraTestUtility
 {
+  
+  private const string c_usernameEnvironmentVariableName = "JiraUsername";
+  private const string c_passwordEnvironmentVariableName = "JiraPassword";
+
+  public static Credentials GetLocallySavedCredentials ()
+  {
+    
+    var jiraUsername = Environment.GetEnvironmentVariable(c_usernameEnvironmentVariableName);
+    var jiraPassword = Environment.GetEnvironmentVariable(c_passwordEnvironmentVariableName);
+
+    if (string.IsNullOrEmpty(jiraUsername))
+      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_usernameEnvironmentVariableName}'");
+
+    if (string.IsNullOrEmpty(jiraPassword))
+      throw new InvalidOperationException($"Could not load credentials from environment variable '{c_passwordEnvironmentVariableName}'");
+
+    return new Credentials(jiraUsername, jiraPassword);
+  }
+
+  public static string CreateVersion (JiraRestClient restClient, string versionName, string projectKey)
+  {
+    var request = restClient.CreateRestRequest("version", Method.POST);
+
+    var projectVersion = new JiraProjectVersion { name = versionName, project = projectKey, releaseDate = null };
+    request.AddBody(projectVersion);
+
+    var newVersion = restClient.DoRequest<JiraProjectVersion>(request, HttpStatusCode.Created);
+
+    return newVersion.Data.id;
+  }
+
+  public static void DeleteVersionIfExistent (string projectName, string versionName, JiraRestClient restClient)
+  {
+    var versions = GetAllJiraVersions(projectName, restClient);
+    var versionToDelete = versions.SingleOrDefault(v => v.name == versionName);
+    if (versionToDelete == null)
+      return;
+    var resource = $"version/{versionToDelete.id}";
+    
+    var request = restClient.CreateRestRequest(resource, Method.DELETE);
+    restClient.DoRequest(request, HttpStatusCode.NoContent);
+  }
+
+  public static void DeleteVersionsIfExistent (string projectName, JiraRestClient jiraRestClient,params string[] versionNames)
+  {
+    foreach (var versionName in versionNames)
+    {
+      DeleteVersionIfExistent(projectName, versionName, jiraRestClient);
+    }
+  }
+
   public static JiraIssue AddTestIssueToVersion (
       string summaryOfIssue,
       bool closed,
@@ -43,46 +94,25 @@ public class JiraTestUtility
     return response.Data;
   }
 
-  public static string CreateVersion (JiraRestClient restClient, string versionName, string projectKey)
+  public static JiraIssue GetIssue (string issueID, JiraRestClient restClient)
   {
-    var request = restClient.CreateRestRequest("version", Method.POST);
-
-    var projectVersion = new JiraProjectVersion { name = versionName, project = projectKey, releaseDate = null };
-    request.AddBody(projectVersion);
-
-    var newVersion = restClient.DoRequest<JiraProjectVersion>(request, HttpStatusCode.Created);
-
-    return newVersion.Data.id;
-  }
-
-  public static void CloseIssue (string issueID, JiraRestClient restClient)
-  {
-    var resource = "issue/" + issueID + "/transitions";
-    var request = restClient.CreateRestRequest(resource, Method.POST);
-
-    var body = new { transition = new { id = 2 } };
-    request.AddBody(body);
-
-    restClient.DoRequest(request, HttpStatusCode.NoContent);
-  }
-
-  public static void DeleteVersionIfExistent (string projectName, string versionName, JiraRestClient restClient)
-  {
-    var versions = GetAllJiraVersions(projectName, restClient);
-    var versionToDelete = versions.SingleOrDefault(v => v.name == versionName);
-    if (versionToDelete == null)
-      return;
-    var resource = $"version/{versionToDelete.id}";
-    
-    var request = restClient.CreateRestRequest(resource, Method.DELETE);
-    restClient.DoRequest(request, HttpStatusCode.NoContent);
-  }
-
-  public static IEnumerable<JiraProjectVersion> GetAllJiraVersions (string projectKey, JiraRestClient restClient)
-  {
-    var request = restClient.CreateRestRequest($"project/{projectKey}/versions", Method.GET);
-    var response = restClient.DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
+    var request = restClient.CreateRestRequest($"/issue/{issueID}", Method.GET);
+    var response = restClient.DoRequest<JiraIssue>(request, HttpStatusCode.OK);
     return response.Data;
+  }
+
+  public static void DeleteIssue (JiraRestClient restClient, string issueID)
+  {
+    var request = restClient.CreateRestRequest($"/issue/{issueID}", Method.DELETE);
+    restClient.DoRequest(request, HttpStatusCode.NoContent);
+  }
+
+  public static void DeleteIssues (JiraRestClient jiraRestClient, params string[] issueIds)
+  {
+    foreach (var issueId in issueIds)
+    {
+      DeleteIssue(jiraRestClient, issueId);
+    }
   }
 
   public static bool IsPartOfJiraVersions (string projectKey, string versionName, JiraRestClient restClient, out JiraProjectVersion foundVersion)
@@ -101,17 +131,21 @@ public class JiraTestUtility
     return true;
   }
 
-
-  public static JiraIssue GetIssue (string issueID, JiraRestClient restClient)
+  private static void CloseIssue (string issueID, JiraRestClient restClient)
   {
-    var request = restClient.CreateRestRequest($"/issue/{issueID}", Method.GET);
-    var response = restClient.DoRequest<JiraIssue>(request, HttpStatusCode.OK);
-    return response.Data;
+    var resource = "issue/" + issueID + "/transitions";
+    var request = restClient.CreateRestRequest(resource, Method.POST);
+
+    var body = new { transition = new { id = 2 } };
+    request.AddBody(body);
+
+    restClient.DoRequest(request, HttpStatusCode.NoContent);
   }
 
-  public static void DeleteIssue (string issueID, JiraRestClient restClient)
+  private static IEnumerable<JiraProjectVersion> GetAllJiraVersions (string projectKey, JiraRestClient restClient)
   {
-    var request = restClient.CreateRestRequest($"/issue/{issueID}", Method.DELETE);
-    restClient.DoRequest(request, HttpStatusCode.NoContent);
+    var request = restClient.CreateRestRequest($"project/{projectKey}/versions", Method.GET);
+    var response = restClient.DoRequest<List<JiraProjectVersion>>(request, HttpStatusCode.OK);
+    return response.Data;
   }
 }
