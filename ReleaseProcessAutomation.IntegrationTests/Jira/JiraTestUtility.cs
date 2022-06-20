@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Moq;
 using ReleaseProcessAutomation.Jira.CredentialManagement;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 using RestSharp;
@@ -14,6 +17,20 @@ public static class JiraTestUtility
   private const string c_usernameEnvironmentVariableName = "JiraUsername";
   private const string c_passwordEnvironmentVariableName = "JiraPassword";
 
+  public static int RunProgramWithoutWindowsCredentials (string[] args)
+  {
+    var services = new ApplicationServiceCollectionFactory().CreateServiceCollection();
+
+    var jiraCredentialAPIStub = new Mock<IJiraCredentialAPI>();
+    var jiraCredentialAPIDescriptor = new ServiceDescriptor(typeof(IJiraCredentialAPI), x => jiraCredentialAPIStub.Object, ServiceLifetime.Singleton);
+
+    services.Replace(jiraCredentialAPIDescriptor);
+
+    var app = new ApplicationCommandAppFactory().CreateConfiguredCommandApp(services);
+    
+    return app.Run(args);
+  }
+  
   public static Credentials GetLocallySavedCredentials ()
   {
     
