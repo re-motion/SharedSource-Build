@@ -16,11 +16,8 @@
 //
 
 using System;
-using System.Net;
-using AdysTech.CredentialManager;
 using ReleaseProcessAutomation.Configuration.Data;
 using ReleaseProcessAutomation.Jira.Authentication;
-using ReleaseProcessAutomation.Jira.Utility;
 using ReleaseProcessAutomation.ReadInput;
 using Serilog;
 using Spectre.Console;
@@ -34,29 +31,32 @@ public class JiraCredentialManager
   private readonly IInputReader _inputReader;
   private readonly IAnsiConsole _console;
   private readonly IJiraAuthenticator _jiraAuthenticator;
+  private readonly IJiraCredentialAPI _jiraCredentialAPI;
   private readonly ILogger _log = Log.ForContext<JiraCredentialManager>();
 
   public JiraCredentialManager (
       Config config,
       IInputReader inputReader,
       IAnsiConsole console,
-      IJiraAuthenticator jiraAuthenticator)
+      IJiraAuthenticator jiraAuthenticator,
+      IJiraCredentialAPI jiraCredentialAPI)
   {
     _config = config;
     _inputReader = inputReader;
     _console = console;
     _jiraAuthenticator = jiraAuthenticator;
+    _jiraCredentialAPI = jiraCredentialAPI;
   }
 
   public Credentials GetCredential (string target)
   {
-    var cred = CredentialManager.GetCredentials(target);
+    var cred = _jiraCredentialAPI.GetCredential(target);
 
     if (cred == null)
       return AskForCredentials(target);
 
-    var credentials = new Credentials(cred.UserName, cred.Password);
-
+    var credentials = cred.Value;
+    
     try
     {
       CheckJiraCredentials(credentials);
@@ -93,7 +93,7 @@ public class JiraCredentialManager
       _console.WriteLine("Do you want to save the login information to the credential manager?");
       if (_inputReader.ReadConfirmation())
       {
-        SaveCredentials(tmpCredentials, target);
+        _jiraCredentialAPI.SaveCredentials(tmpCredentials, target);
 
         const string message = "Saved Password";
         _console.WriteLine(message);
@@ -102,21 +102,6 @@ public class JiraCredentialManager
 
       return tmpCredentials;
     }
-  }
-
-  private void SaveCredentials (Credentials tmpCredentials, string target)
-  {
-    var cred = new NetworkCredential(tmpCredentials.Username, tmpCredentials.Password);
-    try
-    {
-      CredentialManager.RemoveCredentials(target);
-    }
-    catch
-    {
-      //catch the error that occurs when the credentials dont get deleted as this should only happen if there were no credentials to begin with
-    }
-
-    CredentialManager.SaveCredentials(target, cred);
   }
 
   private void CheckJiraCredentials (Credentials credentials)
