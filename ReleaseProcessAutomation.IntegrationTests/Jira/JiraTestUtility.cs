@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
@@ -25,7 +26,7 @@ public class JiraTestUtility
                    fields = new
                             {
                                 project = new { key = jiraProjectKey }, issuetype = new { name = "Task" }, summary = summaryOfIssue,
-                                description = "testDescription", fixVersions = toRelease.Select(v => new { v.id })
+                                description = "testDescription", fixVersions = toRelease.Select(v => new { v.id }), components = new []{ new {name = "APMTestComponent"}}
                             }
                };
     request.AddBody(body);
