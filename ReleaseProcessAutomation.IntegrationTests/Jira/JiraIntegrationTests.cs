@@ -113,6 +113,8 @@ public class JiraIntegrationTests : IntegrationTestSetup
     
     JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.0.0", _testRestClient);
     JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.1.0", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.0.1", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey,  "1.0.2", _testRestClient);
     
     var newVersionID = JiraTestUtility.CreateVersion(_testRestClient, "1.0.0", _config.Jira.JiraProjectKey);
     JiraTestUtility.CreateVersion(_testRestClient, "1.0.1", _config.Jira.JiraProjectKey);
@@ -166,6 +168,8 @@ public class JiraIntegrationTests : IntegrationTestSetup
     
     JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.0.0", _testRestClient);
     JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.1.0", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.0.1", _testRestClient);
+    JiraTestUtility.DeleteVersionIfExistent(_config.Jira.JiraProjectKey, "1.0.2", _testRestClient);
     
     JiraTestUtility.DeleteIssue(openIssue.ID, _testRestClient);
     JiraTestUtility.DeleteIssue(closedIssue.ID, _testRestClient);

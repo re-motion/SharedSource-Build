@@ -53,9 +53,10 @@ public class JiraProjectVersionServiceTest
     Assert.That(additionalVersion.name, Is.EqualTo("4.2.0"));
 
     // Add issues to versionToRelease
-    AddTestIssueToVersion("My Test", false, c_jiraProjectKey, RestClient, versionToRelease);
-    AddTestIssueToVersion("My closed Test", true, c_jiraProjectKey, RestClient, versionToRelease);
-    AddTestIssueToVersion("My multiple fixVersion Test", false, c_jiraProjectKey, RestClient, versionToRelease, additionalVersion);
+    var myTestIssue = AddTestIssueToVersion("My Test", false, c_jiraProjectKey, RestClient, versionToRelease);
+    
+    var myClosedIssue = AddTestIssueToVersion("My closed Test", true, c_jiraProjectKey, RestClient, versionToRelease);
+    var myMultipleFixVersionTest = AddTestIssueToVersion("My multiple fixVersion Test", false, c_jiraProjectKey, RestClient, versionToRelease, additionalVersion);
 
     // Release version
     Service.ReleaseVersion(versionToRelease.id, versionToFollow.id);
@@ -77,6 +78,9 @@ public class JiraProjectVersionServiceTest
     Assert.That(additionalVersionIssues.Count(), Is.EqualTo(1));
 
     DeleteVersionsIfExistent(c_jiraProjectKey, "4.1.0", "4.1.1", "4.1.2", "4.2.0");
+    JiraTestUtility.DeleteIssue(myTestIssue.ID, RestClient);
+    JiraTestUtility.DeleteIssue(myClosedIssue.ID, RestClient);
+    JiraTestUtility.DeleteIssue(myMultipleFixVersionTest.ID, RestClient);
   }
 
 
@@ -162,16 +166,18 @@ public class JiraProjectVersionServiceTest
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    var jiraIssue = AddTestIssueToVersion("Closed issues", true, c_jiraProjectKey, RestClient, alpha2Version);
+    var issue = AddTestIssueToVersion("Closed issues", true, c_jiraProjectKey, RestClient, alpha2Version);
 
     Assert.That(
         () => { Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey); },
         Throws.Exception.TypeOf<JiraException>().With.Message.EqualTo(
-            "Version '" + alpha1Version.name + "' cannot be released, as one  or multiple versions contain closed issues (" + jiraIssue.Key + ")"));
+            "Version '" + alpha1Version.name + "' cannot be released, as one  or multiple versions contain closed issues (" + issue.Key + ")"));
 
     Assert.That(_versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-alpha.2").SingleOrDefault(x => x.name == "6.0.1-alpha.2"), Is.Not.Null);
 
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-beta.1");
+    
+    JiraTestUtility.DeleteIssue(issue.ID, RestClient);
   }
 
   [Test]
@@ -188,7 +194,7 @@ public class JiraProjectVersionServiceTest
     var alpha2Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.2").Single(x => x.name == "6.0.1-alpha.2");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
+    var issue = AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
 
     Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
 
@@ -198,6 +204,7 @@ public class JiraProjectVersionServiceTest
     Assert.That(_issueService.FindAllNonClosedIssues(beta1Version.id).Count(), Is.EqualTo(1));
 
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-beta.1");
+    JiraTestUtility.DeleteIssue(issue.ID, RestClient);
   }
 
   [Test]
@@ -216,8 +223,8 @@ public class JiraProjectVersionServiceTest
     var alpha3Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1.alpha.3").Single(x => x.name == "6.0.1-alpha.3");
     var beta1Version = _versionFinder.FindVersions(c_jiraProjectKey, "6.0.1-beta.1").Single(x => x.name == "6.0.1-beta.1");
 
-    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
-    AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha3Version);
+    var issue1 = AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha2Version);
+    var issue2 = AddTestIssueToVersion("Open issues", false, c_jiraProjectKey, RestClient, alpha3Version);
 
     Service.ReleaseVersionAndSquashUnreleased(alpha1Version.id, beta1Version.id, c_jiraProjectKey);
 
@@ -228,6 +235,9 @@ public class JiraProjectVersionServiceTest
     Assert.That(_issueService.FindAllNonClosedIssues(beta1Version.id).Count(), Is.EqualTo(2));
 
     DeleteVersionsIfExistent(c_jiraProjectKey, "6.0.1-alpha.1", "6.0.1-alpha.2", "6.0.1-alpha.3", "6.0.1-beta.1");
+    
+    JiraTestUtility.DeleteIssue(issue1.ID, RestClient);
+    JiraTestUtility.DeleteIssue(issue2.ID, RestClient);
   }
 
   [Test]
