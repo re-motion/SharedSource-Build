@@ -100,7 +100,6 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
 
     //Get release version from user
     TestConsole.Input.PushTextWithEnter("1.1.1");
-    //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.1.2");
 
     var act = RunProgram(new[] { "Release-Version" });
@@ -120,10 +119,8 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     ExecuteGitCommand("checkout -b hotfix/v1.2.1");
     ExecuteGitCommand("commit -m Commit on hotfix --allow-empty");
 
-    //Get release version from user
-    TestConsole.Input.PushTextWithEnter("1.2.2");
     //Get next release version from user for jira
-    TestConsole.Input.PushTextWithEnter("1.3.0");
+    TestConsole.Input.PushTextWithEnter("1.2.2");
 
     var act1 = RunProgram(new[] { "New-Release-Branch" });
 
@@ -148,7 +145,7 @@ internal class ReleaseFromHotfixTests : IntegrationTestSetup
     var releaseCommit = ExecuteGitCommandWithOutput("log -1 --pretty=%H");
     ExecuteGitCommand("commit -m \"Commit on hotfix\" --allow-empty");
 
-    //Get release version from user
+    //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.2.2");
 
     var logs = ExecuteGitCommandWithOutput("log --all --graph --oneline --decorate --pretty=%d%s");

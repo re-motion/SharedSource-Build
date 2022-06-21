@@ -141,37 +141,37 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
   public void ReleaseRelease_FromDevelopRelease_WithDevelopAheadOfRoot_ReleasesToMaster ()
   {
     var correctLogs =
-        @"*    (HEAD -> develop, origin/develop)Merge branch 'release/v1.3.5' into develop
+        @"*    (HEAD -> develop, origin/develop)Merge branch 'release/v2.0.0' into develop
           |\  
-          | | *    (tag: v1.3.5, origin/master, master)Merge branch 'release/v1.3.5'
+          | | *    (tag: v2.0.0, origin/master, master)Merge branch 'release/v2.0.0'
           | | |\  
           | | |/  
           | |/|   
-          | * |  (origin/release/v1.3.5, release/v1.3.5)Update metadata to version '1.3.5'.
+          | * |  (origin/release/v2.0.0, release/v2.0.0)Update metadata to version '2.0.0'.
           |/ /  
           * | feature4
           * | feature3
           * | feature2
           |/  
-          *  (tag: v1.0.0)feature
+          *  (tag: v1.3.0)feature
           * ConfigAndBuildProject
           * Initial CommitAll
           ";
 
     ExecuteGitCommand("commit -m feature --allow-empty");
-    ExecuteGitCommand("tag v1.0.0");
+    ExecuteGitCommand("tag v1.3.0");
     ExecuteGitCommand("checkout -b develop");
 
     ExecuteGitCommand("commit -m feature2 --allow-empty");
     ExecuteGitCommand("commit -m feature3 --allow-empty");
     ExecuteGitCommand("commit -m feature4 --allow-empty");
 
-    ExecuteGitCommand("checkout -b release/v1.3.5");
+    ExecuteGitCommand("checkout -b release/v2.0.0");
 
     //Get release version from user
-    TestConsole.Input.PushTextWithEnter("1.3.5");
+    TestConsole.Input.PushTextWithEnter("2.0.0");
     //Get next release version from user for jira
-    TestConsole.Input.PushTextWithEnter("1.4.0");
+    TestConsole.Input.PushTextWithEnter("2.1.0");
 
     var act = RunProgram(new[] { "Release-Version" });
 
@@ -183,12 +183,12 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
   public void ReleaseWithRC_FromDevelopRelease_WithDevelopNotAheadOfRoot_ReleasesToMaster ()
   {
     var correctLogs =
-        @"*    (HEAD -> develop, origin/develop)Merge branch 'release/v1.3.5' into develop
+        @"*    (HEAD -> develop, origin/develop)Merge branch 'release/v2.0.0' into develop
           |\  
-          | | *  (tag: v1.3.5, origin/master, master)Merge branch 'release/v1.3.5'
+          | | *  (tag: v2.0.0, origin/master, master)Merge branch 'release/v2.0.0'
           | |/| 
           |/|/  
-          | *  (origin/release/v1.3.5, release/v1.3.5)Update metadata to version '1.3.5'.
+          | *  (origin/release/v2.0.0, release/v2.0.0)Update metadata to version '2.0.0'.
           |/  
           * feature
           * ConfigAndBuildProject
@@ -198,12 +198,12 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
     ExecuteGitCommand("commit -m feature --allow-empty");
     ExecuteGitCommand("checkout -b develop");
 
-    ExecuteGitCommand("checkout -b release/v1.3.5");
+    ExecuteGitCommand("checkout -b release/v2.0.0");
 
     //Get release version from user
-    TestConsole.Input.PushTextWithEnter("1.3.5");
+    TestConsole.Input.PushTextWithEnter("2.0.0");
     //Get next release version from user for jira
-    TestConsole.Input.PushTextWithEnter("1.4.0");
+    TestConsole.Input.PushTextWithEnter("2.1.0");
 
     var act = RunProgram(new[] { "Release-Version" });
 
@@ -215,12 +215,14 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
   public void ReleaseSecondRC_FromDevelopRelease_ToReleaseWithContinue ()
   {
     var correctLogs =
-        @"*    (HEAD -> release/v1.2.0)Merge branch 'prerelease/v1.2.0-rc.1' into release/v1.2.0
+        @"*    (HEAD -> release/v1.2.0)Merge branch 'prerelease/v1.2.0-rc.2' into release/v1.2.0
           |\  
-          | *  (tag: v1.2.0-rc.1, origin/prerelease/v1.2.0-rc.1, prerelease/v1.2.0-rc.1)Another commit on prerelease
-          | * Update metadata to version '1.2.0-rc.1'.
+          | *  (tag: v1.2.0-rc.2, origin/prerelease/v1.2.0-rc.2, prerelease/v1.2.0-rc.2)Another commit on prerelease
+          | * Update metadata to version '1.2.0-rc.2'.
           |/  
-          | *  (tag: v1.2.0-rc1, prerelease/v1.2.0)Commit on prerelease branch
+          *    Merge branch 'prerelease/v1.2.0-rc.1' into release/v1.2.0
+          |\  
+          | *  (tag: v1.2.0-rc.1, prerelease/v1.2.0-rc.1)Commit on prerelease branch
           |/  
           *  (master, develop)ConfigAndBuildProject
           *  (origin/master)Initial CommitAll
@@ -228,15 +230,16 @@ internal class ReleaseFromReleaseTests : IntegrationTestSetup
 
     ExecuteGitCommand("checkout -b develop");
     ExecuteGitCommand("checkout -b release/v1.2.0");
-    ExecuteGitCommand("checkout -b prerelease/v1.2.0");
+    ExecuteGitCommand("checkout -b prerelease/v1.2.0-rc.1");
 
     ExecuteGitCommand("commit -m \"Commit on prerelease branch\" --allow-empty");
-    ExecuteGitCommand("tag -a v1.2.0-rc1 -m v1.2.0-rc1");
+    ExecuteGitCommand("tag -a v1.2.0-rc.1 -m v1.2.0-rc.1");
     ExecuteGitCommand("checkout release/v1.2.0");
-    ExecuteGitCommand("merge prerelease/v1.2.0-rc1 --no-ff");
+    ExecuteGitCommand("merge prerelease/v1.2.0-rc.1 --no-ff");
+
 
     //Get release version from user
-    TestConsole.Input.PushTextWithEnter("2");
+    TestConsole.Input.PushTextWithEnter("1.2.0-rc.2");
     //Get next release version from user for jira
     TestConsole.Input.PushTextWithEnter("1.2.0");
     //Get ancestor choice
