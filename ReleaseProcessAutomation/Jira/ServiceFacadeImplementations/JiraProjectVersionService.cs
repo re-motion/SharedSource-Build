@@ -21,22 +21,30 @@ using System.Linq;
 using System.Net;
 using ReleaseProcessAutomation.Jira.ServiceFacadeInterfaces;
 using ReleaseProcessAutomation.Jira.Utility;
+using ReleaseProcessAutomation.ReadInput;
 using ReleaseProcessAutomation.SemanticVersioning;
 using RestSharp;
+using Spectre.Console;
 
 namespace ReleaseProcessAutomation.Jira.ServiceFacadeImplementations;
 
 public class JiraProjectVersionService : IJiraProjectVersionService
 {
+  private readonly IInputReader _inputReader;
+  private readonly IAnsiConsole _console;
   private readonly IJiraRestClientProvider _jiraRestClientProvider;
   private readonly IJiraIssueService _jiraIssueService;
   private readonly IJiraProjectVersionFinder _jiraProjectVersionFinder;
 
   public JiraProjectVersionService (
+      IInputReader inputReader,
+      IAnsiConsole console,
       IJiraRestClientProvider jiraRestClientProvider,
       IJiraIssueService jiraIssueService,
       IJiraProjectVersionFinder jiraProjectVersionFinder)
   {
+    _inputReader = inputReader;
+    _console = console;
     _jiraRestClientProvider = jiraRestClientProvider;
     _jiraIssueService = jiraIssueService;
     _jiraProjectVersionFinder = jiraProjectVersionFinder;
@@ -126,6 +134,18 @@ public class JiraProjectVersionService : IJiraProjectVersionService
     if (versionID != nextVersionID)
     {
       var nonClosedIssues = _jiraIssueService.FindAllNonClosedIssues(versionID);
+      _console.WriteLine("These are some of the issues that will be moved by releasing the version on jira:");
+      foreach (var issue in nonClosedIssues.Select((value, index) => new {value, index} ))
+      {
+        _console.WriteLine($"'{issue.value.Key} - {issue.value.Fields.Summary}'");
+        if (issue.index >= 4)
+          break;
+      }
+      _console.WriteLine("Do you want to move these issues to the new version and continue?");
+      if (!_inputReader.ReadConfirmation())
+      {
+        return;
+      }
       _jiraIssueService.MoveIssuesToVersion(nonClosedIssues, versionID, nextVersionID);
     }
 
