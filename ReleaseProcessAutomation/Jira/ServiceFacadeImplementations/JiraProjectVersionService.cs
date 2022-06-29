@@ -141,12 +141,11 @@ public class JiraProjectVersionService : IJiraProjectVersionService
         if (issue.index >= 4)
           break;
       }
-      _console.WriteLine("Do you want to move these issues to the new version and continue?");
-      if (!_inputReader.ReadConfirmation())
+      _console.WriteLine("Do you want to move these issues to the new version and release the old one or just release the old version?");
+      if (_inputReader.ReadConfirmation())
       {
-        return;
+        _jiraIssueService.MoveIssuesToVersion(nonClosedIssues, versionID, nextVersionID);
       }
-      _jiraIssueService.MoveIssuesToVersion(nonClosedIssues, versionID, nextVersionID);
     }
 
     ReleaseVersion(versionID);
