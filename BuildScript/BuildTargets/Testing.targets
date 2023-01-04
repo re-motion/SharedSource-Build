@@ -87,6 +87,7 @@
       <_testAssemblyDirectory>%(_testOutputFiles.TestAssemblyDirectoryName)</_testAssemblyDirectory>
       <_use32Bit>%(_testOutputFiles.Use32Bit)</_use32Bit>
       <_dockerImageName>%(_testOutputFiles.DockerImage)</_dockerImageName>
+      <_dockerIsolationMode>%(_testOutputFiles.DockerIsolationMode)</_dockerIsolationMode>
       <_executionRuntimeKey>%(_testOutputFiles.ExecutionRuntimeKey)</_executionRuntimeKey>
       <_targetRuntime>%(_testOutputFiles.TargetRuntime)</_targetRuntime>
       <_platform>%(_testOutputFiles.Platform)</_platform>
@@ -110,7 +111,8 @@
                 AppConfigFile=$(_appConfigFile);
                 DatabaseSystem=$(_databaseSystem);
                 Browser=$(_browser);
-                DockerImage=$(_dockerImageName);"
+                DockerImage=$(_dockerImageName);
+                DockerIsolationMode=$(_dockerIsolationMode);"
              Condition="'$(_testingSetupBuildFile)' != ''"/>
 
     <!-- Run tests -->
@@ -196,6 +198,7 @@
       <_dockerCommand>
 docker run ^
 --rm ^
+--isolation $(_dockerIsolationMode) ^
 --volume $(_nunitRunnerFolderPath):$(_nunitRunnerFolderPath) ^
 --volume $(_testAssemblyDirectory):$(_testAssemblyDirectory) ^
 --volume $(LogDirectory):$(LogDirectory) ^
