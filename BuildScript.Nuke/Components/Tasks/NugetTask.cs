@@ -185,6 +185,7 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
+          .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
           .EnableNoRestore()
           .EnableNoBuild();
 
@@ -208,7 +209,8 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.CompanyName, assemblyMetadata.CompanyName)
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
-          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile);
+          .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
+          .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true");
 
   private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath, SemanticVersion semanticVersion)
   {

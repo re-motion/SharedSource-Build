@@ -372,7 +372,8 @@
         AssemblyVersion=$(AssemblyVersion);
         FileVersion=$(AssemblyFileVersion);
         InformationalVersion=$(AssemblyInformationalVersion);
-        PackageVersion=$(AssemblyNuGetVersion)
+        PackageVersion=$(AssemblyNuGetVersion);
+        ContinuousIntegrationBuild=true
       </CommonBuildProperties>
     </PropertyGroup>
 
