@@ -145,6 +145,7 @@ internal static class CompileTask
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
+          .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
           .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(

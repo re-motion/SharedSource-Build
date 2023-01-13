@@ -36,4 +36,5 @@ public static class MSBuildProperties
   public const string AssemblyInfoFile = "AssemblyInfoFile";
   public const string RestorePackagesConfig = "RestorePackagesConfig";
   public const string SolutionDir = "SolutionDir";
+  public const string ContinuousIntegrationBuild = "ContinuousIntegrationBuild";
 }
