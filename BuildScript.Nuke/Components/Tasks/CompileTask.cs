@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Nuke.Common;
+using Nuke.Common.CI.TeamCity;
 using Nuke.Common.Git;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.MSBuild;
@@ -146,6 +147,7 @@ internal static class CompileTask
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
           .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
+          .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance.BuildVcsNumber)
           .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(
