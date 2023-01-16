@@ -373,7 +373,8 @@
         FileVersion=$(AssemblyFileVersion);
         InformationalVersion=$(AssemblyInformationalVersion);
         PackageVersion=$(AssemblyNuGetVersion);
-        ContinuousIntegrationBuild=true
+        ContinuousIntegrationBuild=true;
+        CommitID=$(CommitID)
       </CommonBuildProperties>
     </PropertyGroup>
 

@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 using GlobExpressions;
+using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
@@ -186,6 +187,7 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
           .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
+          .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance.BuildVcsNumber)
           .EnableNoRestore()
           .EnableNoBuild();
 
@@ -210,7 +212,8 @@ internal static class NugetTask
           .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
-          .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true");
+          .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
+          .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance.BuildVcsNumber);
 
   private static void RemoveSrcFolder (ProjectMetadata projectFile, AbsolutePath nugetOutputDirectoryPath, SemanticVersion semanticVersion)
   {

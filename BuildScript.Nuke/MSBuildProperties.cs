@@ -37,4 +37,5 @@ public static class MSBuildProperties
   public const string RestorePackagesConfig = "RestorePackagesConfig";
   public const string SolutionDir = "SolutionDir";
   public const string ContinuousIntegrationBuild = "ContinuousIntegrationBuild";
+  public const string CommitID = "CommitID";
 }
