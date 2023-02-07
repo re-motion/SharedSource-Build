@@ -390,6 +390,7 @@ namespace Remotion.BuildScript.UnitTests
         string browser = null,
         string executionRuntimeValue = null,
         string executionRuntimeKey = null,
+        string dockerIsolationMode = null,
         string testAssemblyFullPath = null,
         string targetRuntime = null,
         string configurationID = null)
@@ -407,7 +408,8 @@ namespace Remotion.BuildScript.UnitTests
               executionRuntimeKey ?? "Win_NET45",
               executionRuntimeValue ?? "DockerImageForWinNET45",
               true,
-              executionRuntimeValue ?? "DockerImageForWinNET45"),
+              executionRuntimeValue ?? "DockerImageForWinNET45",
+              dockerIsolationMode),
           "TestAssembly.dll",
           testAssemblyFullPath ?? "C:\\Path\\To\\TestAssembly.dll''",
           "DirectoryFileName",

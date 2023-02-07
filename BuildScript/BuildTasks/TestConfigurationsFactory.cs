@@ -156,14 +156,20 @@ namespace Remotion.BuildScript.BuildTasks
         CreateMultipleExecutionRuntimesException (executionRuntimeKeys);
       }
 
-      var dockerImage = possibleExecutionRuntimes.SingleOrDefault();
+      var executionRuntime = possibleExecutionRuntimes.SingleOrDefault();
+
+      var executionContextParts = (executionRuntime.Value ?? string.Empty).Split('|');
+      var dockerImage = executionContextParts[0];
+      var dockerIsolationMode = executionContextParts.Length >= 2 && !string.IsNullOrWhiteSpace(executionContextParts[1])
+          ? executionContextParts[1]
+          : null;
 
       if (hasLocalMachine)
-        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "");
+        return new ExecutionRuntime (MetadataValueConstants.LocalMachine, MetadataValueConstants.LocalMachine, false, "", dockerIsolationMode);
       else if (hasEnforcedLocalMachine)
-        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine,false, dockerImage.Value ?? "");
+        return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine,false, dockerImage, dockerIsolationMode);
       else
-        return new ExecutionRuntime (dockerImage.Key, dockerImage.Value, true, dockerImage.Value);
+        return new ExecutionRuntime (executionRuntime.Key, dockerImage, true, dockerImage, dockerIsolationMode);
     }
 
     private static void CreateMultipleExecutionRuntimesException (params string[] executionRuntimeKeys)
