@@ -27,13 +27,13 @@ namespace Remotion.BuildScript.BuildTasks
     public string DockerImage { get; }
     public string DockerIsolationMode { get; }
 
-    public ExecutionRuntime (string key, string value, bool useDocker, string dockerImage, [CanBeNull] string dockerIsolationMode)
+    public ExecutionRuntime (string key, string value, bool useDocker, string dockerImage, string dockerIsolationMode)
     {
       Key = key;
       Value = value;
       UseDocker = useDocker;
       DockerImage = dockerImage;
-      DockerIsolationMode = dockerIsolationMode ?? "default";
+      DockerIsolationMode = dockerIsolationMode;
     }
   }
 }
