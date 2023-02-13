@@ -88,7 +88,7 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("LocalMachine"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("LocalMachine"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo (""));
-      Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerIsolationMode), Is.EqualTo ("default"));
+      Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerIsolationMode), Is.EqualTo (""));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.TargetRuntime), Is.EqualTo ("NET-4.5"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.Use32Bit), Is.EqualTo ("False"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("False"));
