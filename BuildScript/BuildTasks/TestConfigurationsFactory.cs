@@ -169,7 +169,7 @@ namespace Remotion.BuildScript.BuildTasks
       else if (hasEnforcedLocalMachine)
         return new ExecutionRuntime (MetadataValueConstants.EnforcedLocalMachine, MetadataValueConstants.EnforcedLocalMachine,false, dockerImage, dockerIsolationMode);
       else
-        return new ExecutionRuntime (executionRuntime.Key, dockerImage, true, dockerImage, dockerIsolationMode);
+        return new ExecutionRuntime (executionRuntime.Key, executionRuntime.Value, true, dockerImage, dockerIsolationMode);
     }
 
     private static void CreateMultipleExecutionRuntimesException (params string[] executionRuntimeKeys)
