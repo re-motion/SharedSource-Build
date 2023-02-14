@@ -37,7 +37,7 @@ namespace Remotion.BuildScript.UnitTests
                      SupportedPlatforms = new ITaskItem[] { new TaskItem ("x64") },
                      EnabledPlatforms = new ITaskItem[] { new TaskItem ("x64") },
                      SupportedExecutionRuntimes =
-                         new ITaskItem[] { new TaskItem ("Win_NET45=DockerImageForWinNet45"), new TaskItem ("Win_NET46=DockerImageForWinNet46") },
+                         new ITaskItem[] { new TaskItem ("Win_NET45=DockerImageForWinNet45|process"), new TaskItem ("Win_NET46=DockerImageForWinNet46") },
                      EnabledExecutionRuntimes = new ITaskItem[] { new TaskItem ("Win_NET45"), new TaskItem ("LocalMachine") },
                      SupportedTargetRuntimes = new ITaskItem[] { new TaskItem ("NET45") },
                      EnabledTargetRuntimes = new ITaskItem[] { new TaskItem ("NET45") },
@@ -58,15 +58,17 @@ namespace Remotion.BuildScript.UnitTests
       var result = task.Execute();
 
       Assert.That (result, Is.True);
+      Assert.That (task.Output.Length, Is.EqualTo(2));
       var testConfiguration1 = task.Output[0];
       var testConfiguration2 = task.Output[1];
 
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.Browser), Is.EqualTo ("Chrome"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.DatabaseSystem), Is.EqualTo ("SqlServer2012"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.Platform), Is.EqualTo ("x64"));
-      Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("DockerImageForWinNet45"));
+      Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("DockerImageForWinNet45|process"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("Win_NET45"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo ("DockerImageForWinNet45"));
+      Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.DockerIsolationMode), Is.EqualTo ("process"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.TargetRuntime), Is.EqualTo ("NET-4.5"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.Use32Bit), Is.EqualTo ("False"));
       Assert.That (testConfiguration1.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("True"));
@@ -86,6 +88,7 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("LocalMachine"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("LocalMachine"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo (""));
+      Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.DockerIsolationMode), Is.EqualTo (""));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.TargetRuntime), Is.EqualTo ("NET-4.5"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.Use32Bit), Is.EqualTo ("False"));
       Assert.That (testConfiguration2.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("False"));
@@ -229,6 +232,7 @@ namespace Remotion.BuildScript.UnitTests
         Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeValue), Is.EqualTo ("EnforcedLocalMachine"));
         Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.ExecutionRuntimeKey), Is.EqualTo ("EnforcedLocalMachine"));
         Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.DockerImage), Is.EqualTo ("DockerImageForWinNet45"));
+        Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.DockerIsolationMode), Is.EqualTo ("default"));
         Assert.That (testConfiguration.GetMetadata (TestConfigurationMetadata.UseDocker), Is.EqualTo ("False"));
     }
   }
