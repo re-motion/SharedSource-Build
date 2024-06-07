@@ -147,7 +147,7 @@ internal static class CompileTask
           .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
           .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
-          .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance.BuildVcsNumber)
+          .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance?.BuildVcsNumber ?? "")
           .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(
