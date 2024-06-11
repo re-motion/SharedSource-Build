@@ -17,16 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
-using Nuke.Common.Git;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.MSBuild;
+using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
 
 namespace Remotion.BuildScript.Components.Tasks;
@@ -38,14 +35,9 @@ internal static class CompileTask
       Directories directories,
       string additionalBuildMetadata,
       SemanticVersion semanticVersion,
-      AssemblyMetadata assemblyMetadata,
-      string msBuildNukePath,
-      string msBuildPath,
-      VisualStudioVersion? visualStudioVersion,
       string solutionPath
   )
   {
-    var toolPath = _toolPath ??= GetToolPath(msBuildNukePath, msBuildPath, visualStudioVersion);
     var sortedProjects = _sortedProjects ??= GetSortedProjects(solutionPath).GetAwaiter().GetResult();
 
     var projectFilesDebugTargets = projectFiles
@@ -60,8 +52,6 @@ internal static class CompileTask
           directories,
           additionalBuildMetadata,
           semanticVersion,
-          assemblyMetadata,
-          toolPath,
           sortedProjects);
     }
 
@@ -73,8 +63,6 @@ internal static class CompileTask
           directories,
           additionalBuildMetadata,
           semanticVersion,
-          assemblyMetadata,
-          toolPath,
           sortedProjects);
     }
   }
@@ -96,27 +84,7 @@ internal static class CompileTask
         .ToList()!;
   }
 
-  private static string? _toolPath;
   private static IReadOnlyCollection<Project>? _sortedProjects;
-
-  private static string GetToolPath (string msBuildNukePath, string msBuildPath, VisualStudioVersion? visualStudioVersion)
-  {
-    var toolPath = msBuildNukePath;
-    var editions = new[] { "Enterprise", "Professional", "Community", "BuildTools", "Preview" };
-    if (!string.IsNullOrEmpty(msBuildPath))
-      toolPath = msBuildPath;
-    else if (visualStudioVersion != null)
-    {
-      toolPath = editions
-          .Select(
-              edition => Path.Combine(
-                  EnvironmentInfo.SpecialFolder(SpecialFolders.ProgramFilesX86)!,
-                  $@"Microsoft Visual Studio\{visualStudioVersion.VsVersion}\{edition}\MSBuild\{visualStudioVersion.MsBuildVersion}\Bin\msbuild.exe"))
-          .First(File.Exists);
-    }
-
-    return toolPath;
-  }
 
   private static void CompileProject (
       IReadOnlyCollection<ProjectMetadata> projects,
@@ -124,8 +92,6 @@ internal static class CompileTask
       Directories directories,
       string additionalBuildMetadata,
       SemanticVersion semanticVersion,
-      AssemblyMetadata assemblyMetadata,
-      string toolPath,
       IReadOnlyCollection<Project> sortedProjectList)
   {
     var filteredProjects = sortedProjectList
@@ -136,24 +102,17 @@ internal static class CompileTask
 
     filteredProjects.ForEach(project =>
     {
-      MSBuildTasks.MSBuild(s => s
-          .SetProcessToolPath(toolPath)
+      DotNetTasks.DotNetBuild(s => s
           .SetAssemblyVersion(semanticVersion.AssemblyVersion)
           .SetFileVersion(semanticVersion.AssemblyFileVersion)
-          .SetCopyright(assemblyMetadata.Copyright)
           .SetProperty(MSBuildProperties.PackageVersion, semanticVersion.AssemblyNuGetVersion)
-          .SetProperty(MSBuildProperties.CompanyName, assemblyMetadata.CompanyName)
-          .SetProperty(MSBuildProperties.CompanyUrl, assemblyMetadata.CompanyUrl)
-          .SetProperty(MSBuildProperties.ProductName, assemblyMetadata.ProductName)
           .SetProperty(MSBuildProperties.AssemblyOriginatorKeyFile, directories.SolutionKeyFile)
           .SetProperty(MSBuildProperties.ContinuousIntegrationBuild, "true")
           .SetProperty(MSBuildProperties.CommitID, TeamCity.Instance?.BuildVcsNumber ?? "")
-          .SetToolsVersion(project!.ToolsVersion)
           .SetConfiguration(configuration)
           .SetInformationalVersion(
               semanticVersion.GetAssemblyInformationalVersion(configuration, additionalBuildMetadata))
-          .SetTargetPath(project.ProjectPath)
-          .SetTargets(project.IsMultiTargetFramework ? MSBuildTargets.DispatchToInnerBuilds : MSBuildTargets.Build)
+          .SetProjectFile(project!.ProjectPath)
       );
     });
   }

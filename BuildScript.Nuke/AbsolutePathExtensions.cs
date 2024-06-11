@@ -1,4 +1,4 @@
-// Copyright (c) rubicon IT GmbH, www.rubicon.eu
+﻿// Copyright (c) rubicon IT GmbH, www.rubicon.eu
 // 
 // See the NOTICE file distributed with this work for additional information
 // regarding copyright ownership.  rubicon licenses this file to you under
@@ -13,26 +13,19 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
 
-using System;
-using System.Collections.Generic;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Utilities.Collections;
+using System.IO;
+using Nuke.Common.IO;
 
-namespace Remotion.BuildScript.Components.Tasks;
+namespace Remotion.BuildScript;
 
-internal static class RestoreTask
+public static class AbsolutePathExtensions
 {
-  internal static void RestoreProject (IReadOnlyCollection<ProjectMetadata> projects, Directories directories)
+  public static string ToStringWithEndingDirectorySeparator (this AbsolutePath path)
   {
-    projects.ForEach(project =>
-    {
-      DotNetTasks.DotNetRestore(s => s
-          .SetProperty(MSBuildProperties.RestorePackagesConfig, true)
-          .SetProperty(MSBuildProperties.SolutionDir, directories.Solution.ToStringWithEndingDirectorySeparator())
-          .SetProjectFile(project.ProjectPath)
-      );
-    });
+    var rawPath = path.ToString();
+    return Path.EndsInDirectorySeparator(rawPath)
+        ? rawPath
+        : rawPath + Path.DirectorySeparatorChar;
   }
 }

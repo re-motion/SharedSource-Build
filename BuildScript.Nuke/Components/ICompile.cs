@@ -18,7 +18,6 @@
 using System;
 using JetBrains.Annotations;
 using Nuke.Common;
-using Nuke.Common.Tools.MSBuild;
 using Remotion.BuildScript.Components.Tasks;
 
 namespace Remotion.BuildScript.Components;
@@ -43,10 +42,6 @@ public interface ICompile : IBaseBuild
             Directories,
             AdditionalBuildMetadata,
             ConfigurationData.SemanticVersion,
-            ConfigurationData.AssemblyMetadata,
-            MSBuildTasks.MSBuildPath,
-            MsBuildPath,
-            VisualStudioVersion,
             Solution.Path);
       });
 
@@ -64,10 +59,6 @@ public interface ICompile : IBaseBuild
             Directories,
             AdditionalBuildMetadata,
             ConfigurationData.SemanticVersion,
-            ConfigurationData.AssemblyMetadata,
-            MSBuildTasks.MSBuildPath,
-            MsBuildPath,
-            VisualStudioVersion,
             Solution.Path);
       });
 }

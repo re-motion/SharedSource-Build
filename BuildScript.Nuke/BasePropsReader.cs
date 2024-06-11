@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.IO;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Project = Microsoft.Build.Evaluation.Project;
@@ -40,7 +41,7 @@ public class BasePropsReader
   protected Project LoadProjectWithSolutionDirectoryPropertySet (string configFileName)
   {
     var project = ProjectModelTasks.ParseProject(_customizationDirectoryPath / configFileName);
-    project.SetGlobalProperty(c_solutionDirectoryProperty, _solutionDirectoryPath);
+    project.SetGlobalProperty(c_solutionDirectoryProperty, _solutionDirectoryPath.ToStringWithEndingDirectorySeparator());
     project.ReevaluateIfNecessary();
     return project;
   }

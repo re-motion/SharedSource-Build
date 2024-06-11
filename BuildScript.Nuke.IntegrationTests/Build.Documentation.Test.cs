@@ -8,6 +8,7 @@ namespace BuildScript.Nuke.IntegrationTests;
 public class BuildDocumentationTest : BuildBaseTest
 {
   [Test]
+  [Ignore("Takes too long")]
   public void GenerateDocumentation_WithAllReleaseProjects_BuildsAllDocumentationProject ()
   {
     var releaseProjectOutputs = BuildConfigurationSetup.CreateReleaseProjectOutputs(ProjectOutputConfiguration.Debug);

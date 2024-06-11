@@ -22,7 +22,6 @@ using Remotion.BuildScript.Components;
 
 namespace Remotion.BuildScript;
 
-[CheckBuildProjectConfigurations]
 public class BaseBuild
     : NukeBuild,
         ICleanup,
