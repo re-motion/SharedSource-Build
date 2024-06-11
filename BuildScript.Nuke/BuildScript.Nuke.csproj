@@ -41,9 +41,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="DocumentationFiles\SandcastleProjectTemplate.shfbproj"/>
-    <EmbeddedResource Include="DocumentationFiles\ContentLayout.content"/>
-  </ItemGroup>
 
 </Project>
