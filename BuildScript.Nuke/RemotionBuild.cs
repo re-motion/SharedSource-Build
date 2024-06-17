@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Immutable;
 using System.Reflection;
 using Nuke.Common;
 using Remotion.BuildScript.Components;
@@ -23,25 +24,26 @@ using Serilog;
 
 namespace Remotion.BuildScript;
 
-public class RemotionBuild
+public abstract partial class RemotionBuild
     : NukeBuild,
         IClean,
         IRestore,
         IBuild,
-        IPack
+        IPack,
+        ITest
 {
-  [Parameter]
-  public BuildType BuildType { get; set; } = BuildType.Local;
+  ImmutableDictionary<string, BuildMetadata> IBuildMetadata.BuildMetadataPerConfiguration { get; set; } = ImmutableDictionary<string, BuildMetadata>.Empty;
+
+  [Parameter("Uses release instead of debug versioning when determining the build versions.")]
+  public bool UseReleaseVersioning { get; set; }
+
+  public ImmutableArray<ProjectMetadata> ProjectMetadata { get; set; }
 
   protected override void OnBuildInitialized ()
   {
-      var buildScriptVersion = typeof(RemotionBuild).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "?";
-      Log.Information($"re-motion NUKE Build Script version {buildScriptVersion}");
-      Log.Information($"IsServerBuild: {(IsServerBuild ? "True" : "False")}");
-      Log.Information($"Host: {Host?.GetType().Name ?? "n/a"}");
-      Log.Information($"BuildType: {BuildType}");
+    var buildScriptVersion = typeof(RemotionBuild).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "?";
+    Log.Information($"re-motion NUKE Build Script version {buildScriptVersion}");
+    Log.Information($"IsServerBuild: {(IsServerBuild ? "True" : "False")}");
+    Log.Information($"Host: {Host?.GetType().Name ?? "n/a"}");
   }
-
-  [Parameter("Sign output assemblies. Requires a specified key file")]
-  public bool SignAssemblies { get; set; } = true;
 }

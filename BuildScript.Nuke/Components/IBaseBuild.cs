@@ -32,8 +32,6 @@ public interface IBaseBuild : INukeBuild
   [GitRepository]
   public GitRepository Repository => TryGetValue(() => Repository) ?? throw new InvalidOperationException("The git repository is currently unavailable.");
 
-  public BuildType BuildType { get; }
-
   [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
   public string[] Configurations => TryGetValue(() => Configurations) ?? s_defaultBuildConfigurations;
 

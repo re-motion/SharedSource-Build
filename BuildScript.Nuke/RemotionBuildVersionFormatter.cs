@@ -16,7 +16,6 @@
 
 using System;
 using System.Text.RegularExpressions;
-using Remotion.BuildScript.Components;
 
 namespace Remotion.BuildScript;
 
@@ -29,9 +28,10 @@ public static class RemotionBuildVersionFormatter
       @"(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)"
       + @"(?:\-(?<prereleaseSuffix>(?<prereleaseName>[a-zA-Z]+)\.(?<prereleaseCounter>[1-9][0-9]{0,2})(?<prereleaseRemainder>(?:\.[a-zA-Z0-9-]+)*)))?");
 
-  public static VersionDetails FormatVersions (
+  public static RemotionBuildVersion FormatRemotionBuildVersion (
       string versionString,
-      BuildType buildType,
+      bool isServerBuild,
+      bool useReleaseVersioning,
       string buildNumber)
   {
     ArgumentNullException.ThrowIfNull(versionString);
@@ -53,33 +53,53 @@ public static class RemotionBuildVersionFormatter
     var preReleaseCounter = match.Groups["prereleaseCounter"].Value;
 
     string version;
-    if (buildType == BuildType.Local)
+    if (useReleaseVersioning)
     {
-      // For local test builds, we don't want unique version to prevent unnecessary re-compiles.
-      version = $"{major}.{minor}.{patch}-x.9";
-      preReleaseName = "x";
-      preReleaseCounter = "9";
-    }
-    else if (buildType is BuildType.CI or BuildType.Nightly)
-    {
-      version = $"{major}.{minor}.{patch}-x.1.{buildNumber}";
-      preReleaseName = "x";
-      preReleaseCounter = "1";
+      if (isServerBuild)
+      {
+        version = versionString;
+      }
+      else
+      {
+        var formattedDate = DateTime.Now.ToString("yyMMdd-HHmmss");
+        version = $"{major}.{minor}.{patch}-x.9.{formattedDate}";
+        preReleaseName = "x";
+        preReleaseCounter = "9";
+      }
     }
     else
     {
-      version = versionString;
+      if (isServerBuild)
+      {
+        version = $"{major}.{minor}.{patch}-x.1.{buildNumber}";
+        preReleaseName = "x";
+        preReleaseCounter = "1";
+      }
+      else
+      {
+        // For local test builds, we don't want unique version to prevent unnecessary re-compiles.
+        version = $"{major}.{minor}.{patch}-x.9";
+        preReleaseName = "x";
+        preReleaseCounter = "9";
+      }
     }
 
     var assemblyFileVersion = CreateAssemblyFileVersion(major, minor, patch, preReleaseName, preReleaseCounter);
     var assemblyVersion = $"{major}.{minor}.0.0";
     var assemblyNuGetVersion = version;
 
-    return new VersionDetails(
+    return new RemotionBuildVersion(
         version,
         assemblyVersion,
         assemblyFileVersion,
         assemblyNuGetVersion);
+  }
+
+  public static string FormatAssemblyInformationalVersion (string version, string configuration, string? additionalBuildMetadata)
+  {
+    return string.IsNullOrEmpty(additionalBuildMetadata)
+        ? $"{version}+{configuration}"
+        : $"{version}+{configuration}.{additionalBuildMetadata}";
   }
 
   private static string CreateAssemblyFileVersion (string major, string minor, string patch, string preReleaseName, string preReleaseCounter)

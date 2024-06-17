@@ -14,10 +14,9 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-namespace Remotion.BuildScript.Components;
+namespace Remotion.BuildScript;
 
-public record VersionDetails(
-      string Version,
-      string AssemblyVersion,
-      string AssemblyFileVersion,
-      string AssemblyNugetVersion);
+public class ProjectMetadataNames
+{
+  public static readonly string TestMatrix = "TestMatrix";
+}

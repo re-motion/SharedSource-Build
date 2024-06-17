@@ -14,12 +14,21 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-namespace Remotion.BuildScript;
+using System;
+using JetBrains.Annotations;
 
-public enum BuildType
+namespace Remotion.BuildScript.TestMatrix.Dimensions;
+
+// ReSharper disable InconsistentNaming
+
+[PublicAPI]
+public sealed class Platforms : TestDimension
 {
-  Local,
-  CI,
-  Nightly,
-  FullBuild
+  public static readonly Platforms x86 = new(nameof(x86));
+  public static readonly Platforms x64 = new(nameof(x64));
+
+  public Platforms (string value)
+      : base(value)
+  {
+  }
 }

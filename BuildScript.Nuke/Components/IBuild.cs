@@ -23,14 +23,14 @@ using Nuke.Common.Utilities.Collections;
 
 namespace Remotion.BuildScript.Components;
 
-public interface IBuild : IBaseBuild, IBuildVersion, IRestore
+public interface IBuild : IBaseBuild, IBuildMetadata, IRestore
 {
   [Parameter("Path to the key file containing the signing key.")]
   public AbsolutePath AssemblySigningKeyFile => TryGetValue(() => AssemblySigningKeyFile) ?? (RootDirectory / "remotion.snk");
 
   [PublicAPI]
   public Target Build => _ => _
-      .DependsOn<IBuildVersion>()
+      .DependsOn<IBuildMetadata>()
       .DependsOn<IRestore>()
       .After<IClean>()
       .Description("Builds all projects")
@@ -40,13 +40,14 @@ public interface IBuild : IBaseBuild, IBuildVersion, IRestore
 
         Configurations.ForEach(configuration =>
         {
+          var buildMetadata = GetBuildMetadata(configuration);
           DotNetTasks.DotNetBuild(s => s
               .SetProjectFile(Solution)
               .SetConfiguration(configuration)
               .EnableNoRestore()
-              .SetAssemblyVersion(AssemblyVersion)
-              .SetFileVersion(AssemblyFileVersion)
-              .SetInformationalVersion(GetAssemblyInformationalVersion(configuration, AdditionalBuildMetadata))
+              .SetAssemblyVersion(buildMetadata.AssemblyVersion)
+              .SetFileVersion(buildMetadata.AssemblyFileVersion)
+              .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
               .SetProperty("AssemblyOriginatorKeyFile", AssemblySigningKeyFile)
           );
         });
