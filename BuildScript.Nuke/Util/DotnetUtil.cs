@@ -14,20 +14,25 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using Nuke.Common.IO;
+using Remotion.BuildScript.Test.Dimensions;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Util;
 
-public static class ProjectExtensions
+public static class DotnetUtil
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
+  public static AbsolutePath GetDotnetPath (Platforms platform)
   {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
+    var specialFolder = platform == Platforms.x86
+        ? Environment.SpecialFolder.ProgramFilesX86
+        : Environment.SpecialFolder.ProgramFiles;
+
+    return AbsolutePath.Create(Environment.GetFolderPath(specialFolder)) / "dotnet";
   }
 
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
+  public static AbsolutePath GetDotnetExePath (Platforms platform)
   {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
+    return GetDotnetPath(platform) / "dotnet.exe";
   }
 }

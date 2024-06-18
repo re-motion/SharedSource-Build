@@ -14,10 +14,11 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
 public class TestMatrix
 {

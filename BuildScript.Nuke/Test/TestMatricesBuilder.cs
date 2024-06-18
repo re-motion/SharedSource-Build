@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Nuke.Common;
 using Serilog;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
 public class TestMatricesBuilder
 {
@@ -55,7 +56,10 @@ public class TestMatricesBuilder
       {
         var value = matrix[x, y];
         if (!addedTestDimensions.Add(value.GetType()))
-          throw new InvalidOperationException($"Test matrix '{name}' contains a duplicate test dimension '{value.GetType().Name}' in row {x}.");
+          Assert.Fail($"Test matrix '{name}' contains a duplicate test dimension '{value.GetType().Name}' in row {x}.");
+
+        if (!_supportedTestDimensions.IsSupported(value))
+          Assert.Fail($"The value '{value}' is not a supported value.");
 
         testDimensionBuilder.Add(value);
       }
@@ -85,6 +89,13 @@ public class TestMatricesBuilder
     }
 
     var testMatrix = new TestMatrix(name, testConfigurationBuilder.ToImmutable());
+    if (testMatrix.IsEmpty)
+    {
+      Log.Warning($"The test matrix '{name}' is empty.");
+
+      Assert.Fail("Test matrix cannot be empty.");
+    }
+
     _testMatrices.Add(name, testMatrix);
 
     return testMatrix;

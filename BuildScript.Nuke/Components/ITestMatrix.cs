@@ -18,7 +18,7 @@ using System;
 using System.Collections.Immutable;
 using JetBrains.Annotations;
 using Nuke.Common;
-using Remotion.BuildScript.TestMatrix;
+using Remotion.BuildScript.Test;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;
@@ -29,7 +29,7 @@ public interface ITestMatrix : IBaseBuild
 
   public EnabledTestDimensions EnabledTestDimensions { get; set; }
 
-  public ImmutableArray<TestMatrix.TestMatrix> TestMatrices { get; set; }
+  public ImmutableArray<TestMatrix> TestMatrices { get; set; }
 
   [PublicAPI]
   public Target CreateTestMatrix => _ => _

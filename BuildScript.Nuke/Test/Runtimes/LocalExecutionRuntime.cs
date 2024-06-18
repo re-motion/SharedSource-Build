@@ -14,20 +14,18 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using Nuke.Common.Tooling;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Test.Runtimes;
 
-public static class ProjectExtensions
+public class LocalExecutionRuntime : ITestExecutionRuntime
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
+  public int ExecuteTests (TestExecutionContext context)
   {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
-  }
+    var process = ProcessTasks.StartProcess(context.DotNetTestSettings);
+    process.WaitForExit();
 
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
-  {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
+    return process.ExitCode;
   }
 }

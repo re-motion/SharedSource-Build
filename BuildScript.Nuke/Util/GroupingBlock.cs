@@ -14,20 +14,29 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using Nuke.Common.CI.TeamCity;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Util;
 
-public static class ProjectExtensions
+public class GroupingBlock : IDisposable
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
+  public static GroupingBlock Start (string name)
   {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
+    TeamCity.Instance?.OpenBlock(name);
+
+    return new GroupingBlock(name);
   }
 
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
+  private readonly string _name;
+
+  private GroupingBlock (string name)
   {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
+    _name = name;
+  }
+
+  public void Dispose ()
+  {
+    TeamCity.Instance?.CloseBlock(_name);
   }
 }

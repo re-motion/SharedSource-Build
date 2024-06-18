@@ -14,25 +14,11 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System;
-using JetBrains.Annotations;
-using Nuke.Common.Tools.DotNet;
+using Remotion.BuildScript.Test.Dimensions;
 
-namespace Remotion.BuildScript.TestMatrix.Dimensions;
+namespace Remotion.BuildScript.Test;
 
-[PublicAPI]
-public sealed class Configurations : TestDimension, IConfigureTestSettings
+public interface ITestExecutionRuntimeFactory
 {
-  public static readonly Configurations Debug = new(nameof(Debug));
-  public static readonly Configurations Release = new(nameof(Release));
-
-  public Configurations (string value)
-      : base(value)
-  {
-  }
-
-  DotNetTestSettings IConfigureTestSettings.ConfigureTestSettings (DotNetTestSettings settings)
-  {
-    return settings.SetConfiguration(Value);
-  }
+  ITestExecutionRuntime CreateTestExecutionRuntime (ExecutionRuntimes executionRuntime);
 }

@@ -15,20 +15,34 @@
 // under the License.
 
 using System;
-using JetBrains.Annotations;
+using Nuke.Common.Tools.DotNet;
+using Remotion.BuildScript.Components;
 
-namespace Remotion.BuildScript.TestMatrix.Dimensions;
+namespace Remotion.BuildScript.Test;
 
-// ReSharper disable InconsistentNaming
-
-[PublicAPI]
-public sealed class Platforms : TestDimension
+public class TestExecutionContext
 {
-  public static readonly Platforms x86 = new(nameof(x86));
-  public static readonly Platforms x64 = new(nameof(x64));
+  public IBaseBuild Build { get; }
 
-  public Platforms (string value)
-      : base(value)
+  public ProjectMetadata Project { get; }
+
+  public TestConfiguration TestConfiguration { get; }
+
+  public TestSettings TestSettings { get; }
+
+  public DotNetTestSettings DotNetTestSettings { get; }
+
+  public TestExecutionContext (
+      IBaseBuild build,
+      ProjectMetadata project,
+      TestConfiguration testConfiguration,
+      TestSettings testSettings,
+      DotNetTestSettings dotNetTestSettings)
   {
+    Build = build;
+    Project = project;
+    TestConfiguration = testConfiguration;
+    TestSettings = testSettings;
+    DotNetTestSettings = dotNetTestSettings;
   }
 }

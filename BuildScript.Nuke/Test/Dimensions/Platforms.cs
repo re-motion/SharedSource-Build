@@ -16,22 +16,31 @@
 
 using System;
 using JetBrains.Annotations;
+using Nuke.Common;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
+using Remotion.BuildScript.Util;
 
-namespace Remotion.BuildScript.TestMatrix.Dimensions;
+namespace Remotion.BuildScript.Test.Dimensions;
 
 // ReSharper disable InconsistentNaming
 
 [PublicAPI]
-public sealed class TargetRuntimes : TestDimension
+public sealed class Platforms : TestDimension, IConfigureTestSettings
 {
-  // .NET Framework
-  public static readonly TargetRuntimes NET462 = new(nameof(NET462));
-  public static readonly TargetRuntimes NET472 = new(nameof(NET472));
-  public static readonly TargetRuntimes NET48 = new(nameof(NET48));
-  public static readonly TargetRuntimes NET481 = new(nameof(NET481));
+  public static readonly Platforms x86 = new(nameof(x86));
+  public static readonly Platforms x64 = new(nameof(x64));
 
-  public TargetRuntimes (string value)
+  public Platforms (string value)
       : base(value)
   {
+  }
+
+  DotNetTestSettings IConfigureTestSettings.ConfigureTestSettings (DotNetTestSettings settings)
+  {
+    var dotnetExePath = DotnetUtil.GetDotnetExePath(this);
+    Assert.FileExists(dotnetExePath, $"The .NET SDK ({ToString()}) needs to be installed.");
+
+    return settings.SetProcessToolPath(dotnetExePath);
   }
 }

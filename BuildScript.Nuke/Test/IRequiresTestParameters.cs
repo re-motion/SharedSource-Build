@@ -14,20 +14,9 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+namespace Remotion.BuildScript.Test;
 
-namespace Remotion.BuildScript;
-
-public static class ProjectExtensions
+public interface IRequiresTestParameters
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
-  {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
-  }
-
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
-  {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
-  }
+  void ConfigureTestParameters (TestParameterBuilder parameter);
 }

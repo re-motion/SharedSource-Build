@@ -17,6 +17,7 @@
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
@@ -27,8 +28,11 @@ public interface IClean : IBaseBuild
       .Description("Remove build output, log and temp folders")
       .Executes(() =>
       {
-        OutputFolder.DeleteDirectory();
-        LogFolder.DeleteDirectory();
-        TempFolder.DeleteDirectory();
+        Log.Information($"Cleaning output folder '{OutputFolder}'.");
+        OutputFolder.CreateOrCleanDirectory();
+        Log.Information($"Cleaning log folder '{LogFolder}'.");
+        LogFolder.CreateOrCleanDirectory();
+        Log.Information($"Cleaning temp folder '{TempFolder}'.");
+        TempFolder.CreateOrCleanDirectory();
       });
 }

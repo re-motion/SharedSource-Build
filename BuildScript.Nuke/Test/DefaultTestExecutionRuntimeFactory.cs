@@ -14,20 +14,26 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using Remotion.BuildScript.Test.Dimensions;
+using Remotion.BuildScript.Test.Runtimes;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Test;
 
-public static class ProjectExtensions
+public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
+  public ITestExecutionRuntime CreateTestExecutionRuntime (ExecutionRuntimes executionRuntime)
   {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
-  }
+    if (executionRuntime == ExecutionRuntimes.LocalMachine || executionRuntime == ExecutionRuntimes.EnforcedLocalMachine)
+    {
+      return new LocalExecutionRuntime();
+    }
 
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
-  {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
+    if (executionRuntime.Value.StartsWith("Docker_"))
+    {
+      return new DockerExecutionRuntime(executionRuntime);
+    }
+
+    throw new NotSupportedException($"The specified execution runtime '{executionRuntime}' is not supported.");
   }
 }

@@ -36,7 +36,7 @@ public interface IBaseBuild : INukeBuild
   public string[] Configurations => TryGetValue(() => Configurations) ?? s_defaultBuildConfigurations;
 
   [Parameter("Path to the output folder where build artifacts are put.")]
-  public AbsolutePath OutputFolder => TryGetValue(() => OutputFolder) ?? RootDirectory / "BuildOutput";
+  public AbsolutePath OutputFolder => TryGetValue(() => OutputFolder) ?? BuildProjectDirectory / "BuildOutput";
 
   [Parameter("Path to the temp folder where temporary build files are put.")]
   public AbsolutePath TempFolder => TryGetValue(() => TempFolder) ?? OutputFolder / "Temp";

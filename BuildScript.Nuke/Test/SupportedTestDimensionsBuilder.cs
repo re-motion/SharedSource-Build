@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Immutable;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensionsBuilder
 {

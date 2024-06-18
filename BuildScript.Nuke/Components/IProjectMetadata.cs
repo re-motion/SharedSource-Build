@@ -21,13 +21,13 @@ using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
-public interface IProjectMetadata : ITestMatrix
+public interface IProjectMetadata : IBaseBuild
 {
   public ImmutableArray<ProjectMetadata> ProjectMetadata { get; set; }
 
   [PublicAPI]
   public Target DetermineProjectMetadata => _ => _
-      .DependsOn<ITestMatrix>()
+      .TryDependsOn<ITestMatrix>()
       .Description("Determines metadata for projects in the solution")
       .Executes(() =>
       {

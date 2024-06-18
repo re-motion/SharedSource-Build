@@ -15,11 +15,28 @@
 // under the License.
 
 using System;
-using Nuke.Common.Tools.DotNet;
+using System.Collections.Immutable;
+using System.Linq;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
-public interface IConfigureTestSettings
+public class TestConfiguration
 {
-  DotNetTestSettings ConfigureTestSettings (DotNetTestSettings settings);
+  public ImmutableArray<TestDimension> Elements { get; }
+
+  public TestConfiguration (ImmutableArray<TestDimension> elements)
+  {
+    Elements = elements;
+  }
+
+  public T? GetDimensionOrDefault<T> ()
+    where T : TestDimension
+  {
+    return (T?)Elements.SingleOrDefault(e => e.GetType() == typeof(T));
+  }
+
+  public override string ToString ()
+  {
+    return string.Join(" + ", Elements);
+  }
 }

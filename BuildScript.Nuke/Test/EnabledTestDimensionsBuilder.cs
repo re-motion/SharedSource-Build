@@ -17,18 +17,29 @@
 using System;
 using System.Collections.Immutable;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
-public class EnabledTestDimensions
+public class EnabledTestDimensionsBuilder
 {
-  private readonly ImmutableHashSet<TestDimension> _enabledTestDimensions;
+  private readonly ImmutableHashSet<TestDimension>.Builder _enabledTestDimensions = ImmutableHashSet.CreateBuilder<TestDimension>();
 
-  public EnabledTestDimensions (ImmutableHashSet<TestDimension> enabledTestDimensions)
+  public EnabledTestDimensionsBuilder ()
   {
-    ArgumentNullException.ThrowIfNull(enabledTestDimensions);
-
-    _enabledTestDimensions = enabledTestDimensions;
   }
 
-  public bool Contains (TestDimension testDimension) => _enabledTestDimensions.Contains(testDimension);
+  public void AddEnabledDimension<T> (params T[] enabledValues)
+    where T : TestDimension
+  {
+    ArgumentNullException.ThrowIfNull(enabledValues);
+    if (enabledValues.Length == 0)
+      throw new ArgumentException("Array must not be empty.", nameof(enabledValues));
+
+    foreach (var testDimension in enabledValues)
+      _enabledTestDimensions.Add(testDimension);
+  }
+
+  public EnabledTestDimensions Build ()
+  {
+    return new EnabledTestDimensions(_enabledTestDimensions.ToImmutable());
+  }
 }

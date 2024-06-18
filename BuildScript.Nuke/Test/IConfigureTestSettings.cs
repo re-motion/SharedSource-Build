@@ -14,20 +14,12 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using Nuke.Common.Tools.DotNet;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Test;
 
-public static class ProjectExtensions
+public interface IConfigureTestSettings
 {
-  public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
-  {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
-  }
-
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
-  {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
-  }
+  DotNetTestSettings ConfigureTestSettings (DotNetTestSettings settings);
 }

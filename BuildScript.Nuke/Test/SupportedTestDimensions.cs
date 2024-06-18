@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Immutable;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensions
 {
@@ -31,6 +31,11 @@ public class SupportedTestDimensions
   {
     ByType = byType;
     ByName = byName;
+  }
+
+  public bool IsSupported(TestDimension value)
+  {
+    return ByName.TryGetValue(value.Value, out var existingValue) && value == existingValue;
   }
 
   public bool IsSupported<T> ()

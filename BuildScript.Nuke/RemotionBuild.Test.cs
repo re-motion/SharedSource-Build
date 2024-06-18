@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Immutable;
 using Nuke.Common;
-using Remotion.BuildScript.TestMatrix;
-using Remotion.BuildScript.TestMatrix.Dimensions;
+using Remotion.BuildScript.Test;
+using Remotion.BuildScript.Test.Dimensions;
 
 namespace Remotion.BuildScript;
 
@@ -41,11 +41,13 @@ public partial class RemotionBuild
   public string[] TestTargetRuntimes { get; set; } = Array.Empty<string>();
 
 
+  public TestSettings TestSettings { get; set; } = TestSettings.Default;
+
   public SupportedTestDimensions SupportedTestDimensions { get; set; } = default!;
 
   public EnabledTestDimensions EnabledTestDimensions { get; set; } = default!;
 
-  public ImmutableArray<TestMatrix.TestMatrix> TestMatrices { get; set; }
+  public ImmutableArray<TestMatrix> TestMatrices { get; set; }
 
 
   public abstract void ConfigureProjects (ProjectsBuilder projects);
@@ -86,10 +88,10 @@ public partial class RemotionBuild
       enabledTestDimensions.AddEnabledDimension(testPlatforms);
     }
 
-    if (SupportedTestDimensions.IsSupported<TargetRuntimes>())
+    if (SupportedTestDimensions.IsSupported<TargetFrameworks>())
     {
-      var testTargetRuntimes = SupportedTestDimensions.ParseTestDimensionValuesOrDefault<TargetRuntimes>(TestTargetRuntimes)
-                               ?? throw CreateConfigurationException<TargetRuntimes>();
+      var testTargetRuntimes = SupportedTestDimensions.ParseTestDimensionValuesOrDefault<TargetFrameworks>(TestTargetRuntimes)
+                               ?? throw CreateConfigurationException<TargetFrameworks>();
 
       enabledTestDimensions.AddEnabledDimension(testTargetRuntimes);
     }

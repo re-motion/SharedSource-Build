@@ -14,21 +14,21 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System.Collections.Immutable;
+using System;
+using JetBrains.Annotations;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test.Dimensions;
 
-public class TestConfiguration
+[PublicAPI]
+public sealed class Browsers : TestDimension
 {
-  public ImmutableArray<TestDimension> Elements { get; }
+  public static readonly Browsers NoBrowser = new(nameof(NoBrowser));
+  public static readonly Browsers Chrome = new(nameof(Chrome));
+  public static readonly Browsers Edge = new(nameof(Edge));
+  public static readonly Browsers Firefox = new(nameof(Firefox));
 
-  public TestConfiguration (ImmutableArray<TestDimension> elements)
+  public Browsers (string value)
+      : base(value)
   {
-    Elements = elements;
-  }
-
-  public override string ToString ()
-  {
-    return string.Join(" + ", Elements);
   }
 }

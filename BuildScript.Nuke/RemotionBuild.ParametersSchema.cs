@@ -16,8 +16,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Remotion.BuildScript.TestMatrix;
-using Remotion.BuildScript.TestMatrix.Dimensions;
+using Remotion.BuildScript.Test;
+using Remotion.BuildScript.Test.Dimensions;
 
 namespace Remotion.BuildScript;
 
@@ -31,7 +31,7 @@ public partial class RemotionBuild
 
   protected IEnumerable<string> SupportedTestPlatforms => GetTestDimensionValueList<Platforms>();
 
-  protected IEnumerable<string> SupportedTestTargetRuntimes => GetTestDimensionValueList<TargetRuntimes>();
+  protected IEnumerable<string> SupportedTestTargetRuntimes => GetTestDimensionValueList<TargetFrameworks>();
 
   private IEnumerable<string> GetTestDimensionValueList<T> ()
   {

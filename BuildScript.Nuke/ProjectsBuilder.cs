@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Nuke.Common.ProjectModel;
+using Remotion.BuildScript.Test;
 
 namespace Remotion.BuildScript;
 
@@ -56,7 +57,7 @@ public class ProjectsBuilder
     return AddProject(name);
   }
 
-  public ProjectBuilder AddUnitTestProject (string name, TestMatrix.TestMatrix testMatrix)
+  public ProjectBuilder AddUnitTestProject (string name, TestMatrix testMatrix)
   {
     ArgumentNullException.ThrowIfNull(name);
 

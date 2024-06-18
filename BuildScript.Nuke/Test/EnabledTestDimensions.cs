@@ -15,20 +15,20 @@
 // under the License.
 
 using System;
-using JetBrains.Annotations;
+using System.Collections.Immutable;
 
-namespace Remotion.BuildScript.TestMatrix.Dimensions;
+namespace Remotion.BuildScript.Test;
 
-[PublicAPI]
-public sealed class Browsers : TestDimension
+public class EnabledTestDimensions
 {
-  public static readonly Browsers NoBrowser = new(nameof(NoBrowser));
-  public static readonly Browsers Chrome = new(nameof(Chrome));
-  public static readonly Browsers Edge = new(nameof(Edge));
-  public static readonly Browsers Firefox = new(nameof(Firefox));
+  private readonly ImmutableHashSet<TestDimension> _enabledTestDimensions;
 
-  public Browsers (string value)
-      : base(value)
+  public EnabledTestDimensions (ImmutableHashSet<TestDimension> enabledTestDimensions)
   {
+    ArgumentNullException.ThrowIfNull(enabledTestDimensions);
+
+    _enabledTestDimensions = enabledTestDimensions;
   }
+
+  public bool Contains (TestDimension testDimension) => _enabledTestDimensions.Contains(testDimension);
 }

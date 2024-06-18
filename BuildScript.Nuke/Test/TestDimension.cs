@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test;
 
 public abstract class TestDimension
     : IEquatable<TestDimension>

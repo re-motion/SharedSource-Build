@@ -15,31 +15,24 @@
 // under the License.
 
 using System;
-using System.Collections.Immutable;
+using JetBrains.Annotations;
+using Nuke.Common.Tools.DotNet;
 
-namespace Remotion.BuildScript.TestMatrix;
+namespace Remotion.BuildScript.Test.Dimensions;
 
-public class EnabledTestDimensionsBuilder
+[PublicAPI]
+public sealed class Configurations : TestDimension, IConfigureTestSettings
 {
-  private readonly ImmutableHashSet<TestDimension>.Builder _enabledTestDimensions = ImmutableHashSet.CreateBuilder<TestDimension>();
+  public static readonly Configurations Debug = new(nameof(Debug));
+  public static readonly Configurations Release = new(nameof(Release));
 
-  public EnabledTestDimensionsBuilder ()
+  public Configurations (string value)
+      : base(value)
   {
   }
 
-  public void AddEnabledDimension<T> (params T[] enabledValues)
-    where T : TestDimension
+  DotNetTestSettings IConfigureTestSettings.ConfigureTestSettings (DotNetTestSettings settings)
   {
-    ArgumentNullException.ThrowIfNull(enabledValues);
-    if (enabledValues.Length == 0)
-      throw new ArgumentException("Array must not be empty.", nameof(enabledValues));
-
-    foreach (var testDimension in enabledValues)
-      _enabledTestDimensions.Add(testDimension);
-  }
-
-  public EnabledTestDimensions Build ()
-  {
-    return new EnabledTestDimensions(_enabledTestDimensions.ToImmutable());
+    return settings.SetConfiguration(Value);
   }
 }
