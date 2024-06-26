@@ -23,8 +23,6 @@ namespace Remotion.BuildScript;
 
 public partial class RemotionBuild
 {
-  protected IEnumerable<string> SupportedTestBrowsers => GetTestDimensionValueList<Browsers>();
-
   protected IEnumerable<string> SupportedTestConfigurations => GetTestDimensionValueList<Configurations>();
 
   protected IEnumerable<string> SupportedTestExecutionRuntimes => GetTestDimensionValueList<ExecutionRuntimes>();
@@ -33,7 +31,7 @@ public partial class RemotionBuild
 
   protected IEnumerable<string> SupportedTestTargetRuntimes => GetTestDimensionValueList<TargetFrameworks>();
 
-  private IEnumerable<string> GetTestDimensionValueList<T> ()
+  protected IEnumerable<string> GetTestDimensionValueList<T> ()
   {
     var supportedTestDimensionsBuilder = new SupportedTestDimensionsBuilder();
     ConfigureSupportedTestDimensions(supportedTestDimensionsBuilder);

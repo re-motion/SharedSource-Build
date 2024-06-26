@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
@@ -21,27 +22,31 @@ using Nuke.Common.Utilities.Collections;
 
 namespace Remotion.BuildScript.Components;
 
-public interface IPack : IBuild, IBuildMetadata
+public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
 {
   [PublicAPI]
   public Target Pack => _ => _
       .DependsOn<IBuildMetadata>()
       .DependsOn<IBuild>()
+      .DependsOn<IProjectMetadata>()
       .Description("Packages the projects")
       .Executes(() =>
       {
         Configurations.ForEach(configuration =>
         {
-          var buildMetadata = GetBuildMetadata(configuration);
-          DotNetTasks.DotNetPack(s => s
-              .SetProject(Solution)
-              .SetConfiguration(configuration)
-              .EnableNoRestore()
-              .EnableNoBuild()
-              .EnableContinuousIntegrationBuild()
-              .SetVersion(buildMetadata.AssemblyNuGetVersion)
-              .SetOutputDirectory(OutputFolder / "NuGetWithDebugSymbols" / configuration)
-          );
+          ProjectMetadata.Where(e => e.GetMetadata(RemotionBuildMetadataProperties.ProjectType) == ProjectType.ReleaseProject).ForEach(project =>
+          {
+            var buildMetadata = GetBuildMetadata(configuration);
+            DotNetTasks.DotNetPack(s => s
+                .SetProject(project.Path)
+                .SetConfiguration(configuration)
+                .EnableNoRestore()
+                .EnableNoBuild()
+                .EnableContinuousIntegrationBuild()
+                .SetVersion(buildMetadata.AssemblyNuGetVersion)
+                .SetOutputDirectory(OutputFolder / "NuGetWithDebugSymbols" / configuration)
+            );
+          });
         });
       });
 }

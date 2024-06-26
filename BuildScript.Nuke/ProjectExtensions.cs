@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using Remotion.BuildScript.Components;
 using Remotion.BuildScript.Test;
 
 namespace Remotion.BuildScript;
@@ -22,12 +23,32 @@ public static class ProjectExtensions
 {
   public static ProjectBuilder SetTestMatrix (this ProjectBuilder project, TestMatrix testMatrix)
   {
-    return project.SetMetadata(ProjectMetadataNames.TestMatrix, testMatrix);
+    return project.SetMetadata(RemotionBuildMetadataProperties.TestMatrix, testMatrix);
   }
 
-  public static TestMatrix? GetTestMatrixOrDefault (this ProjectMetadata project)
+  public static ProjectBuilder SetCreateNugetPackageWithSymbolServerSupport (this ProjectBuilder project, bool value)
   {
-    project.Metadata.TryGetValue(ProjectMetadataNames.TestMatrix, out var value);
-    return value as TestMatrix;
+    return project.SetMetadata(RemotionBuildMetadataProperties.CreateNugetPackageWithSymbolServerSupport, value);
+  }
+
+  public static ProjectBuilder SetCreateDocumentationFile (this ProjectBuilder project, bool value)
+  {
+    return project.SetMetadata(RemotionBuildMetadataProperties.CreateDocumentationFile, value);
+  }
+
+  public static ProjectBuilder SetExcludeFromDocumentation (this ProjectBuilder project, bool value)
+  {
+    return project.SetMetadata(RemotionBuildMetadataProperties.ExcludeFromDocumentation, value);
+  }
+
+  public static ProjectBuilder SetTestSetup<T> (this ProjectBuilder project)
+      where T : ITestSetup, new()
+  {
+    return project.SetMetadata(RemotionBuildMetadataProperties.TestSetup, new T());
+  }
+
+  public static ProjectBuilder SetTestSetup (this ProjectBuilder project, ITestSetup testSetup)
+  {
+    return project.SetMetadata(RemotionBuildMetadataProperties.TestSetup, testSetup);
   }
 }

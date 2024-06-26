@@ -14,9 +14,28 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System;
+using System.Collections.Generic;
+
 namespace Remotion.BuildScript;
 
-public class ProjectMetadataNames
+public static class ProjectMetadataProperty
 {
-  public static readonly string TestMatrix = "TestMatrix";
+  private static readonly HashSet<string> s_registeredProperties = new();
+
+  public static ProjectMetadataProperty<T> Create<T> (string name)
+  {
+    if (!s_registeredProperties.Add(name))
+      throw new InvalidOperationException($"A property with the name '{name}' was already registered.");
+
+    return new ProjectMetadataProperty<T>(name);
+  }
+
+  public static ProjectMetadataProperty<T> CreateWithDefault<T> (string name, T defaultValue)
+  {
+    if (!s_registeredProperties.Add(name))
+      throw new InvalidOperationException($"A property with the name '{name}' was already registered.");
+
+    return new ProjectMetadataProperty<T>(name, defaultValue);
+  }
 }

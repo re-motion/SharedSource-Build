@@ -42,7 +42,7 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
         int passedTestCount = 0, failedTestCount = 0, totalTestCount = 0;
         foreach (var projectMetadata in ProjectMetadata)
         {
-          var testMatrix = projectMetadata.GetTestMatrixOrDefault();
+          var testMatrix = projectMetadata.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestMatrix);
           if (testMatrix == null)
             continue;
 

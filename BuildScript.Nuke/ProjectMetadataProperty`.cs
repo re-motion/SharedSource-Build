@@ -14,21 +14,27 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System;
-using JetBrains.Annotations;
+namespace Remotion.BuildScript;
 
-namespace Remotion.BuildScript.Test.Dimensions;
-
-[PublicAPI]
-public sealed class Browsers : TestDimension
+public class ProjectMetadataProperty<T>
 {
-  public static readonly Browsers NoBrowser = new(nameof(NoBrowser));
-  public static readonly Browsers Chrome = new(nameof(Chrome));
-  public static readonly Browsers Edge = new(nameof(Edge));
-  public static readonly Browsers Firefox = new(nameof(Firefox));
+  public string Name { get; }
 
-  public Browsers (string value)
-      : base(value)
+  public bool HasDefaultValue { get; }
+
+  public T? DefaultValue { get; }
+
+  internal ProjectMetadataProperty (string name)
   {
+    Name = name;
+    HasDefaultValue = false;
+    DefaultValue = default;
+  }
+
+  internal ProjectMetadataProperty (string name, T defaultValue)
+  {
+    Name = name;
+    HasDefaultValue = true;
+    DefaultValue = defaultValue;
   }
 }

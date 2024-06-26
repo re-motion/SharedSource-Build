@@ -25,9 +25,6 @@ namespace Remotion.BuildScript;
 public partial class RemotionBuild
 {
   // todo parameter descriptions
-  [Parameter(ValueProviderMember = nameof(SupportedTestBrowsers), Separator = "+")]
-  public string[] TestBrowsers { get; set; } = Array.Empty<string>();
-
   [Parameter(ValueProviderMember = nameof(SupportedTestConfigurations), Separator = "+")]
   public string[] TestConfigurations { get; set; } = Array.Empty<string>();
 
@@ -56,14 +53,6 @@ public partial class RemotionBuild
 
   public virtual void ConfigureEnabledTestDimensions (EnabledTestDimensionsBuilder enabledTestDimensions)
   {
-    if (SupportedTestDimensions.IsSupported<Browsers>())
-    {
-      var testBrowsers = SupportedTestDimensions.ParseTestDimensionValuesOrDefault<Browsers>(TestBrowsers)
-                         ?? throw CreateConfigurationException<Browsers>();
-
-      enabledTestDimensions.AddEnabledDimension(testBrowsers);
-    }
-
     if (SupportedTestDimensions.IsSupported<Configurations>())
     {
       var testConfigurations = SupportedTestDimensions.ParseTestDimensionValuesOrDefault<Configurations>(TestConfigurations)
@@ -101,7 +90,7 @@ public partial class RemotionBuild
     static InvalidOperationException CreateConfigurationException<T> ()
         where T : TestDimension
     {
-      return new InvalidOperationException($"The configuration for test dimension '{typeof(T).Namespace}' cannot be empty.");
+      return new InvalidOperationException($"The configuration for test dimension '{typeof(T).Name}' cannot be empty.");
     }
   }
 

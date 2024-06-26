@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Nuke.Common.IO;
 
 namespace Remotion.BuildScript;
@@ -34,9 +35,39 @@ public class ProjectBuilder
     Path = path;
   }
 
-  public ProjectBuilder SetMetadata (string key, object value)
+  public T GetMetadata<T> (ProjectMetadataProperty<T> property)
   {
-    Metadata[key] = value;
+    return TryGetMetadata(property, out var result)
+        ? result
+        : property.HasDefaultValue
+            ? property.DefaultValue!
+            : throw new InvalidOperationException($"Cannot find the specified project metadata '{property}' on project '{Name}'.");
+  }
+
+  public T? GetMetadataOrDefault<T> (ProjectMetadataProperty<T> property)
+  {
+    return TryGetMetadata(property, out var result)
+        ? result
+        : property.HasDefaultValue
+            ? property.DefaultValue
+            : default;
+  }
+
+  public bool TryGetMetadata<T> (ProjectMetadataProperty<T> property, [NotNullWhen(true)] out T? result)
+  {
+    if (Metadata.TryGetValue(property.Name, out var rawResult))
+    {
+      result = (T) rawResult;
+      return true;
+    }
+
+    result = default;
+    return false;
+  }
+
+  public ProjectBuilder SetMetadata<T> (ProjectMetadataProperty<T> property, T value)
+  {
+    Metadata[property.Name] = value!;
     return this;
   }
 

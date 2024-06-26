@@ -26,6 +26,7 @@ namespace Remotion.BuildScript.Test.Runtimes;
 public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParameters
 {
   private const string c_imageParameterName = "Image";
+  private const string c_isolationModeParameterName = "IsolationMode";
 
   private readonly ExecutionRuntimes _executionRuntime;
 
@@ -37,17 +38,22 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
   public void ConfigureTestParameters (TestParameterBuilder parameter)
   {
     parameter.AddRequiredParameter(_executionRuntime, c_imageParameterName);
+    parameter.AddOptionalParameter(_executionRuntime, c_isolationModeParameterName, "");
   }
 
   public int ExecuteTests (TestExecutionContext context)
   {
     var dockerImage = context.TestSettings.GetTestParameter(_executionRuntime, c_imageParameterName);
+    var dockerIsolationMode = context.TestSettings.GetTestParameter(_executionRuntime, c_isolationModeParameterName);
 
     var solutionFolder = context.Build.Solution.Directory;
 
     var dockerRunSettings = new DockerRunSettings()
         .EnableProcessLogOutput()
         .SetImage(dockerImage)
+        .When(!string.IsNullOrEmpty(dockerIsolationMode), s => s
+            .SetIsolation(dockerIsolationMode)
+        )
         .EnableRm()
         .AddVolume($"{solutionFolder}:{solutionFolder}")
         .AddVolume($"{context.Build.LogFolder}:{context.Build.LogFolder}")
