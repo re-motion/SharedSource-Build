@@ -45,7 +45,7 @@ public interface IBuildMetadata : IBaseBuild
         var versionString = project.Properties.Single(e => e.Name == "Version").EvaluatedValue;
 
         var buildNumber = TeamCity.Instance?.BuildNumber ?? "0";
-        var remotionBuildVersion = RemotionBuildVersionFormatter.FormatRemotionBuildVersion(
+        var remotionBuildVersion = RemotionBuildVersionFormatter.Instance.FormatRemotionBuildVersion(
             versionString,
             IsServerBuild,
             UseReleaseVersioning,
@@ -77,7 +77,7 @@ public interface IBuildMetadata : IBaseBuild
   public BuildMetadata CreateBuildMetadataForConfiguration (string configuration, RemotionBuildVersion remotionBuildVersion)
   {
     var additionalBuildMetadata = AdditionalBuildMetadata;
-    var assemblyInformationalVersion = RemotionBuildVersionFormatter.FormatAssemblyInformationalVersion(
+    var assemblyInformationalVersion = RemotionBuildVersionFormatter.Instance.FormatAssemblyInformationalVersion(
         remotionBuildVersion.Version,
         configuration,
         additionalBuildMetadata);

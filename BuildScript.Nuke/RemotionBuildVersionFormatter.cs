@@ -22,13 +22,28 @@ namespace Remotion.BuildScript;
 /// <summary>
 /// Utility to format versions according to re-motion's version rules.
 /// </summary>
-public static class RemotionBuildVersionFormatter
+public class RemotionBuildVersionFormatter
 {
   private static readonly Regex s_versionPreReleaseSuffixPatternRegex = new(
-      @"(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)"
-      + @"(?:\-(?<prereleaseSuffix>(?<prereleaseName>[a-zA-Z]+)\.(?<prereleaseCounter>[1-9][0-9]{0,2})(?<prereleaseRemainder>(?:\.[a-zA-Z0-9-]+)*)))?");
+      @"^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)"
+      + @"(?:\-(?<prereleaseSuffix>(?<prereleaseName>[a-zA-Z]+)\.(?<prereleaseCounter>[1-9][0-9]{0,2})(?<prereleaseRemainder>(?:\.[a-zA-Z0-9-]+)*)))?$");
 
-  public static RemotionBuildVersion FormatRemotionBuildVersion (
+  public static RemotionBuildVersionFormatter Instance { get; } = new();
+
+  private readonly Func<DateTime> _getCurrentTime;
+
+  private RemotionBuildVersionFormatter ()
+      : this(static () => DateTime.Now)
+  {
+  }
+
+  // Unit testing override for the current time
+  internal RemotionBuildVersionFormatter (Func<DateTime> getCurrentTime)
+  {
+    _getCurrentTime = getCurrentTime;
+  }
+
+  public RemotionBuildVersion FormatRemotionBuildVersion (
       string versionString,
       bool isServerBuild,
       bool useReleaseVersioning,
@@ -41,9 +56,8 @@ public static class RemotionBuildVersionFormatter
     if (!match.Success)
     {
       throw new FormatException(
-          "The specified version is invalid. Only versions according to SemVer 2.0 without build metadata are allowed."
-          + " In case of a pre-release version, the release-counter may only contain up to 3 digits (e.g. '-alpha.123')."
-          + $" Version='{versionString}'.");
+          $"The specified version '{versionString}' is invalid. Only versions according to SemVer 2.0 without build metadata are allowed."
+          + " In case of a pre-release version, the release-counter may only contain up to 3 digits (e.g. '-alpha.123').");
     }
 
     var major = match.Groups["major"].Value;
@@ -61,7 +75,7 @@ public static class RemotionBuildVersionFormatter
       }
       else
       {
-        var formattedDate = DateTime.Now.ToString("yyMMdd-HHmmss");
+        var formattedDate = _getCurrentTime().ToString("yyMMdd-HHmmss");
         version = $"{major}.{minor}.{patch}-x.9.{formattedDate}";
         preReleaseName = "x";
         preReleaseCounter = "9";
@@ -95,7 +109,7 @@ public static class RemotionBuildVersionFormatter
         assemblyNuGetVersion);
   }
 
-  public static string FormatAssemblyInformationalVersion (string version, string configuration, string? additionalBuildMetadata)
+  public string FormatAssemblyInformationalVersion (string version, string configuration, string? additionalBuildMetadata)
   {
     return string.IsNullOrEmpty(additionalBuildMetadata)
         ? $"{version}+{configuration}"

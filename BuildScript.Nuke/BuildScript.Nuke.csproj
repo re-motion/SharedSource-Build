@@ -20,4 +20,8 @@
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="BuildScript.Nuke.UnitTests" />
+  </ItemGroup>
+
 </Project>
