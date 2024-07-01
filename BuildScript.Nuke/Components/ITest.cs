@@ -15,6 +15,7 @@
 // under the License.
 
 using System;
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
@@ -28,7 +29,7 @@ using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
-public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
+public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
 {
   [Parameter("Executes only tests that match the specified test filter.")]
   public string TestFilter => TryGetValue(() => TestFilter) ?? "";
@@ -37,7 +38,7 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
   public Target Test => _ => _
       .DependsOn<IProjectMetadata>()
       .DependsOn<ITestMatrix>()
-      .DependsOn<ITestSettings>()
+      .DependsOn<ITestParameters>()
       .DependsOn<IBuild>()
       .Description("Runs all tests")
       .Executes(() =>
@@ -46,10 +47,11 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
         int passedTestCount = 0, failedTestCount = 0, totalTestCount = 0;
         foreach (var projectMetadata in ProjectMetadata)
         {
-          var testMatrix = projectMetadata.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestMatrix);
-          if (testMatrix == null)
+          var testConfiguration = projectMetadata.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestConfiguration);
+          if (testConfiguration == null)
             continue;
 
+          var testMatrix = testConfiguration.TestMatrix;
           if (testMatrix.IsEmpty)
           {
             Log.Information($"Skipped test project '{projectMetadata.Name}' as there are no test configurations");
@@ -58,22 +60,22 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
 
           var supportedTargetFrameworks = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks);
 
-          using var _ = GroupingBlock.Start($"Test project '{projectMetadata.Name}' with {testMatrix.TestConfigurations.Length} test configurations");
-          Log.Information($"Testing project '{projectMetadata.Name}' in {testMatrix.TestConfigurations.Length} test configurations.");
-          foreach (var testConfiguration in testMatrix.TestConfigurations)
+          using var _ = GroupingBlock.Start($"Test project '{projectMetadata.Name}' with {testMatrix.Rows.Length} test configurations");
+          Log.Information($"Testing project '{projectMetadata.Name}' in {testMatrix.Rows.Length} test configurations.");
+          foreach (var row in testMatrix.Rows)
           {
-            var targetFramework = testConfiguration.GetDimensionOrDefault<TargetFrameworks>();
+            var targetFramework = row.GetDimensionOrDefault<TargetFrameworks>();
             if (targetFramework != null && !supportedTargetFrameworks.Contains(targetFramework.Identifier))
             {
-              Log.Warning($"Skipped test configuration '{testConfiguration}' as the target framework '{targetFramework.Identifier}' is not supported. "
+              Log.Warning($"Skipped test configuration '{row}' as the target framework '{targetFramework.Identifier}' is not supported. "
                               + $"Supported are: '{supportedTargetFrameworks}'");
               continue;
             }
 
-            using var __ = GroupingBlock.Start($"Test configuration '{testConfiguration}'");
-            Log.Information($"Run test configuration '{testConfiguration}':");
+            using var __ = GroupingBlock.Start($"Test configuration '{row}'");
+            Log.Information($"Run test configuration '{row}':");
 
-            var resultFileName = $"{projectMetadata.Name}.{string.Join(".", testConfiguration.Elements)}.xml";
+            var resultFileName = $"{projectMetadata.Name}.{string.Join(".", row.Elements)}.xml";
             var resultFilePath = LogFolder / resultFileName;
 
             var dotNetTestSettings = new DotNetTestSettings()
@@ -85,21 +87,26 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
                     .SetFilter(TestFilter)
                 );
 
-            foreach (var configure in testConfiguration.Elements.OfType<IConfigureTestSettings>())
+            foreach (var configure in row.Elements.OfType<IConfigureTestSettings>())
               dotNetTestSettings = configure.ConfigureTestSettings(dotNetTestSettings);
 
-            var executionRuntime = testConfiguration.GetDimensionOrDefault<ExecutionRuntimes>()
-                ?? ExecutionRuntimes.LocalMachine;
+            var testExecutionContext = new TestExecutionContext(this, projectMetadata, TestParameters, row, dotNetTestSettings);
+            var testExecutionRuntime = testConfiguration.TestExecutionRuntimeFactory.CreateTestExecutionRuntime(testExecutionContext);
 
-            var testExecutionRuntime = TestSettings.ExecutionRuntimeFactory.CreateTestExecutionRuntime(executionRuntime);
+            Action<TestExecutionContext> next = context => testExecutionRuntime.ExecuteTests(context);
+            foreach (var testExecutionWrapper in testConfiguration.TestExecutionWrappers.Reverse())
+            {
+              var myNext = next;
+              next = context => testExecutionWrapper.ExecuteTests(context, myNext);
+            }
 
-            var testExecutionContext = new TestExecutionContext(this, projectMetadata, testConfiguration, TestSettings, dotNetTestSettings);
-            var exitCode = testExecutionRuntime.ExecuteTests(testExecutionContext);
+            next(testExecutionContext);
 
             // For unexpected exit code we want the build to fail after all tests are executed to ensure that the error is inspected
+            var exitCode = testExecutionContext.ExitCode;
             if (exitCode != 0 && exitCode != 1)
             {
-              Log.Fatal($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed with exit code {exitCode}.");
+              Log.Fatal($"Test execution for '{projectMetadata.Name}' with '{row}' failed with exit code {exitCode}.");
               fatalFailure = true;
               continue;
             }
@@ -112,11 +119,11 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
 
               if (exitCode == 0)
               {
-                Log.Information($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' succeeded. ({totalTests} tests)");
+                Log.Information($"Test execution for '{projectMetadata.Name}' with '{row}' succeeded. ({totalTests} tests)");
               }
               else
               {
-                Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed. ({failedTests}/{totalTests} failed tests)");
+                Log.Error($"Test execution for '{projectMetadata.Name}' with '{row}' failed. ({failedTests}/{totalTests} failed tests)");
               }
 
               TeamCity.Instance?.ImportData(TeamCityImportType.mstest, resultFilePath, verbose: true, action: TeamCityNoDataPublishedAction.error);
@@ -130,12 +137,12 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
               if (exitCode == 0)
               {
                 Log.Warning(
-                    $"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' did not produce an output file but reported exit code = 0. "
+                    $"Test execution for '{projectMetadata.Name}' with '{row}' did not produce an output file but reported exit code = 0. "
                     + "This can be correct if the target framework is not supported or if there are no tests to execute.");
               }
               else
               {
-                Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' did not produce any outputs.");
+                Log.Error($"Test execution for '{projectMetadata.Name}' with '{row}' did not produce any outputs.");
               }
             }
           }

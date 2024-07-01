@@ -69,6 +69,15 @@ public class ProjectBuilder
     return false;
   }
 
+  public ProjectBuilder AddMetadata<T> (ProjectMetadataProperty<ImmutableArray<T>> property, T value)
+  {
+    var newValues = TryGetMetadata(property, out var existingValues)
+        ? existingValues.Add(value)
+        : [value];
+
+    return SetMetadata(property, newValues);
+  }
+
   public ProjectBuilder SetMetadata<T> (ProjectMetadataProperty<T> property, T value)
   {
     Metadata[property.Name] = value!;

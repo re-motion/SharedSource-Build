@@ -26,7 +26,6 @@ public sealed class ExecutionRuntimes : TestDimension
 {
   public static readonly ExecutionRuntimes LocalMachine = new(nameof(LocalMachine));
   public static readonly ExecutionRuntimes EnforcedLocalMachine = new(nameof(EnforcedLocalMachine));
-  public static readonly ExecutionRuntimes Docker = new(nameof(Docker_Win_NET462));
 
   public static readonly ExecutionRuntimes Docker_Win_NET462 = new(nameof(Docker_Win_NET462));
   public static readonly ExecutionRuntimes Docker_Win_NET472 = new(nameof(Docker_Win_NET472));

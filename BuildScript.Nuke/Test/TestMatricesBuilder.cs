@@ -46,7 +46,7 @@ public class TestMatricesBuilder
     if (_testMatrices.ContainsKey(name))
       throw new InvalidOperationException($"A test matrix with the name '{name}' has already been added.");
 
-    var testConfigurationBuilder = ImmutableArray.CreateBuilder<TestConfiguration>();
+    var rowBuilder = ImmutableArray.CreateBuilder<TestMatrixRow>();
     for (var x = 0; x < matrix.GetLength(0); x++)
     {
       var addedTestDimensions = new HashSet<Type>();
@@ -79,7 +79,7 @@ public class TestMatricesBuilder
       // Check if all the values are actually enabled
       if (testDimensionBuilder.All(_enabledTestDimensions.Contains))
       {
-        testConfigurationBuilder.Add(new TestConfiguration(testDimensionBuilder.ToImmutable()));
+        rowBuilder.Add(new TestMatrixRow(testDimensionBuilder.ToImmutable()));
       }
       else
       {
@@ -88,7 +88,7 @@ public class TestMatricesBuilder
       }
     }
 
-    var testMatrix = new TestMatrix(name, testConfigurationBuilder.ToImmutable());
+    var testMatrix = new TestMatrix(name, rowBuilder.ToImmutable());
     if (testMatrix.IsEmpty && !allowEmpty)
     {
       Log.Warning($"The test matrix '{name}' is empty.");

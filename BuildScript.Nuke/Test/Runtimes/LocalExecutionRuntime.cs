@@ -21,11 +21,11 @@ namespace Remotion.BuildScript.Test.Runtimes;
 
 public class LocalExecutionRuntime : ITestExecutionRuntime
 {
-  public int ExecuteTests (TestExecutionContext context)
+  public void ExecuteTests (TestExecutionContext context)
   {
     var process = ProcessTasks.StartProcess(context.DotNetTestSettings);
     process.WaitForExit();
 
-    return process.ExitCode;
+    context.ExitCode = process.ExitCode;
   }
 }

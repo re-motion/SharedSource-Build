@@ -15,6 +15,8 @@
 // under the License.
 
 using System;
+using System.Collections.Immutable;
+using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
 using Remotion.BuildScript.Components;
 
@@ -26,23 +28,41 @@ public class TestExecutionContext
 
   public ProjectMetadata Project { get; }
 
-  public TestConfiguration TestConfiguration { get; }
+  public TestMatrixRow TestMatrixRow { get; }
 
-  public TestSettings TestSettings { get; }
+  public ImmutableDictionary<string, string> TestParameters { get; }
 
   public DotNetTestSettings DotNetTestSettings { get; }
+
+  public int ExitCode { get; set; } = -1;
 
   public TestExecutionContext (
       IBaseBuild build,
       ProjectMetadata project,
-      TestConfiguration testConfiguration,
-      TestSettings testSettings,
+      ImmutableDictionary<string, string> testParameters,
+      TestMatrixRow testMatrixRow,
       DotNetTestSettings dotNetTestSettings)
   {
     Build = build;
     Project = project;
-    TestConfiguration = testConfiguration;
-    TestSettings = testSettings;
+    TestParameters = testParameters;
+    TestMatrixRow = testMatrixRow;
     DotNetTestSettings = dotNetTestSettings;
+  }
+
+  public string GetTestParameter(TestDimension testDimension, string name)
+  {
+    return GetTestParameter($"{testDimension}_{name}");
+  }
+
+  public string GetTestParameter (string name)
+  {
+    if (!TestParameters.TryGetValue(name, out var result))
+    {
+      Assert.Fail($"The test configuration value '{name}' is required but not set. "
+                  + $"Use the environment variable 'REMOTION_{name}' to set this test configuration value.");
+    }
+
+    return result!;
   }
 }

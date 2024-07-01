@@ -14,21 +14,23 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Components;
 using Remotion.BuildScript.Test;
 
 namespace Remotion.BuildScript;
 
 public static class RemotionBuildMetadataProperties
 {
-  public static readonly ProjectMetadataProperty<ProjectType> ProjectType = ProjectMetadataProperty.Create<ProjectType>(nameof(ProjectType));
+  // General
+  public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks = ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
 
-  public static readonly ProjectMetadataProperty<TestMatrix> TestMatrix = ProjectMetadataProperty.Create<TestMatrix>(nameof(TestMatrix));
-  public static readonly ProjectMetadataProperty<bool> CreateNugetPackageWithSymbolServerSupport = ProjectMetadataProperty.Create<bool>(nameof(CreateNugetPackageWithSymbolServerSupport));
+  // Testing
+  public static readonly ProjectMetadataProperty<TestConfiguration> TestConfiguration = ProjectMetadataProperty.Create<TestConfiguration>(nameof(TestConfiguration));
+
+  // Documentation
   public static readonly ProjectMetadataProperty<bool> CreateDocumentationFile = ProjectMetadataProperty.Create<bool>(nameof(CreateDocumentationFile));
   public static readonly ProjectMetadataProperty<bool> ExcludeFromDocumentation = ProjectMetadataProperty.Create<bool>(nameof(ExcludeFromDocumentation));
-  public static readonly ProjectMetadataProperty<ITestSetup> TestSetup = ProjectMetadataProperty.Create<ITestSetup>(nameof(TestSetup));
 
-  public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks =
-      ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
+  // Packaging
+  public static readonly ProjectMetadataProperty<bool> CreateNugetPackage = ProjectMetadataProperty.CreateWithDefault<bool>(nameof(CreateNugetPackage), false);
+  public static readonly ProjectMetadataProperty<bool> CreateNugetPackageWithSymbolServerSupport = ProjectMetadataProperty.Create<bool>(nameof(CreateNugetPackageWithSymbolServerSupport));
 }

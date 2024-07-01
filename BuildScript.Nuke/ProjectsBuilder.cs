@@ -66,25 +66,15 @@ public class ProjectsBuilder
     ArgumentNullException.ThrowIfNull(name);
 
     return AddProject(name)
-        .SetMetadata(RemotionBuildMetadataProperties.ProjectType, ProjectType.ReleaseProject);
+        .SetMetadata(RemotionBuildMetadataProperties.CreateNugetPackage, true);
   }
 
-  public ProjectBuilder AddUnitTestProject (string name, TestMatrix testMatrix)
+  public ProjectBuilder AddUnitTestProject (string name, TestConfiguration testConfiguration)
   {
     ArgumentNullException.ThrowIfNull(name);
 
     return AddProject(name)
-        .SetMetadata(RemotionBuildMetadataProperties.ProjectType, ProjectType.UnitTestProject)
-        .SetTestMatrix(testMatrix);
-  }
-
-  public ProjectBuilder AddIntegrationTestProject (string name, TestMatrix testMatrix)
-  {
-    ArgumentNullException.ThrowIfNull(name);
-
-    return AddProject(name)
-        .SetMetadata(RemotionBuildMetadataProperties.ProjectType, ProjectType.IntegrationTestProject)
-        .SetTestMatrix(testMatrix);
+        .SetMetadata(RemotionBuildMetadataProperties.TestConfiguration, testConfiguration);
   }
 
   public ImmutableArray<ProjectMetadata> Build ()

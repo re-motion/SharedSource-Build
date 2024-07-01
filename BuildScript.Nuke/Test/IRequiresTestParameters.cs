@@ -18,5 +18,5 @@ namespace Remotion.BuildScript.Test;
 
 public interface IRequiresTestParameters
 {
-  void ConfigureTestParameters (TestParameterBuilder parameter);
+  void ConfigureTestParameters (TestParameterBuilder builder);
 }

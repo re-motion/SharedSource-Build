@@ -38,7 +38,7 @@ public partial class RemotionBuild
   public string[] TestTargetRuntimes { get; set; } = Array.Empty<string>();
 
 
-  public TestSettings TestSettings { get; set; } = TestSettings.Default;
+  public ImmutableDictionary<string, string> TestParameters { get; set; } = ImmutableDictionary<string, string>.Empty;
 
   public SupportedTestDimensions SupportedTestDimensions { get; set; } = default!;
 

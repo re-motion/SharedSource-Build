@@ -20,10 +20,26 @@ using Remotion.BuildScript.Test.Runtimes;
 
 namespace Remotion.BuildScript.Test;
 
-public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
+public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory, IRequiresTestParameters
 {
-  public ITestExecutionRuntime CreateTestExecutionRuntime (ExecutionRuntimes executionRuntime)
+  private const string c_imageParameterName = "Image";
+  private const string c_isolationModeParameterName = "IsolationMode";
+
+  public void ConfigureTestParameters (TestParameterBuilder builder)
   {
+    foreach (var executionRuntime in builder.SupportedTestDimensions.OfType<ExecutionRuntimes>())
+    {
+      if (!executionRuntime.Value.StartsWith("Docker_"))
+        continue;
+
+      builder.AddRequiredParameter(executionRuntime, c_imageParameterName);
+      builder.AddOptionalParameter(executionRuntime, c_isolationModeParameterName, "");
+    }
+  }
+
+  public ITestExecutionRuntime CreateTestExecutionRuntime (TestExecutionContext context)
+  {
+    var executionRuntime = context.TestMatrixRow.GetDimension<ExecutionRuntimes>();
     if (executionRuntime == ExecutionRuntimes.LocalMachine || executionRuntime == ExecutionRuntimes.EnforcedLocalMachine)
     {
       return new LocalExecutionRuntime();
@@ -31,7 +47,11 @@ public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
 
     if (executionRuntime.Value.StartsWith("Docker_"))
     {
-      return new DockerExecutionRuntime(executionRuntime);
+      var dockerImage = context.GetTestParameter(executionRuntime, c_imageParameterName);
+      var dockerIsolationMode = context.GetTestParameter(executionRuntime, c_isolationModeParameterName);
+      return new DockerExecutionRuntime(
+          dockerImage,
+          dockerIsolationMode);
     }
 
     throw new NotSupportedException($"The specified execution runtime '{executionRuntime}' is not supported.");

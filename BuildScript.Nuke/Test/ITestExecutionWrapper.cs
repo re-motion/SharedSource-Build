@@ -14,11 +14,11 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-namespace Remotion.BuildScript;
+using System;
 
-public enum ProjectType
+namespace Remotion.BuildScript.Test;
+
+public interface ITestExecutionWrapper
 {
-  ReleaseProject,
-  UnitTestProject,
-  IntegrationTestProject
+  void ExecuteTests (TestExecutionContext context, Action<TestExecutionContext> next);
 }

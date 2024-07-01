@@ -14,9 +14,35 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System;
+using System.Collections.Immutable;
+using System.Linq;
+
 namespace Remotion.BuildScript.Test;
 
-public interface ITestSetup
+public class TestMatrixRow
 {
-  
+  public ImmutableArray<TestDimension> Elements { get; }
+
+  public TestMatrixRow (ImmutableArray<TestDimension> elements)
+  {
+    Elements = elements;
+  }
+
+  public T GetDimension<T> ()
+    where T : TestDimension
+  {
+    return GetDimensionOrDefault<T>() ?? throw new InvalidOperationException($"No element for dimension '{typeof(T).Name}' was found");
+  }
+
+  public T? GetDimensionOrDefault<T> ()
+    where T : TestDimension
+  {
+    return (T?)Elements.SingleOrDefault(e => e.GetType() == typeof(T));
+  }
+
+  public override string ToString ()
+  {
+    return string.Join(" + ", Elements);
+  }
 }

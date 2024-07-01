@@ -34,7 +34,7 @@ public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
       {
         Configurations.ForEach(configuration =>
         {
-          ProjectMetadata.Where(e => e.GetMetadata(RemotionBuildMetadataProperties.ProjectType) == ProjectType.ReleaseProject).ForEach(project =>
+          ProjectMetadata.Where(e => e.GetMetadata(RemotionBuildMetadataProperties.CreateNugetPackage)).ForEach(project =>
           {
             var buildMetadata = GetBuildMetadata(configuration);
             DotNetTasks.DotNetPack(s => s

@@ -23,43 +23,33 @@ using Remotion.BuildScript.Util;
 
 namespace Remotion.BuildScript.Test.Runtimes;
 
-public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParameters
+public class DockerExecutionRuntime : ITestExecutionRuntime
 {
-  private const string c_imageParameterName = "Image";
-  private const string c_isolationModeParameterName = "IsolationMode";
+  private readonly string _image;
+  private readonly string _isolationMode;
 
-  private readonly ExecutionRuntimes _executionRuntime;
-
-  public DockerExecutionRuntime (ExecutionRuntimes executionRuntime)
+  public DockerExecutionRuntime (string image, string isolationMode)
   {
-    _executionRuntime = executionRuntime;
+    _image = image;
+    _isolationMode = isolationMode;
   }
 
-  public void ConfigureTestParameters (TestParameterBuilder parameter)
+  public void ExecuteTests (TestExecutionContext context)
   {
-    parameter.AddRequiredParameter(_executionRuntime, c_imageParameterName);
-    parameter.AddOptionalParameter(_executionRuntime, c_isolationModeParameterName, "");
-  }
-
-  public int ExecuteTests (TestExecutionContext context)
-  {
-    var dockerImage = context.TestSettings.GetTestParameter(_executionRuntime, c_imageParameterName);
-    var dockerIsolationMode = context.TestSettings.GetTestParameter(_executionRuntime, c_isolationModeParameterName);
-
     var solutionFolder = context.Build.Solution.Directory;
 
     var dockerRunSettings = new DockerRunSettings()
         .EnableProcessLogOutput()
-        .SetImage(dockerImage)
-        .When(!string.IsNullOrEmpty(dockerIsolationMode), s => s
-            .SetIsolation(dockerIsolationMode)
+        .SetImage(_image)
+        .When(!string.IsNullOrEmpty(_isolationMode), s => s
+            .SetIsolation(_isolationMode)
         )
         .EnableRm()
         .AddVolume($"{solutionFolder}:{solutionFolder}")
         .AddVolume($"{context.Build.LogFolder}:{context.Build.LogFolder}")
-        .When(context.TestConfiguration.GetDimensionOrDefault<TargetFrameworks>()!.IsNetFramework, s =>
+        .When(context.TestMatrixRow.GetDimension<TargetFrameworks>().IsNetFramework, s =>
         {
-          var platform = context.TestConfiguration.GetDimensionOrDefault<Platforms>()!;
+          var platform = context.TestMatrixRow.GetDimension<Platforms>();
           var dotnetPath = DotnetUtil.GetDotnetPath(platform);
           Assert.DirectoryExists(dotnetPath, $"The .NET SDK ({platform}) needs to be installed.");
 
@@ -72,6 +62,6 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
     var process = ProcessTasks.StartProcess(dockerRunSettings);
     process.WaitForExit();
 
-    return process.ExitCode;
+    context.ExitCode = process.ExitCode;
   }
 }

@@ -14,11 +14,9 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test.Dimensions;
-
 namespace Remotion.BuildScript.Test;
 
 public interface ITestExecutionRuntimeFactory
 {
-  ITestExecutionRuntime CreateTestExecutionRuntime (ExecutionRuntimes executionRuntime);
+  ITestExecutionRuntime CreateTestExecutionRuntime (TestExecutionContext testExecutionContext);
 }

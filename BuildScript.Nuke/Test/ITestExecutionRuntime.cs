@@ -20,5 +20,5 @@ namespace Remotion.BuildScript.Test;
 
 public interface ITestExecutionRuntime
 {
-  int ExecuteTests (TestExecutionContext context);
+  void ExecuteTests (TestExecutionContext context);
 }

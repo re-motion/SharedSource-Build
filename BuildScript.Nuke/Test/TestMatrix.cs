@@ -15,7 +15,9 @@
 // under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Remotion.BuildScript.Test;
@@ -24,22 +26,31 @@ public class TestMatrix
 {
   public string Name { get; }
 
-  public ImmutableArray<TestConfiguration> TestConfigurations { get; }
+  public ImmutableArray<TestMatrixRow> Rows { get; }
 
-  public TestMatrix (string name, ImmutableArray<TestConfiguration> testConfigurations)
+  public TestMatrix (string name, ImmutableArray<TestMatrixRow> rows)
   {
     Name = name;
-    TestConfigurations = testConfigurations;
+    Rows = rows;
   }
 
-  public bool IsEmpty => TestConfigurations.Length == 0;
+  public bool IsEmpty => Rows.Length == 0;
+
+  public IEnumerable<T> GetRequiredElements<T> ()
+      where T : TestDimension
+  {
+    return Rows
+        .SelectMany(e => e.Elements)
+        .OfType<T>()
+        .Distinct();
+  }
 
   public override string ToString ()
   {
     var stringBuilder = new StringBuilder();
-    stringBuilder.AppendLine($"TestMatrix '{Name}' with {TestConfigurations.Length} test configurations:");
-    foreach (var testConfiguration in TestConfigurations)
-      stringBuilder.AppendLine($" - {testConfiguration}");
+    stringBuilder.AppendLine($"TestMatrix '{Name}' with {Rows.Length} test configurations:");
+    foreach (var row in Rows)
+      stringBuilder.AppendLine($" - {row}");
 
     return stringBuilder.ToString();
   }

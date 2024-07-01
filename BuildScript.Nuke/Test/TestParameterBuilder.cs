@@ -26,6 +26,21 @@ public class TestParameterBuilder
 {
   private readonly Dictionary<string, string?> _requiredParametersWithDefaultValues = new();
 
+  public SupportedTestDimensions SupportedTestDimensions { get; }
+
+  public EnabledTestDimensions EnabledTestDimensions { get; }
+
+  public TestParameterBuilder ()
+      : this(SupportedTestDimensions.Empty, EnabledTestDimensions.Empty)
+  {
+  }
+
+  public TestParameterBuilder (SupportedTestDimensions supportedTestDimensions, EnabledTestDimensions enabledTestDimensions)
+  {
+    SupportedTestDimensions = supportedTestDimensions;
+    EnabledTestDimensions = enabledTestDimensions;
+  }
+
   public void AddRequiredParameter (TestDimension testDimension, string name)
   {
     ArgumentNullException.ThrowIfNull(testDimension);
@@ -67,9 +82,9 @@ public class TestParameterBuilder
     }
   }
 
-  public ImmutableDictionary<string, string> Build (ImmutableDictionary<string, string> parameters)
+  public ImmutableDictionary<string, string> Build ()
   {
-    var finalParameters = parameters.ToBuilder();
+    var finalParameters = ImmutableDictionary.CreateBuilder<string, string>();
 
     var missingTestParameters = new List<string>();
     foreach (var (key, @default) in _requiredParametersWithDefaultValues)

@@ -15,12 +15,16 @@
 // under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensions
 {
+  public static readonly SupportedTestDimensions Empty = new(ImmutableHashSet<Type>.Empty, ImmutableDictionary<string, TestDimension>.Empty);
+
   public ImmutableHashSet<Type> ByType { get; }
 
   public ImmutableDictionary<string, TestDimension> ByName { get; }
@@ -42,6 +46,12 @@ public class SupportedTestDimensions
     where T : TestDimension
   {
     return ByType.Contains(typeof(T));
+  }
+
+  public IEnumerable<T> OfType<T> ()
+    where T : TestDimension
+  {
+    return ByName.Values.OfType<T>();
   }
 
   public T[]? ParseTestDimensionValuesOrDefault<T> (string[] values)

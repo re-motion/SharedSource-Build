@@ -14,35 +14,25 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Remotion.BuildScript.Test;
 
 public class TestConfiguration
 {
-  public ImmutableArray<TestDimension> Elements { get; }
+  public ITestExecutionRuntimeFactory TestExecutionRuntimeFactory { get; }
 
-  public TestConfiguration (ImmutableArray<TestDimension> elements)
-  {
-    Elements = elements;
-  }
+  public TestMatrix TestMatrix { get; }
 
-  public T GetDimension<T> ()
-    where T : TestDimension
-  {
-    return GetDimensionOrDefault<T>() ?? throw new InvalidOperationException($"No element for dimension '{typeof(T).Name}' was found");
-  }
+  public ImmutableArray<ITestExecutionWrapper> TestExecutionWrappers { get; }
 
-  public T? GetDimensionOrDefault<T> ()
-    where T : TestDimension
+  public TestConfiguration (
+      ITestExecutionRuntimeFactory testExecutionRuntimeFactory,
+      TestMatrix testMatrix,
+      ImmutableArray<ITestExecutionWrapper> testExecutionWrappers)
   {
-    return (T?)Elements.SingleOrDefault(e => e.GetType() == typeof(T));
-  }
-
-  public override string ToString ()
-  {
-    return string.Join(" + ", Elements);
+    TestExecutionRuntimeFactory = testExecutionRuntimeFactory;
+    TestMatrix = testMatrix;
+    TestExecutionWrappers = testExecutionWrappers;
   }
 }

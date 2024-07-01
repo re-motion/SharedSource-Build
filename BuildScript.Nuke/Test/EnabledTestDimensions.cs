@@ -21,6 +21,8 @@ namespace Remotion.BuildScript.Test;
 
 public class EnabledTestDimensions
 {
+  public static readonly EnabledTestDimensions Empty = new(ImmutableHashSet<TestDimension>.Empty);
+
   private readonly ImmutableHashSet<TestDimension> _enabledTestDimensions;
 
   public EnabledTestDimensions (ImmutableHashSet<TestDimension> enabledTestDimensions)
