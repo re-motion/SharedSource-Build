@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Nuke.Common;
 using Nuke.Common.Tooling;
+using Nuke.Common.Utilities;
 
 namespace Remotion.BuildScript.Util;
 
@@ -48,6 +49,14 @@ public static class ArgumentsExtensions
   }
 
   /// <summary>
+  /// Converts the <see cref="IArguments"/> to <see cref="Arguments"/>.
+  /// </summary>
+  public static Arguments AsArguments (this IArguments arguments)
+  {
+    return (Arguments) arguments;
+  }
+
+  /// <summary>
   /// Inserts an argument value in an <see cref="Arguments"/> instance.
   /// This is a workaround to allow inserting arguments when the command wrapper does not support that argument.
   /// </summary>
@@ -57,5 +66,36 @@ public static class ArgumentsExtensions
     internalArgumentsList.Insert(index, new KeyValuePair<string, List<string>>(value, new List<string> { true.ToString() }));
 
     return arguments;
+  }
+
+  /// <summary>
+  /// Renders the specified <see cref="Arguments"/> as an array.
+  /// This is useful, for example, when using the <see cref="Arguments"/> to start a process where we need an array of strings.
+  /// </summary>
+  public static string[] RenderAsArray (this Arguments arguments)
+  {
+    var internalArgumentsList = GetInternalArgumentsList(arguments);
+
+    var argumentList = new List<string>();
+    foreach (var argumentPair in internalArgumentsList)
+    {
+      // The key is either '--option {0}', '{0}', or 'argument'/'--rm'
+      // but we need to convert this to an array, so we split before replacing the value
+      var nameParts = argumentPair.Key.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+      foreach (var argument in argumentPair.Value)
+      {
+        foreach (var namePart in nameParts)
+        {
+          var value = namePart == "{0}"
+              ? argument.TrimMatchingDoubleQuotes() // Arguments will add double quotes if necessary, which need to be removed for the array
+              : namePart;
+
+          argumentList.Add(value);
+        }
+      }
+    }
+
+    return argumentList.ToArray();
   }
 }

@@ -64,7 +64,7 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
           return s.AddVolume($"{dotnetPath}:{dotnetPath}");
         })
         .SetEntrypoint(context.DotNetTestSettings.ProcessToolPath)
-        .SetArgs(context.DotNetTestSettings.GetProcessArguments().RenderForExecution().Split(' ')) // todo this is incorrect we need correct arg supplying
+        .SetArgs(context.DotNetTestSettings.GetProcessArguments().AsArguments().RenderAsArray())
         .SetProcessArgumentConfigurator(arguments => arguments.InsertAt(1, "--quiet"));
 
     var process = ProcessTasks.StartProcess(dockerRunSettings);
