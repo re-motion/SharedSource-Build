@@ -46,6 +46,8 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
     var dockerImage = context.TestSettings.GetTestParameter(_executionRuntime, c_imageParameterName);
     var dockerIsolationMode = context.TestSettings.GetTestParameter(_executionRuntime, c_isolationModeParameterName);
 
+    var solutionFolder = context.Build.Solution.Directory;
+
     var dockerRunSettings = new DockerRunSettings()
         .EnableProcessLogOutput()
         .SetImage(dockerImage)
@@ -53,7 +55,7 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
             .SetIsolation(dockerIsolationMode)
         )
         .EnableRm()
-        .AddVolume($"{context.Project.Path}:{context.Project.Path}")
+        .AddVolume($"{solutionFolder}:{solutionFolder}")
         .AddVolume($"{context.Build.LogFolder}:{context.Build.LogFolder}")
         .When(context.TestConfiguration.GetDimensionOrDefault<TargetFrameworks>()!.IsNetFramework, s =>
         {

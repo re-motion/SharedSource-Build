@@ -19,6 +19,7 @@ using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Test.Dimensions;
@@ -29,6 +30,9 @@ namespace Remotion.BuildScript.Components;
 
 public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
 {
+  [Parameter("Executes only tests that match the specified test filter.")]
+  public string TestFilter => TryGetValue(() => TestFilter) ?? "";
+
   [PublicAPI]
   public Target Test => _ => _
       .DependsOn<IProjectMetadata>()
@@ -72,12 +76,14 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
             var resultFileName = $"{projectMetadata.Name}.{string.Join(".", testConfiguration.Elements)}.xml";
             var resultFilePath = LogFolder / resultFileName;
 
-            // todo included/excluded categories -> test filter
             var dotNetTestSettings = new DotNetTestSettings()
-                .SetProjectFile(projectMetadata.Path)
+                .SetProjectFile(projectMetadata.FilePath)
                 .AddLoggers($"trx;LogFileName={resultFilePath}")
                 .EnableNoRestore()
-                .EnableNoBuild();
+                .EnableNoBuild()
+                .When(!string.IsNullOrEmpty(TestFilter), s => s
+                    .SetFilter(TestFilter)
+                );
 
             foreach (var configure in testConfiguration.Elements.OfType<IConfigureTestSettings>())
               dotNetTestSettings = configure.ConfigureTestSettings(dotNetTestSettings);
@@ -98,26 +104,40 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
               continue;
             }
 
-            Assert.True(resultFilePath.FileExists(), "The test execution did not produce an TRX output file.");
-
-            var passedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@passed")!);
-            var failedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@failed")!);
-            var totalTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@total")!);
-
-            if (exitCode == 0)
+            if (resultFilePath.FileExists())
             {
-              Log.Information($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' succeeded. ({totalTests} tests)");
+              var passedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@passed")!);
+              var failedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@failed")!);
+              var totalTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@total")!);
+
+              if (exitCode == 0)
+              {
+                Log.Information($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' succeeded. ({totalTests} tests)");
+              }
+              else
+              {
+                Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed. ({failedTests}/{totalTests} failed tests)");
+              }
+
+              TeamCity.Instance?.ImportData(TeamCityImportType.mstest, resultFilePath, verbose: true, action: TeamCityNoDataPublishedAction.error);
+
+              passedTestCount += passedTests;
+              failedTestCount += failedTests;
+              totalTestCount += totalTests;
             }
             else
             {
-              Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed. ({failedTests}/{totalTests} failed tests)");
+              if (exitCode == 0)
+              {
+                Log.Warning(
+                    $"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' did not produce an output file but reported exit code = 0. "
+                    + "This can be correct if the target framework is not supported or if there are no tests to execute.");
+              }
+              else
+              {
+                Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' did not produce any outputs.");
+              }
             }
-
-            TeamCity.Instance?.ImportData(TeamCityImportType.mstest, resultFilePath, verbose: true, action: TeamCityNoDataPublishedAction.error);
-
-            passedTestCount += passedTests;
-            failedTestCount += failedTests;
-            totalTestCount += totalTests;
           }
         }
 

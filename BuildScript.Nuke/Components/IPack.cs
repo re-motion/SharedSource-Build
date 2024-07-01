@@ -38,7 +38,7 @@ public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
           {
             var buildMetadata = GetBuildMetadata(configuration);
             DotNetTasks.DotNetPack(s => s
-                .SetProject(project.Path)
+                .SetProject(project.FilePath)
                 .SetConfiguration(configuration)
                 .EnableNoRestore()
                 .EnableNoBuild()

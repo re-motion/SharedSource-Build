@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Nuke.Common;
 using Nuke.Common.IO;
 
 namespace Remotion.BuildScript;
@@ -25,14 +26,17 @@ public class ProjectMetadata
 {
   public string Name { get; }
 
-  public AbsolutePath Path { get; }
+  public AbsolutePath FilePath { get; }
+
+  public AbsolutePath FolderPath { get; }
 
   public ImmutableDictionary<string, object> Metadata { get; }
 
-  public ProjectMetadata (string name, AbsolutePath path, ImmutableDictionary<string, object> metadata)
+  public ProjectMetadata (string name, AbsolutePath filePath, ImmutableDictionary<string, object> metadata)
   {
     Name = name;
-    Path = path;
+    FilePath = filePath;
+    FolderPath = filePath.Parent.NotNull();
     Metadata = metadata;
   }
 
