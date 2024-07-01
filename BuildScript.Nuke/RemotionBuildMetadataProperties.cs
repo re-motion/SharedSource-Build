@@ -28,4 +28,7 @@ public static class RemotionBuildMetadataProperties
   public static readonly ProjectMetadataProperty<bool> CreateDocumentationFile = ProjectMetadataProperty.Create<bool>(nameof(CreateDocumentationFile));
   public static readonly ProjectMetadataProperty<bool> ExcludeFromDocumentation = ProjectMetadataProperty.Create<bool>(nameof(ExcludeFromDocumentation));
   public static readonly ProjectMetadataProperty<ITestSetup> TestSetup = ProjectMetadataProperty.Create<ITestSetup>(nameof(TestSetup));
+
+  public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks =
+      ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
 }

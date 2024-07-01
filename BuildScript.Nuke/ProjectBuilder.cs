@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 
 namespace Remotion.BuildScript;
@@ -27,12 +28,15 @@ public class ProjectBuilder
 
   public AbsolutePath Path { get; }
 
+  public Project MsBuildProject { get; }
+
   public ImmutableDictionary<string, object>.Builder Metadata { get; } = ImmutableDictionary.CreateBuilder<string, object>();
 
-  public ProjectBuilder (string name, AbsolutePath path)
+  public ProjectBuilder (string name, AbsolutePath path, Project msBuildProject)
   {
     Name = name;
     Path = path;
+    MsBuildProject = msBuildProject;
   }
 
   public T GetMetadata<T> (ProjectMetadataProperty<T> property)

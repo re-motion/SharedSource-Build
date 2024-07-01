@@ -38,7 +38,7 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
       .Description("Runs all tests")
       .Executes(() =>
       {
-        var testsFailed = false;
+        bool fatalFailure = false;
         int passedTestCount = 0, failedTestCount = 0, totalTestCount = 0;
         foreach (var projectMetadata in ProjectMetadata)
         {
@@ -46,10 +46,26 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
           if (testMatrix == null)
             continue;
 
+          if (testMatrix.IsEmpty)
+          {
+            Log.Information($"Skipped test project '{projectMetadata.Name}' as there are no test configurations");
+            continue;
+          }
+
+          var supportedTargetFrameworks = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks);
+
           using var _ = GroupingBlock.Start($"Test project '{projectMetadata.Name}' with {testMatrix.TestConfigurations.Length} test configurations");
           Log.Information($"Testing project '{projectMetadata.Name}' in {testMatrix.TestConfigurations.Length} test configurations.");
           foreach (var testConfiguration in testMatrix.TestConfigurations)
           {
+            var targetFramework = testConfiguration.GetDimensionOrDefault<TargetFrameworks>();
+            if (targetFramework != null && !supportedTargetFrameworks.Contains(targetFramework.Identifier))
+            {
+              Log.Warning($"Skipped test configuration '{testConfiguration}' as the target framework '{targetFramework.Identifier}' is not supported. "
+                              + $"Supported are: '{supportedTargetFrameworks}'");
+              continue;
+            }
+
             using var __ = GroupingBlock.Start($"Test configuration '{testConfiguration}'");
             Log.Information($"Run test configuration '{testConfiguration}':");
 
@@ -74,34 +90,47 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestSettings
             var testExecutionContext = new TestExecutionContext(this, projectMetadata, testConfiguration, TestSettings, dotNetTestSettings);
             var exitCode = testExecutionRuntime.ExecuteTests(testExecutionContext);
 
-            if (exitCode != 0)
+            // For unexpected exit code we want the build to fail after all tests are executed to ensure that the error is inspected
+            if (exitCode != 0 && exitCode != 1)
             {
-              Log.Error($"Test execution failed with exit code '{exitCode}'");
+              Log.Fatal($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed with exit code {exitCode}.");
+              fatalFailure = true;
+              continue;
+            }
+
+            Assert.True(resultFilePath.FileExists(), "The test execution did not produce an TRX output file.");
+
+            var passedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@passed")!);
+            var failedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@failed")!);
+            var totalTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@total")!);
+
+            if (exitCode == 0)
+            {
+              Log.Information($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' succeeded. ({totalTests} tests)");
             }
             else
             {
-              Log.Information("Test execution finished.");
+              Log.Error($"Test execution for '{projectMetadata.Name}' with '{testConfiguration}' failed. ({failedTests}/{totalTests} failed tests)");
             }
 
             TeamCity.Instance?.ImportData(TeamCityImportType.mstest, resultFilePath, verbose: true, action: TeamCityNoDataPublishedAction.error);
-            Assert.True(resultFilePath.FileExists());
 
-            passedTestCount += int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@passed")!);
-            failedTestCount += int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@failed")!);
-            totalTestCount += int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@total")!);
+            passedTestCount += passedTests;
+            failedTestCount += failedTests;
+            totalTestCount += totalTests;
           }
         }
 
-        if (testsFailed)
+        var finalMessage = $"Test execution finished. Failed: {failedTestCount}, Passed: {passedTestCount}, Total: {totalTestCount}";
+        if (failedTestCount > 0)
         {
-          Log.Error($"Tests failed. Failed: {failedTestCount}, Passed: {passedTestCount}, Total: {totalTestCount}");
+          Log.Error(finalMessage);
         }
         else
         {
-          Log.Information($"Tests succeeded. Failed: {failedTestCount}, Passed: {passedTestCount}, Total: {totalTestCount}");
+          Log.Information(finalMessage);
         }
 
-        if (testsFailed)
-          throw new InvalidOperationException("Test execution failed.");
+        Assert.False(fatalFailure, "One or more test projects failed fatally.");
       });
 }

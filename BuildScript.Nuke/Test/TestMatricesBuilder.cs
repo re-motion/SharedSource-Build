@@ -36,7 +36,7 @@ public class TestMatricesBuilder
     _enabledTestDimensions = enabledTestDimensions;
   }
 
-  public TestMatrix AddTestMatrix (string name, TestDimension[,] matrix)
+  public TestMatrix AddTestMatrix (string name, TestDimension[,] matrix, bool allowEmpty = false)
   {
     ArgumentNullException.ThrowIfNull(name);
     ArgumentNullException.ThrowIfNull(matrix);
@@ -89,7 +89,7 @@ public class TestMatricesBuilder
     }
 
     var testMatrix = new TestMatrix(name, testConfigurationBuilder.ToImmutable());
-    if (testMatrix.IsEmpty)
+    if (testMatrix.IsEmpty && !allowEmpty)
     {
       Log.Warning($"The test matrix '{name}' is empty.");
 

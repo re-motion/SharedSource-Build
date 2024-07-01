@@ -46,8 +46,6 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
     var dockerImage = context.TestSettings.GetTestParameter(_executionRuntime, c_imageParameterName);
     var dockerIsolationMode = context.TestSettings.GetTestParameter(_executionRuntime, c_isolationModeParameterName);
 
-    var solutionFolder = context.Build.Solution.Directory;
-
     var dockerRunSettings = new DockerRunSettings()
         .EnableProcessLogOutput()
         .SetImage(dockerImage)
@@ -55,7 +53,7 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
             .SetIsolation(dockerIsolationMode)
         )
         .EnableRm()
-        .AddVolume($"{solutionFolder}:{solutionFolder}")
+        .AddVolume($"{context.Project.Path}:{context.Project.Path}")
         .AddVolume($"{context.Build.LogFolder}:{context.Build.LogFolder}")
         .When(context.TestConfiguration.GetDimensionOrDefault<TargetFrameworks>()!.IsNetFramework, s =>
         {
@@ -66,7 +64,8 @@ public class DockerExecutionRuntime : ITestExecutionRuntime, IRequiresTestParame
           return s.AddVolume($"{dotnetPath}:{dotnetPath}");
         })
         .SetEntrypoint(context.DotNetTestSettings.ProcessToolPath)
-        .SetArgs(context.DotNetTestSettings.GetProcessArguments().RenderForExecution().Split(' ')); // todo this is incorrect we need correct arg supplying
+        .SetArgs(context.DotNetTestSettings.GetProcessArguments().RenderForExecution().Split(' ')) // todo this is incorrect we need correct arg supplying
+        .SetProcessArgumentConfigurator(arguments => arguments.InsertAt(1, "--quiet"));
 
     var process = ProcessTasks.StartProcess(dockerRunSettings);
     process.WaitForExit();

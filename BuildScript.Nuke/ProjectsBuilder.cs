@@ -18,8 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Nuke.Common;
 using Nuke.Common.ProjectModel;
 using Remotion.BuildScript.Test;
+using Serilog;
 
 namespace Remotion.BuildScript;
 
@@ -40,12 +42,21 @@ public class ProjectsBuilder
   {
     ArgumentNullException.ThrowIfNull(name);
 
-    var project = _solution.Projects.SingleOrDefault(e => e.Name == name);
+    var project = _solution.AllProjects.SingleOrDefault(e => e.Name == name);
     if (project == null)
       throw new InvalidOperationException($"The project '{name}' could not be found in the solution.");
 
-    var projectBuilder = new ProjectBuilder(project.Name, project.Path);
+    var msBuildProject = ProjectModelTasks.ParseProject(project.Path);
+
+    var projectBuilder = new ProjectBuilder(project.Name, project.Path, msBuildProject);
     _projects.Add(name, projectBuilder);
+
+    var targetFrameworks = msBuildProject.GetProperty("TargetFrameworks")?.EvaluatedValue
+                           ?? msBuildProject.GetProperty("TargetFramework")?.EvaluatedValue;
+    targetFrameworks.NotNull($"Could not determine target framework for project '{project.Name}'");
+    projectBuilder.SetMetadata(RemotionBuildMetadataProperties.TargetFrameworks, TargetFrameworkSet.Parse(targetFrameworks!));
+
+    Log.Information($"Determined project metadata for project '{project.Name}'.");
 
     return projectBuilder;
   }

@@ -29,6 +29,12 @@ public class TestConfiguration
     Elements = elements;
   }
 
+  public T GetDimension<T> ()
+    where T : TestDimension
+  {
+    return GetDimensionOrDefault<T>() ?? throw new InvalidOperationException($"No element for dimension '{typeof(T).Name}' was found");
+  }
+
   public T? GetDimensionOrDefault<T> ()
     where T : TestDimension
   {
