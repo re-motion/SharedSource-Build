@@ -38,7 +38,7 @@ public interface ITestParameters : IBaseBuild, IProjectMetadata
             : new TestParameterBuilder();
 
         var testConfigurations = ProjectMetadata.Select(e => e.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestConfiguration))
-            .Where(e => e != null)
+            .Where(e => e != null && !e.TestMatrix.IsEmpty)
             .Distinct()
             .Select(e => e!)
             .ToArray();

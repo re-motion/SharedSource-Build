@@ -48,6 +48,7 @@ public interface IBuild : IBaseBuild, IBuildMetadata, IRestore
               .SetAssemblyVersion(buildMetadata.AssemblyVersion)
               .SetFileVersion(buildMetadata.AssemblyFileVersion)
               .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
+              .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
               .SetProperty("AssemblyOriginatorKeyFile", AssemblySigningKeyFile)
           );
         });

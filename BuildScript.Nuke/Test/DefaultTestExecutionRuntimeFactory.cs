@@ -25,9 +25,15 @@ public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory, 
   private const string c_imageParameterName = "Image";
   private const string c_isolationModeParameterName = "IsolationMode";
 
+  public static readonly DefaultTestExecutionRuntimeFactory Instance = new();
+
+  private DefaultTestExecutionRuntimeFactory ()
+  {
+  }
+
   public void ConfigureTestParameters (TestParameterBuilder builder)
   {
-    foreach (var executionRuntime in builder.SupportedTestDimensions.OfType<ExecutionRuntimes>())
+    foreach (var executionRuntime in builder.EnabledTestDimensions.OfType<ExecutionRuntimes>())
     {
       if (!executionRuntime.Value.StartsWith("Docker_"))
         continue;

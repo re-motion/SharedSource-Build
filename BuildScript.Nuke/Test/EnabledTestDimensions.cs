@@ -15,7 +15,9 @@
 // under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Remotion.BuildScript.Test;
 
@@ -33,4 +35,10 @@ public class EnabledTestDimensions
   }
 
   public bool Contains (TestDimension testDimension) => _enabledTestDimensions.Contains(testDimension);
+
+  public IEnumerable<T> OfType<T> ()
+    where T : TestDimension
+  {
+    return _enabledTestDimensions.OfType<T>();
+  }
 }

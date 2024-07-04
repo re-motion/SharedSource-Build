@@ -75,7 +75,8 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
             using var __ = GroupingBlock.Start($"Test configuration '{row}'");
             Log.Information($"Run test configuration '{row}':");
 
-            var resultFileName = $"{projectMetadata.Name}.{string.Join(".", row.Elements)}.xml";
+            var assemblyName = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.AssemblyName);
+            var resultFileName = $"{assemblyName}.{string.Join(".", row.Elements)}.xml";
             var resultFilePath = LogFolder / resultFileName;
 
             var dotNetTestSettings = new DotNetTestSettings()

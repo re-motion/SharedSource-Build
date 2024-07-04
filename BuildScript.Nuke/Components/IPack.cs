@@ -43,7 +43,10 @@ public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
                 .EnableNoRestore()
                 .EnableNoBuild()
                 .EnableContinuousIntegrationBuild()
-                .SetVersion(buildMetadata.AssemblyNuGetVersion)
+                .SetAssemblyVersion(buildMetadata.AssemblyVersion)
+                .SetFileVersion(buildMetadata.AssemblyFileVersion)
+                .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
+                .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
                 .SetOutputDirectory(OutputFolder / "NuGetWithDebugSymbols" / configuration)
             );
           });

@@ -56,6 +56,9 @@ public class ProjectsBuilder
     targetFrameworks.NotNull($"Could not determine target framework for project '{project.Name}'");
     projectBuilder.SetMetadata(RemotionBuildMetadataProperties.TargetFrameworks, TargetFrameworkSet.Parse(targetFrameworks!));
 
+    var assemblyName = msBuildProject.GetProperty("AssemblyName").NotNull().EvaluatedValue;
+    projectBuilder.SetMetadata(RemotionBuildMetadataProperties.AssemblyName, assemblyName);
+
     Log.Information($"Determined project metadata for project '{project.Name}'.");
 
     return projectBuilder;

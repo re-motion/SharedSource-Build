@@ -21,6 +21,7 @@ namespace Remotion.BuildScript;
 public static class RemotionBuildMetadataProperties
 {
   // General
+  public static readonly ProjectMetadataProperty<string> AssemblyName = ProjectMetadataProperty.Create<string>(nameof(AssemblyName));
   public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks = ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
 
   // Testing
