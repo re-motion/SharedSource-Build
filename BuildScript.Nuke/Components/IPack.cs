@@ -14,16 +14,21 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Immutable;
 using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
+using Remotion.BuildScript.Pack;
+using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
 public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
 {
+  public ImmutableArray<IPackProfile> Profiles { get; }
+
   [PublicAPI]
   public Target Pack => _ => _
       .DependsOn<IBuildMetadata>()
@@ -32,23 +37,35 @@ public interface IPack : IBuild, IBuildMetadata, IProjectMetadata
       .Description("Packages the projects")
       .Executes(() =>
       {
-        Configurations.ForEach(configuration =>
+        if (Profiles.IsEmpty)
+          Log.Warning("Pack profiles are empty.");
+
+        Profiles.ForEach(profile =>
         {
-          ProjectMetadata.Where(e => e.GetMetadata(RemotionBuildMetadataProperties.CreateNugetPackage)).ForEach(project =>
+          Configurations.ForEach(configuration =>
           {
-            var buildMetadata = GetBuildMetadata(configuration);
-            DotNetTasks.DotNetPack(s => s
-                .SetProject(project.FilePath)
-                .SetConfiguration(configuration)
-                .EnableNoRestore()
-                .EnableNoBuild()
-                .EnableContinuousIntegrationBuild()
-                .SetAssemblyVersion(buildMetadata.AssemblyVersion)
-                .SetFileVersion(buildMetadata.AssemblyFileVersion)
-                .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
-                .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
-                .SetOutputDirectory(OutputFolder / "NuGetWithDebugSymbols" / configuration)
-            );
+            ProjectMetadata.Where(e => e.GetMetadata(RemotionBuildMetadataProperties.CreateNugetPackage)).ForEach(project =>
+            {
+              var buildMetadata = GetBuildMetadata(configuration);
+              var dotNetPackSettings = new DotNetPackSettings()
+                  .SetProject(project.FilePath)
+                  .SetConfiguration(configuration)
+                  .EnableNoRestore()
+                  .EnableNoBuild()
+                  .EnableContinuousIntegrationBuild()
+                  .SetAssemblyVersion(buildMetadata.AssemblyVersion)
+                  .SetFileVersion(buildMetadata.AssemblyFileVersion)
+                  .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
+                  .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
+                  .SetOutputDirectory(OutputFolder / profile.OutputFolderName / configuration);
+
+              var packContext = new PackContext(
+                  this,
+                  project,
+                  configuration,
+                  dotNetPackSettings);
+              profile.PackProject(packContext);
+            });
           });
         });
       });

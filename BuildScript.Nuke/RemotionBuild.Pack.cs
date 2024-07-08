@@ -14,19 +14,26 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Remotion.BuildScript.Test;
+using System;
+using System.Collections.Immutable;
+using JetBrains.Annotations;
+using Nuke.Common;
+using Remotion.BuildScript.Components;
+using Remotion.BuildScript.Pack;
 
 namespace Remotion.BuildScript;
 
-public static class RemotionBuildMetadataProperties
+public partial class RemotionBuild
 {
-  // General
-  public static readonly ProjectMetadataProperty<string> AssemblyName = ProjectMetadataProperty.Create<string>(nameof(AssemblyName));
-  public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks = ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
+  protected static readonly string WithDebugSymbolsOutputFolderName = "NuGetWithDebugSymbols";
 
-  // Testing
-  public static readonly ProjectMetadataProperty<TestConfiguration> TestConfiguration = ProjectMetadataProperty.Create<TestConfiguration>(nameof(TestConfiguration));
+  public ImmutableArray<IPackProfile> Profiles { get; set; } = ImmutableArray<IPackProfile>.Empty;
 
-  // Packaging
-  public static readonly ProjectMetadataProperty<bool> CreateNugetPackage = ProjectMetadataProperty.CreateWithDefault(nameof(CreateNugetPackage), false);
+  [PublicAPI]
+  public virtual Target PreparePack => _ => _
+      .DependentFor<IPack>()
+      .Executes(() =>
+      {
+        Profiles = Profiles.Add(new DefaultPackProfile(WithDebugSymbolsOutputFolderName));
+      });
 }

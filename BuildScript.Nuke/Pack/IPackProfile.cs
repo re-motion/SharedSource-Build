@@ -14,22 +14,11 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.Pack;
 
-public static class ProjectExtensions
+public interface IPackProfile
 {
-  public static ProjectBuilder SetCreateNugetPackageWithSymbolServerSupport (this ProjectBuilder project, bool value)
-  {
-    return project.SetMetadata(RemotionBuildMetadataProperties.CreateNugetPackageWithSymbolServerSupport, value);
-  }
+  string OutputFolderName { get; }
 
-  public static ProjectBuilder SetCreateDocumentationFile (this ProjectBuilder project, bool value)
-  {
-    return project.SetMetadata(RemotionBuildMetadataProperties.CreateDocumentationFile, value);
-  }
-
-  public static ProjectBuilder SetExcludeFromDocumentation (this ProjectBuilder project, bool value)
-  {
-    return project.SetMetadata(RemotionBuildMetadataProperties.ExcludeFromDocumentation, value);
-  }
+  void PackProject (PackContext context);
 }
