@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.IO;
@@ -34,5 +35,13 @@ public interface IClean : IBaseBuild
         LogFolder.CreateOrCleanDirectory();
         Log.Information($"Cleaning temp folder '{TempFolder}'.");
         TempFolder.CreateOrCleanDirectory();
+
+        var allProjectExceptBuildProject = Solution.AllProjects
+            .Where(e => e.Path != BuildProjectFile);
+        foreach (var project in allProjectExceptBuildProject)
+        {
+          (project.Directory / "bin").DeleteDirectory();
+          (project.Directory / "obj").DeleteDirectory();
+        }
       });
 }

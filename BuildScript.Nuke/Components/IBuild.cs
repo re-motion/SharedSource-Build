@@ -50,6 +50,8 @@ public interface IBuild : IBaseBuild, IBuildMetadata, IRestore
               .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
               .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
               .SetProperty("AssemblyOriginatorKeyFile", AssemblySigningKeyFile)
+              // Disable SourceLink's changes to the informational version as we already add the commit hash ourselves
+              .SetProperty("IncludeSourceRevisionInInformationalVersion", "false")
           );
         });
       });

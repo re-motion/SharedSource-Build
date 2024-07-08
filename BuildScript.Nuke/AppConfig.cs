@@ -23,7 +23,6 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Nuke.Common.IO;
-using Nuke.Common.Utilities;
 
 namespace Remotion.BuildScript;
 
@@ -41,9 +40,9 @@ public class AppConfig
     return new AppConfig(xDocument, CreateXmlNamespaceManager(xDocument, namespaces));
   }
 
-  private static XmlNamespaceManager CreateXmlNamespaceManager (XDocument xDocument, (string prefix, string uri)[] namespaces)
+  private static XmlNamespaceManager? CreateXmlNamespaceManager (XDocument xDocument, (string prefix, string uri)[] namespaces)
   {
-    XmlNamespaceManager xmlNamespaceManager = null;
+    XmlNamespaceManager? xmlNamespaceManager = null;
 
     if (namespaces?.Length > 0)
     {
@@ -60,9 +59,9 @@ public class AppConfig
   }
 
   private readonly XDocument _xDocument;
-  private readonly XmlNamespaceManager _xmlNamespaceManager;
+  private readonly XmlNamespaceManager? _xmlNamespaceManager;
 
-  public AppConfig (XDocument xDocument, XmlNamespaceManager xmlNamespaceManager)
+  public AppConfig (XDocument xDocument, XmlNamespaceManager? xmlNamespaceManager)
   {
     _xDocument = xDocument;
     _xmlNamespaceManager = xmlNamespaceManager;
