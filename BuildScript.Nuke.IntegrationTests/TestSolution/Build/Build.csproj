@@ -2,20 +2,22 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace></RootNamespace>
     <NoWarn>CS0649;CS0169</NoWarn>
     <NukeRootDirectory>..</NukeRootDirectory>
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="6.0.1" />
+    <Reference Include="../../../Remotion.BuildScript.Nuke.dll" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildScript.Nuke\BuildScript.Nuke.csproj" />
+    <PackageReference Include="Nuke.Build" Version="8.0.0" />
+    <PackageReference Include="Nuke.Common" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

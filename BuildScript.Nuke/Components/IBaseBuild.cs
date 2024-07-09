@@ -1,4 +1,4 @@
-// Copyright (c) rubicon IT GmbH, www.rubicon.eu
+﻿// Copyright (c) rubicon IT GmbH, www.rubicon.eu
 // 
 // See the NOTICE file distributed with this work for additional information
 // regarding copyright ownership.  rubicon licenses this file to you under
@@ -13,31 +13,36 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
 
 using System;
 using Nuke.Common;
 using Nuke.Common.Git;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 
 namespace Remotion.BuildScript.Components;
 
 public interface IBaseBuild : INukeBuild
 {
-  public ConfigurationData ConfigurationData { get; set; }
-
-  public Directories Directories => new(RootDirectory, BuildProjectDirectory);
-
-  [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-  public string[] Configuration => TryGetValue(() => Configuration)
-                                   ?? new[] { "Debug", "Release" };
+  private static readonly string[] s_defaultBuildConfigurations = new[] { "Debug", "Release" };
 
   [Solution]
-  public Solution Solution => TryGetValue(() => Solution);
+  public Solution Solution => TryGetValue(() => Solution) ?? throw new InvalidOperationException("The solution is currently unavailable.");
 
-  [Parameter("Added to the AssemblyInformationalVersion")]
-  public string AdditionalBuildMetadata => TryGetValue(() => AdditionalBuildMetadata) ?? "";
+  [GitRepository]
+  public GitRepository Repository => TryGetValue(() => Repository) ?? throw new InvalidOperationException("The git repository is currently unavailable.");
 
-  [Parameter("Skip compiling and running of tests - true / false")]
-  public bool SkipTests => TryGetValue<bool?>(() => SkipTests) ?? false;
+  [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+  public string[] Configurations => TryGetValue(() => Configurations) ?? s_defaultBuildConfigurations;
+
+  [Parameter("Path to the output folder where build artifacts are put.")]
+  public AbsolutePath OutputFolder => TryGetValue(() => OutputFolder) ?? BuildProjectDirectory / "BuildOutput";
+
+  [Parameter("Path to the temp folder where temporary build files are put.")]
+  public AbsolutePath TempFolder => TryGetValue(() => TempFolder) ?? OutputFolder / "Temp";
+
+  [Parameter("Path to the log folder where log files are put.")]
+  public AbsolutePath LogFolder => TryGetValue(() => LogFolder) ?? OutputFolder / "Log";
+
+  public AbsolutePath CustomizationsFolder => BuildProjectDirectory / "Customizations";
 }

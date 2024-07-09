@@ -1,0 +1,4 @@
+# This folder is copied as part of the tests, which is why we need to keep it clean.
+# As such, we enable all files again to prevent bin/obj folders from being ignored.
+# This should make it clearer that the working directory is dirty 
+!*
