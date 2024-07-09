@@ -1,0 +1,7 @@
+mode: ContinuousDelivery
+branches:
+  develop:
+    increment: Patch
+ignore:
+  sha: []
+merge-message-formats: {}
