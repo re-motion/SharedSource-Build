@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.TextString"/>
+
   <PropertyGroup>
     <!-- http://semver.org/spec/v2.0.0.html -->
     <_versionNumberPattern><![CDATA[(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)]]></_versionNumberPattern>
@@ -39,7 +41,7 @@
            Condition="'$( [System.Text.RegularExpressions.Regex]::IsMatch ( $(Version), $(VersionPattern) ) )' == 'False'" />
   </Target>
 
-  <Target Name="PrepareAssemblyVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+  <Target Name="PrepareAssemblyVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
     <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
 
     <!-- Support binding-redirect-free patching of a production deployment -->
@@ -48,10 +50,10 @@
       <AssemblyVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyVersionReplacementPattern) ) )</AssemblyVersion>
     </PropertyGroup>
     
-    <Message Text="Done preparing AssemblyVersion '$(AssemblyVersion)'" Importance="High"/>
+    <Message Text="Done preparing AssemblyVersion '$(AssemblyVersion)'." Importance="High"/>
   </Target>
 
-  <Target Name="PrepareAssemblyFileVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+  <Target Name="PrepareAssemblyFileVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
     <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
 
     <PropertyGroup>
@@ -75,10 +77,10 @@
       <AssemblyFileVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_assemblyFileVersionReplacementPattern) ) )</AssemblyFileVersion>
     </PropertyGroup>
 
-    <Message Text="Done preparing AssemblyFileVersion '$(AssemblyFileVersion)'" Importance="High"/>
+    <Message Text="Done preparing AssemblyFileVersion '$(AssemblyFileVersion)'." Importance="High"/>
   </Target>
 
-  <Target Name="PrepareAssemblyInformationalVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+  <Target Name="PrepareAssemblyInformationalVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
     <Error Text="The property 'VersionWithBuildMetadataPattern' is not set." Condition="'$(VersionWithBuildMetadataPattern)' == ''" />
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
 
@@ -90,35 +92,15 @@
     <Error Text="The build metadata of the version did not conform to SemVer 2.0 when building the AssemblyInformationalVersion. AssemblyInformationalVersion='$(AssemblyInformationalVersion)'" 
            Condition="'$( [System.Text.RegularExpressions.Regex]::IsMatch ( $(AssemblyInformationalVersion), $(VersionWithBuildMetadataPattern) ) )' == 'False'" />
 
-    <Message Text="Done preparing AssemblyInformationalVersion '$(AssemblyInformationalVersion)'" Importance="High"/>
+    <Message Text="Done preparing AssemblyInformationalVersion '$(AssemblyInformationalVersion)'." Importance="High"/>
   </Target>
 
-  <Target Name="PrepareAssemblyNuGetVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
-    <!-- The NuGet version is updated to match the requirements of NuGet 2.8. Full support for SemVer 2.0 will be introduced with NuGet 3.0. -->
-    <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
-
+  <Target Name="PrepareAssemblyNuGetVersion" DependsOnTargets="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
     <PropertyGroup>
-      <_prereleaseSuffix>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseSuffix}" ) )</_prereleaseSuffix>
-      <_prereleaseName>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseName}" ) )</_prereleaseName>
-      <_prereleaseCounter>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseCounter}" ) )</_prereleaseCounter>
-      <_prereleaseRemainder>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), "${prereleaseRemainder}" ) )</_prereleaseRemainder>
+      <AssemblyNuGetVersion>$(Version)</AssemblyNuGetVersion>
     </PropertyGroup>
 
-    <MSBuild.ExtensionPack.Framework.TextString TaskAction="PadLeft" OldString="$(_prereleaseCounter)" String1="0" Count="3" Condition="'$(_prereleaseCounter)' != ''"> 
-      <Output PropertyName="_prereleaseCounter" TaskParameter="NewString"/> 
-    </MSBuild.ExtensionPack.Framework.TextString>
-
-    <MSBuild.ExtensionPack.Framework.TextString TaskAction="Replace" OldString="$(_prereleaseRemainder)" OldValue="." NewValue="-" Condition="'$(_prereleaseRemainder)' != ''">
-      <Output PropertyName="_prereleaseRemainder" TaskParameter="NewString"/>
-    </MSBuild.ExtensionPack.Framework.TextString>
-
-    <PropertyGroup>
-      <_prereleaseSuffix Condition="'$(_prereleaseSuffix)' != ''">-$(_prereleaseName)-$(_prereleaseCounter)$(_prereleaseRemainder)</_prereleaseSuffix>
-      <_nuGetVersionReplacementPattern>${major}.${minor}.${patch}</_nuGetVersionReplacementPattern>
-      <AssemblyNuGetVersion>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_nuGetVersionReplacementPattern) ) )$(_prereleaseSuffix)</AssemblyNuGetVersion>
-    </PropertyGroup>
-
-    <Message Text="Done preparing AssemblyNuGetVersion '$(AssemblyNuGetVersion)'" Importance="High"/>
+    <Message Text="Done preparing AssemblyNuGetVersion '$(AssemblyNuGetVersion)'." Importance="High"/>
   </Target>
 
   <Target Name="PrepareDependDBProjectVersion" DependsOnTargets="PrepareAssemblyVersion" Condition="'$(Version)' != ''">
@@ -129,10 +111,10 @@
       <DependDBProjectVersion Condition="'$(DependDBProjectVersion)' == ''">$(AssemblyVersion)</DependDBProjectVersion>
     </PropertyGroup>
 
-    <Message Text="Done preparing DependDBProjectVersion '$(DependDBProjectVersion)'" Importance="High"/>
+    <Message Text="Done preparing DependDBProjectVersion '$(DependDBProjectVersion)'." Importance="High"/>
   </Target>
 
-  <Target Name="PrepareVersionWithoutPrerelease" DependsOnTargets="CheckVersionIsSemVer" Condition="$(Version) != ''">
+  <Target Name="PrepareVersionWithoutPrerelease" DependsOnTargets="CheckVersionIsSemVer" Condition="'$(Version)' != ''">
     <Error Text="The property 'VersionPattern' is not set." Condition="'$(VersionPattern)' == ''" />
 
     <PropertyGroup>
@@ -140,7 +122,17 @@
       <VersionWithoutPrerelease>$( [System.Text.RegularExpressions.Regex]::Replace ( $(Version), $(VersionPattern), $(_versionWithoutPrereleaseReplacementPattern) ) )</VersionWithoutPrerelease>
     </PropertyGroup>
 
-    <Message Text="Done preparing VersionWithoutPrerelease '$(VersionWithoutPrerelease)'" Importance="High"/>
+    <Message Text="Done preparing VersionWithoutPrerelease '$(VersionWithoutPrerelease)'." Importance="High"/>
+  </Target>
+
+  <Target Name="UpdateVersionProps">
+    <XmlPoke
+        XmlInputPath="$(CustomizationsDirectory)Version.props"
+        Namespaces="&lt;Namespace Prefix='x'
+        Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
+        Query="//x:PropertyGroup/x:Version"
+        Value="$(Version)"
+    />
   </Target>
 
 </Project>

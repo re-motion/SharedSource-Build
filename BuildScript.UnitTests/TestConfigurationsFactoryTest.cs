@@ -623,6 +623,28 @@ namespace Remotion.BuildScript.UnitTests
       Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("EnforcedLocalMachine"));
       Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("EnforcedLocalMachine"));
       Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageValue"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo ("default"));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_EnforcedLocalMachine_CanBeExtraFlag_AndDockerImageHasIsolationMode ()
+    {
+      var factory = CreateTestConfigurationFactory (
+          supportedExecutionRuntimes: new Dictionary<string, string>
+                                      {
+                                          { "WIN_NET462", "DockerImageValue|hyperv" },
+                                          { "EnforcedLocalMachine", "EnforcedLocalMachine" }
+                                      });
+
+      var testConfigurations = factory.CreateTestConfigurations (
+          "C:\\Path\\To\\MyTest.dll",
+          new[] { "Chrome+SqlServer2014+x64+WIN_NET462+release+net45+EnforcedLocalMachine" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.UseDocker, Is.False);
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("EnforcedLocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("EnforcedLocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageValue"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo ("hyperv"));
     }
 
     [Test]
@@ -632,7 +654,23 @@ namespace Remotion.BuildScript.UnitTests
 
       var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET48+release+net45" });
 
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("Win_NET48"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("DockerImageWinNet48"));
       Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageWinNet48"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo ("default"));
+    }
+
+    [Test]
+    public void CreateTestConfigurations_ExecutionRuntimeWithDockerAndIsolationMode_UsesSpecifiedIsolationMode ()
+    {
+      var factory = CreateTestConfigurationFactory (supportedExecutionRuntimes: new Dictionary<string, string> { { "Win_NET48", "DockerImageWinNet48|hyperv" } });
+
+      var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+Win_NET48+release+net45" });
+
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("Win_NET48"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("DockerImageWinNet48|hyperv"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo ("DockerImageWinNet48"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo ("hyperv"));
     }
 
     [Test]
@@ -642,7 +680,10 @@ namespace Remotion.BuildScript.UnitTests
 
       var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+LocalMachine+release+net45" });
 
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("LocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("LocalMachine"));
       Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo (""));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo (""));
     }
 
     [Test]
@@ -652,7 +693,10 @@ namespace Remotion.BuildScript.UnitTests
 
       var testConfigurations = factory.CreateTestConfigurations ("C:\\Path\\To\\MyTest.dll", new[] { "Chrome+SqlServer2014+x64+EnforcedLocalMachine+release+net45" });
 
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Key, Is.EqualTo ("EnforcedLocalMachine"));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.Value, Is.EqualTo ("EnforcedLocalMachine"));
       Assert.That (testConfigurations.Single().ExecutionRuntime.DockerImage, Is.EqualTo (""));
+      Assert.That (testConfigurations.Single().ExecutionRuntime.DockerIsolationMode, Is.EqualTo (""));
     }
 
     [Test]

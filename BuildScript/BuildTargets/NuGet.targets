@@ -18,10 +18,127 @@
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Compression.Zip"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.FileSystem.File"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
+
   <PropertyGroup>
-    <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\$(ConfigurationID)\</NuGetWithDebugSymbolsOutputDirectory>
-    <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\$(ConfigurationID)\</NuGetWithSymbolServerSupportDirectory>
+    <NuGetWithDebugSymbolsOutputDirectory>$(OutputDirectory)NuGetWithDebugSymbols\</NuGetWithDebugSymbolsOutputDirectory>
+    <NuGetWithSymbolServerSupportDirectory>$(OutputDirectory)NuGetWithSymbolServerSupport\</NuGetWithSymbolServerSupportDirectory>
   </PropertyGroup>
+
+  <Target Name="CreateNuGetPackagesWithDebugSymbols" DependsOnTargets="CreateNuGetPackagesWithDebugSymbolsForDefaultProjects;CreateNuGetPackagesWithDebugSymbolsForNuSpecBasedProjects" />
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="CreateNuGetPackagesWithSymbolServerSupportForDefaultProjects" />
+
+  <Target Name="CreateNuGetPackagesWithDebugSymbolsForDefaultProjects" DependsOnTargets="AddNuGetMetadataToNuGetOutputFiles">
+    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)" />
+
+    <PropertyGroup>
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
+    <!-- Add FolderSuffix, add Unittest and IntegrationTest projects-->
+    <MSBuild Projects="@(ReleaseProjectFiles)"
+        Targets="Pack"
+        ContinueOnError="false"
+        Properties="%(NuGetOutputFiles.AdditionalProperties);PackageOutputPath=$(_nuGetTempDirectory)$(ConfigurationID)"
+        ToolsVersion="%(ReleaseProjectFiles.MSBuildToolsVersion)">
+    </MSBuild>
+
+    <ItemGroup>
+      <_nuGetFiles Remove="@(_nuGetFiles)" />
+      <_nuGetFiles Include="$(_nuGetTempDirectory)**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_nuGetFiles)" DestinationFolder="$(NuGetWithDebugSymbolsOutputDirectory)%(RecursiveDir)" />
+
+    <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="CreateNuGetPackagesWithSymbolServerSupportForDefaultProjects" DependsOnTargets="AddNuGetMetadataToNuGetOutputFiles">
+    <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <MakeDir Directories="$(NuGetWithSymbolServerSupportDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)" />
+
+    <PropertyGroup>
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
+    <MSBuild Projects="@(ReleaseProjectFiles)"
+        Targets="Pack"
+        ContinueOnError="false"
+        Properties="%(NuGetOutputFiles.AdditionalProperties);PackageOutputPath=$(_nuGetTempDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix);IncludeSymbols=true;SymbolPackageFormat=snupkg"
+        ToolsVersion="%(NuGetOutputFiles.MSBuildToolsVersion)">
+    </MSBuild>
+    
+    <ItemGroup>
+      <_nuGetFiles Remove="@(_nuGetFiles)" />
+      <_nuGetFiles Include="$(_nuGetTempDirectory)**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_nuGetFiles)" DestinationFolder="$(NuGetWithSymbolServerSupportDirectory)%(RecursiveDir)" />
+
+    <Message Text="Done creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
+
+  <Target Name="CreateNuGetPackagesWithDebugSymbolsForNuSpecBasedProjects" 
+          DependsOnTargets="ResolveNuGetPath;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles;CreateLocalNuSpecFiles">
+    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+
+    <PropertyGroup>
+      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_nuGetTempDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)" Condition="'%(NuGetOutputFiles.NuSpecFiles)' != ''" />
+    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)" />
+
+    <NuGet.MSBuild.Tools.Pack
+        ToolPath="$(NuGetToolPath)"
+        Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
+        BasePath="%(NuGetOutputFiles.ProjectDirectory)"
+        OutputDirectory="$(_nuGetTempDirectory)$(ConfigurationID)%(NuGetOutputFiles.FolderSuffix)"
+        IncludeReferencedProjects="True"
+        Symbols="False"
+        Configuration="$(ConfigurationID)"
+        Properties="
+            ExtraTags=$(ConfigurationID)Build %(NuGetOutputFiles.DocumentationTag);
+            DocumentationFile=%(NuGetOutputFiles.DocumentationFile);
+            NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
+        Condition="'%(NuGetOutputFiles.NuSpecFiles)' != ''" />
+
+    <!-- Extract the NUPKG-files, remove the SRC-files, re-zip the NUPKG-files -->
+
+    <ItemGroup>
+      <_nuGetFiles Remove="@(_nuGetFiles)" />
+      <_nuGetFiles Include="$(_nuGetTempDirectory)**\*.nupkg" />
+      <_nuGetFiles>
+        <ExtractionPath>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</ExtractionPath>
+        <ArchivePath>$(NuGetWithDebugSymbolsOutputDirectory)%(RecursiveDir)\%(Filename)%(Extension)</ArchivePath>
+      </_nuGetFiles>
+    </ItemGroup>
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Extract"
+        ExtractPath="%(_nuGetFiles.ExtractionPath)" 
+        ZipFileName="%(_nuGetFiles.Identity)" 
+        Condition="@(_nuGetFiles) != ''" />
+
+    <RemoveDir Directories="%(_nuGetFiles.ExtractionPath)src" />
+
+    <MSBuild.ExtensionPack.Compression.Zip
+        TaskAction="Create"
+        CompressPath="%(_nuGetFiles.ExtractionPath)"
+        RemoveRoot="%(_nuGetFiles.ExtractionPath)"
+        ZipFileName="%(_nuGetFiles.ArchivePath)"
+        Condition="@(_nuGetFiles) != ''" />
+
+    <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
+  </Target>
 
   <Target Name="UpdateNuSpecFiles" DependsOnTargets="AddNuGetMetadataToNuGetOutputFiles;PrepareAssemblyNuGetVersion">
     <Message Text="Updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
@@ -38,7 +155,7 @@
     <ItemGroup>
       <_placeHolderNuSpecFiles Remove="@(_placeHolderNuSpecFiles)" />
     </ItemGroup>
-    <MSBuild.ExtensionPack.FileSystem.File TaskAction="FilterByContent" RegexPattern="^$" Files="@(_nuSpecFiles)">
+    <MSBuild.ExtensionPack.FileSystem.File TaskAction="FilterByContent" RegexPattern="^$" Files="@(_nuSpecFiles)" Condition="'@(_nuSpecFiles)' != ''">
       <Output TaskParameter="IncludedFiles" ItemName="_placeHolderNuSpecFiles"/>
     </MSBuild.ExtensionPack.FileSystem.File>
     <ItemGroup>
@@ -56,10 +173,12 @@
     <Copy SourceFiles="%(_nuSpecFiles.Identity)"
           DestinationFiles="%(_nuSpecFiles.Backup)" />
 
-    <MSBuild.ExtensionPack.Xml.XmlFile TaskAction="UpdateElement"
-                                       File="%(_nuSpecFiles.Identity)"
-                                       XPath="package/metadata/version"
-                                       InnerText="$(AssemblyNuGetVersion)"/>
+    <MSBuild.ExtensionPack.Xml.XmlFile 
+        TaskAction="UpdateElement"
+        File="%(_nuSpecFiles.Identity)"
+        XPath="package/metadata/version"
+        InnerText="$(AssemblyNuGetVersion)"
+        Condition="'@(_nuSpecFiles)' != ''" />
 
     <Message Text="Done updating NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
@@ -87,128 +206,6 @@
     <Touch Files="@(_localNuSpecFilesToCreate)" AlwaysCreate="true" />
 
     <Message Text="Done creating local NuGet nuspec-files, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-  </Target>
-
-  <Target Name="CreateNuGetPackagesWithDebugSymbols" 
-          DependsOnTargets="ResolveNuGetPath;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles;CreateLocalNuSpecFiles">
-    <Message Text="Creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
-
-    <PropertyGroup>
-      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"/>
-    <MakeDir Directories="$(NuGetWithDebugSymbolsOutputDirectory.TrimEnd('\'))%(NuGetOutputFiles.FolderSuffix)" />
-
-    <NuGet.MSBuild.Tools.Pack
-        ToolPath="$(NuGetToolPath)"
-        Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
-        BasePath="%(NuGetOutputFiles.ProjectDirectory)"
-        OutputDirectory="$(_nuGetTempDirectory)%(NuGetOutputFiles.FolderSuffix)"
-        IncludeReferencedProjects="True"
-        Symbols="False"
-        Configuration="$(ConfigurationID)"
-        Properties="
-            ExtraTags=$(ConfigurationID)Build %(NuGetOutputFiles.DocumentationTag);
-            DocumentationFile=%(NuGetOutputFiles.DocumentationFile);
-            NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
-        Condition="'%(NuGetOutputFiles.NuSpecFiles)' != ''" />
-
-    <!-- Extract the NUPKG-files, remove the SRC-files, re-zip the NUPKG-files -->
-
-    <ItemGroup>
-      <_nuGetFiles Remove="@(_nuGetFiles)" />
-      <_nuGetFiles Include="$(_nuGetTempDirectory)**\*.nupkg" />
-      <_nuGetFiles>
-        <ExtractionPath>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</ExtractionPath>
-        <ArchivePath>$(NuGetWithDebugSymbolsOutputDirectory.Trim('\'))%(RecursiveDir)\%(Filename)%(Extension)</ArchivePath>
-      </_nuGetFiles>
-    </ItemGroup>
-
-    <MSBuild.ExtensionPack.Compression.Zip
-        TaskAction="Extract"
-        ExtractPath="%(_nuGetFiles.ExtractionPath)" 
-        ZipFileName="%(_nuGetFiles.Identity)" 
-        Condition="@(_nuGetFiles) != ''" />
-
-    <RemoveDir Directories="%(_nuGetFiles.ExtractionPath)src" />
-
-    <MSBuild.ExtensionPack.Compression.Zip
-        TaskAction="Create"
-        CompressPath="%(_nuGetFiles.ExtractionPath)"
-        RemoveRoot="%(_nuGetFiles.ExtractionPath)"
-        ZipFileName="%(_nuGetFiles.ArchivePath)"
-        Condition="@(_nuGetFiles) != ''" />
-
-    <Message Text="Done creating NuGet packages with debug-symbols, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-  </Target>
-
-  <Target Name="CreateNuGetPackagesWithSymbolServerSupport" DependsOnTargets="ResolveNuGetPath;PrepareAssemblyNuGetVersion;UpdateNuSpecFiles">
-    <Message Text="Creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
-
-    <PropertyGroup>
-      <!-- The _nuGetTempDirectory is also used as a blank directory for the documentation source as NuGet requires an existing directory for the include-rule. -->
-      <_nuGetTempDirectory>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</_nuGetTempDirectory>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(_nuGetTempDirectory)"/>
-    <MakeDir Directories="$(NuGetWithSymbolServerSupportDirectory)" />
-
-    <NuGet.MSBuild.Tools.Pack
-          ToolPath="$(NuGetToolPath)"
-          Project="%(NuGetOutputFiles.MSBuildSourceProjectFile)"
-          BasePath="%(NuGetOutputFiles.ProjectDirectory)"
-          OutputDirectory="$(_nuGetTempDirectory)"
-          IncludeReferencedProjects="True"
-          Symbols="True"
-          Configuration="$(ConfigurationID)"
-          Properties="
-              ExtraTags=;
-              DocumentationFile=;
-              NuSpecFolder=%(NuGetOutputFiles.NuSpecFolder);"
-          Condition="'%(NuGetOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' == 'True'" />
-
-    <!-- Extract the NUPKG-files, remove the SRC- and PDB-files, re-zip the NUPKG-files -->
-
-    <ItemGroup>
-      <_nuGetFiles Remove="@(_nuGetFiles)" />
-      <_nuGetFiles Include="$(_nuGetTempDirectory)*.nupkg" Exclude="$(_nuGetTempDirectory)*.Symbols.nupkg" />
-      <_nuGetFiles>
-        <ExtractionPath>$(TempDirectory)nuget\$([System.Guid]::NewGuid())\</ExtractionPath>
-        <ArchivePath>$(NuGetWithSymbolServerSupportDirectory)%(Filename)%(Extension)</ArchivePath>
-      </_nuGetFiles>
-      <_nuGetSymbolsFiles Include="$(_nuGetTempDirectory)*.Symbols.nupkg" />
-    </ItemGroup>
-
-    <MSBuild.ExtensionPack.Compression.Zip
-        TaskAction="Extract"
-        ExtractPath="%(_nuGetFiles.ExtractionPath)" 
-        ZipFileName="%(_nuGetFiles.Identity)" 
-        Condition="@(_nuGetFiles) != ''" />
-
-    <ItemGroup>
-      <_pdbFiles Remove="@(_pdbFiles)" />
-      <_pdbFiles Include="%(_nuGetFiles.ExtractionPath)lib\**\*.pdb" />
-    </ItemGroup>
-
-    <Delete Files="@(_pdbFiles)" />
-
-    <RemoveDir Directories="%(_nuGetFiles.ExtractionPath)src" />
-
-    <MSBuild.ExtensionPack.Compression.Zip
-        TaskAction="Create"
-        CompressPath="%(_nuGetFiles.ExtractionPath)" 
-        RemoveRoot="%(_nuGetFiles.ExtractionPath)"
-        ZipFileName="%(_nuGetFiles.ArchivePath)" 
-        Condition="@(_nuGetFiles) != ''" />
-
-    <Copy SourceFiles="@(_nuGetSymbolsFiles)" DestinationFolder="$(NuGetWithSymbolServerSupportDirectory)" />
-
-    <Message Text="Done creating NuGet packages with symbol-server support, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
   <Target Name="CreateNuGetOutputFiles" DependsOnTargets="AddAdditionalMetadataToOutputFiles">

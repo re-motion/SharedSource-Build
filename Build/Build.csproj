@@ -35,19 +35,21 @@
       <Link>.BuildProject</Link>
     </None>
     <None Include="Build.licenseheader" />
-    <None Include="Customizations\Local\Configuration.Local.targets" />
+    <None Include="Customizations\Local\Configuration.targets" />
+    <None Include="Customizations\Overrides.targets" />
     <None Include="Customizations\Projects.props" />
     <None Include="Customizations\BuildConfiguration.props" />
     <None Include="Customizations\Properties.props" />
     <None Include="Customizations\releaseProcessScript.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Customizations\Server\Configuration.Server.targets" />
+    <None Include="Customizations\Server\Configuration.targets" />
     <None Include="Customizations\Version.props" />
     <None Include="packages.config" />
     <None Include="Remotion.build" />
     <None Include="Remotion.Local.build" />
     <None Include="Remotion.Server.build" />
+    <None Include="How-To-Release.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
@@ -62,12 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Remotion.BuildScript, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Remotion.BuildScript.2.0.0-alpha-026\lib\net461\Remotion.BuildScript.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Remotion.ReleaseProcessScript, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Remotion.ReleaseProcessScript.2.0.0-alpha-026\lib\net461\Remotion.ReleaseProcessScript.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Remotion.BuildScript.2.0.0\lib\net461\Remotion.BuildScript.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

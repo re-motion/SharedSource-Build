@@ -19,9 +19,11 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.AssemblyInfo"/>
+
   <Target Name="UpdateAssemblyInfos" 
           DependsOnTargets="PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion" 
-          Condition="$(Version) != ''">
+          Condition="'$(HasCustomVersion)' == 'True'">
     <Message Text="Updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
 
     <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
@@ -50,15 +52,10 @@
     <Copy SourceFiles="@(_assemblyInfosWithBackup)"
           DestinationFiles="%(_assemblyInfosWithBackup.Backup)" />
 
-    <PropertyGroup>
-      <!-- Target framework is already expressed via the TargetFrameworkAttribute injected via csc.exe -->
-      <_configuration>Build type: $(ConfigurationID)</_configuration>
-    </PropertyGroup>
-    
     <MSBuild.ExtensionPack.Framework.AssemblyInfo AssemblyInfoFiles="%(_assemblyInfos.Identity)"
                                                   AssemblyVersion="$(AssemblyVersion)"
                                                   AssemblyFileVersion="$(AssemblyFileVersion)"
-                                                  AssemblyConfiguration="$(_configuration)"
+                                                  AssemblyConfiguration="$(ConfigurationID)"
                                                   AssemblyCopyright="$(Copyright)"
                                                   AssemblyCompany="$(CompanyName)"
                                                   AssemblyProduct="$(ProductName)"
@@ -66,16 +63,6 @@
                                                   UpdateAssemblyInformationalVersion="True" />
 
     <Message Text="Done updating assembly infos, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-  </Target>
-
-  <Target Name="UpdateVersionProps">
-    <XmlPoke
-      XmlInputPath="$(CustomizationsDirectory)Version.props"
-      Namespaces="&lt;Namespace Prefix='x'
-        Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;"
-      Query="//x:PropertyGroup/x:Version"
-      Value="$(Version)"
-     />
   </Target>
 
   <Target Name="CleanAssemblyBackup">

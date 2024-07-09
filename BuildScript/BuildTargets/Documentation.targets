@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Framework.MsBuildHelper"/>
   <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder"/>
 
   <Target Name="GenerateDocumentation" DependsOnTargets="CreateDocumentationProperties;GenerateDocumentationInternal;" />
@@ -43,21 +45,20 @@
 
   <Target Name="CreateDocumentationProperties" DependsOnTargets="AddAdditionalMetadataToOutputFiles;">
     <Error Text="The property 'TempDirectory' is not set." Condition="'$(TempDirectory)' == ''" />
+    <Error Text="The property 'Version' is not set." Condition="'$(Version)' == ''" />
+    <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
+    <Error Text="The property 'DocumentationFileName' is not set." Condition="'$(DocumentationFileName)' == ''" />
 
     <ItemGroup>
       <_documentationRootAssemblies Remove="@(_documentationRootAssemblies)"/>
-      <_documentationRootAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
-      <_assembliesWithDocumentationFileNameMetadata Remove="@(_assembliesWithDocumentationFileNameMetadata)"/>
-      <_assembliesWithDocumentationFileNameMetadata Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.DocumentationFileName)' != ''" />
+      <_documentationRootAssemblies Include="%(ReleaseOutputFiles.FileName)%(ReleaseOutputFiles.Extension)" Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'" />
     </ItemGroup>
 
-    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Count())' &gt; 1" />
-    <Error Text="The 'DocumentationFileName' metadata has been applied to an item in the 'ReleaseOutputFiles' group that does not have the 'CreateDocumentationFile' metadata set to 'True'." 
-           Condition="'@(_documentationRootAssemblies)' != '@(_assembliesWithDocumentationFileNameMetadata)'" />
+    <Error Text="More than one item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'." Condition="'@(_documentationRootAssemblies->Distinct()->Count())' &gt; 1" />
 
     <PropertyGroup>
       <HasDocumentation>False</HasDocumentation>
-      <HasDocumentation Condition="'@(_documentationRootAssemblies->Count())' == 1">True</HasDocumentation>
+      <HasDocumentation Condition="'@(_documentationRootAssemblies->Count())' &gt; 0">True</HasDocumentation>
     </PropertyGroup>
 
     <Message Text="No documentation will be generated because no item in the 'ReleaseOutputFiles' group has the 'CreateDocumentationFile' metadata set to 'True'."
@@ -65,22 +66,39 @@
              Condition="'$(HasDocumentation)' == 'False'" />
 
     <PropertyGroup>
-      <DocumentationIdentifier>%(_documentationRootAssemblies.DocumentationFileName)</DocumentationIdentifier>
+      <DocumentationIdentifier>$(DocumentationFileName)</DocumentationIdentifier>
       <DocumentationBaseDirectory>$(TempDirectory)doc\</DocumentationBaseDirectory>
       <DocumentationCompilationOutputDirectory>$(DocumentationBaseDirectory)Output\</DocumentationCompilationOutputDirectory>
       <DocumentationSandcastleProjectFile>$(DocumentationBaseDirectory)documentation.shfbproj</DocumentationSandcastleProjectFile>
-      <DocumentationOutputFile>$(DocumentationCompilationOutputDirectory)$(DocumentationIdentifier).chm</DocumentationOutputFile>
+      <DocumentationOutputFile>$(DocumentationCompilationOutputDirectory)$(DocumentationFileName).chm</DocumentationOutputFile>
     </PropertyGroup>
-
-    <MSBuild.ExtensionPack.Framework.Assembly TaskAction="GetInfo" NetAssembly="%(_documentationRootAssemblies.Identity)" Condition="'$(HasDocumentation)' == 'True'"> 
-      <Output TaskParameter="OutputItems" ItemName="_assemblyInfo"/> 
-    </MSBuild.ExtensionPack.Framework.Assembly>
 
     <PropertyGroup>
-      <DocumentationAssemblyVersion>%(_assemblyInfo.AssemblyVersion)</DocumentationAssemblyVersion>
-      <DocumentationVersion Condition="'$(Version)' != ''">$(Version)</DocumentationVersion>
-      <DocumentationVersion Condition="'$(Version)' == '' AND '$(HasDocumentation)' == 'True'">%(_assemblyInfo.AssemblyInformationalVersion)</DocumentationVersion>
+      <DocumentationAssemblyVersion>$(AssemblyVersion)</DocumentationAssemblyVersion>
+      <DocumentationVersion>$(Version)</DocumentationVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Sandcastle Helpfile Builder v1.9 only supports .NET Framework assemblies. -->
+      <_filterSpec Remove="@(_filterSpec)"/>
+      <_filterSpec Include="TargetFramework=net45" />
+      <_filterSpec Include="TargetFramework=net451" />
+      <_filterSpec Include="TargetFramework=net452" />
+      <_filterSpec Include="TargetFramework=net46" />
+      <_filterSpec Include="TargetFramework=net461" />
+      <_filterSpec Include="TargetFramework=net462" />
+      <_filterSpec Include="TargetFramework=net47" />
+      <_filterSpec Include="TargetFramework=net471" />
+      <_filterSpec Include="TargetFramework=net472" />
+      <_filterSpec Include="TargetFramework=net48" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <DocumentationAssemblies Remove="@(DocumentationAssemblies)"/>
+    </ItemGroup>
+    <MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="FilterItemsOnMetadata" InputItems1="@(ReleaseOutputFiles)" InputItems2="@(_filterSpec)" Separator=";" Metadata="AdditionalProperties">
+      <Output TaskParameter="OutputItems" ItemName="DocumentationAssemblies"/>
+    </MSBuild.ExtensionPack.Framework.MsBuildHelper>
   </Target>
 
   <Target Name="CreateSandcastleProjectFile" DependsOnTargets="CreateDocumentationProperties;">
@@ -183,14 +201,9 @@
                                        Value="false"
                                        Namespaces="@(_namespaces)"/>
 
-    <ItemGroup>
-      <_documentationAssemblies Remove="@(_documentationAssemblies)"/>
-      <_documentationAssemblies Include="@(ReleaseOutputFiles)" Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != 'True'" />
-    </ItemGroup>
-
     <Remotion.BuildScript.BuildTasks.SandcastleProjectBuilder
         File="$(DocumentationSandcastleProjectFile)"
-        Assemblies="@(_documentationAssemblies)"
+        Assemblies="@(DocumentationAssemblies)"
         NamespaceSummaryFiles="@(_namespaceSummaryFiles)" />
   </Target>
 

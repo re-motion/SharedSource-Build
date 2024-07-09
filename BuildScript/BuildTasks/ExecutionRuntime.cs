@@ -15,6 +15,7 @@
 // under the License.
 //
 using System;
+using JetBrains.Annotations;
 
 namespace Remotion.BuildScript.BuildTasks
 {
@@ -24,13 +25,15 @@ namespace Remotion.BuildScript.BuildTasks
     public string Key { get; }
     public string Value { get; }
     public string DockerImage { get; }
+    public string DockerIsolationMode { get; }
 
-    public ExecutionRuntime (string key, string value, bool useDocker, string dockerImage)
+    public ExecutionRuntime (string key, string value, bool useDocker, string dockerImage, string dockerIsolationMode)
     {
       Key = key;
       Value = value;
       UseDocker = useDocker;
       DockerImage = dockerImage;
+      DockerIsolationMode = dockerIsolationMode;
     }
   }
 }

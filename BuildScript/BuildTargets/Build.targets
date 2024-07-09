@@ -19,6 +19,8 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <UsingTask AssemblyFile="$(RemotionBuildScriptTasksPath)Remotion.BuildScript.dll" TaskName="MSBuild.ExtensionPack.Xml.XmlFile"/>
+
   <PropertyGroup>
     <BackupExtension>bak</BackupExtension>
   </PropertyGroup>
@@ -27,17 +29,14 @@
     <ItemGroup>
       <_projectFiles Remove="@(_projectFiles)" />
       <_projectFiles Include="%(ReleaseOutputFiles.MSBuildSourceProjectFile)">
-        <ReleaseOutputFileIdentity>%(Identity)</ReleaseOutputFileIdentity>
+        <OutputFileIdentity>%(Identity)</OutputFileIdentity>
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
+        <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(FileName)</AssemblyName>
-        <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' == ''">False</CreateNuGetPackageWithSymbolServerSupport>
-        <CreateNuGetPackageWithSymbolServerSupport Condition="'%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)' != ''">%(ReleaseOutputFiles.CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' == ''">False</CreateDocumentationFile>
         <CreateDocumentationFile Condition="'%(ReleaseOutputFiles.CreateDocumentationFile)' != ''">%(ReleaseOutputFiles.CreateDocumentationFile)</CreateDocumentationFile>
-        <DocumentationFileName></DocumentationFileName>
-        <DocumentationFileName Condition="'%(ReleaseOutputFiles.DocumentationFileName)' == '' And '%(ReleaseOutputFiles.CreateDocumentationFile)' == 'True'">%(FileName)</DocumentationFileName>
-        <DocumentationFileName Condition="'%(ReleaseOutputFiles.DocumentationFileName)' != ''">%(ReleaseOutputFiles.DocumentationFileName)</DocumentationFileName>
         <ExcludeFromDocumentation Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' == ''">False</ExcludeFromDocumentation>
         <ExcludeFromDocumentation Condition="'%(ReleaseOutputFiles.ExcludeFromDocumentation)' != ''">%(ReleaseOutputFiles.ExcludeFromDocumentation)</ExcludeFromDocumentation>
       </_projectFiles>
@@ -45,13 +44,13 @@
 
     <ItemGroup>
       <ReleaseOutputFiles Remove="@(ReleaseOutputFiles)" />
-      <ReleaseOutputFiles Include="%(_projectFiles.ReleaseOutputFileIdentity)">
+      <ReleaseOutputFiles Include="%(_projectFiles.OutputFileIdentity)">
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
+        <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(AssemblyName)</AssemblyName>
-        <CreateNuGetPackageWithSymbolServerSupport>%(CreateNuGetPackageWithSymbolServerSupport)</CreateNuGetPackageWithSymbolServerSupport>
         <CreateDocumentationFile>%(CreateDocumentationFile)</CreateDocumentationFile>
-        <DocumentationFileName>%(DocumentationFileName)</DocumentationFileName>
         <ExcludeFromDocumentation>%(ExcludeFromDocumentation)</ExcludeFromDocumentation>
         <ProjectDirectory>%(RootDir)%(Directory)</ProjectDirectory>
       </ReleaseOutputFiles>
@@ -60,9 +59,11 @@
     <ItemGroup>
       <_projectFiles Remove="@(_projectFiles)" />
       <_projectFiles Include="%(TestOutputFiles.MSBuildSourceProjectFile)">
-        <ReleaseOutputFileIdentity>%(Identity)</ReleaseOutputFileIdentity>
+        <OutputFileIdentity>%(Identity)</OutputFileIdentity>
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
+        <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(FileName)</AssemblyName>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' == ''">False</IsDatabaseTest>
         <IsDatabaseTest Condition="'%(TestOutputFiles.IsDatabaseTest)' != ''">%(TestOutputFiles.IsDatabaseTest)</IsDatabaseTest>
@@ -78,9 +79,11 @@
 
     <ItemGroup>
       <TestOutputFiles Remove="@(TestOutputFiles)" />
-      <TestOutputFiles Include="%(_projectFiles.ReleaseOutputFileIdentity)">
+      <TestOutputFiles Include="%(_projectFiles.OutputFileIdentity)">
         <MSBuildSourceProjectFile>%(MSBuildSourceProjectFile)</MSBuildSourceProjectFile>
         <MSBuildSourceTargetName>%(MSBuildSourceTargetName)</MSBuildSourceTargetName>
+        <MSBuildToolsVersion>%(MSBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
         <AssemblyName>%(AssemblyName)</AssemblyName>
         <IsDatabaseTest>%(IsDatabaseTest)</IsDatabaseTest>
         <IsWebTest>%(IsWebTest)</IsWebTest>
@@ -145,19 +148,16 @@
     <Message Text="Done restoring backup copies, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="BuildReleaseProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateReleaseProjectFiles">
+  <Target Name="BuildReleaseProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateReleaseProjectFiles;">
     <Message Text="Building release projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
-    <Error Text="The property 'SolutionKeyFile' is not set." Condition="'$(SolutionKeyFile)' == ''" />
 
     <PropertyGroup>
       <_startTime>$([System.DateTime]::UtcNow)</_startTime>
     </PropertyGroup>
 
     <MSBuild Projects="@(ReleaseProjectFiles)"
+             Targets="DispatchToInnerBuilds;Build"
              ContinueOnError="false"
-             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
              ToolsVersion="%(ReleaseProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="ReleaseOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
@@ -172,25 +172,23 @@
     <Message Text="Done building release projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="BuildTestProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateUnitTestProjectFiles;UpdateIntegrationTestProjectFiles">
+  <Target Name="BuildTestProjects" DependsOnTargets="UpdateAssemblyInfos;UpdateUnitTestProjectFiles;UpdateIntegrationTestProjectFiles;">
     <Message Text="Building test projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
-
-    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
 
     <PropertyGroup>
       <_startTime>$([System.DateTime]::UtcNow)</_startTime>
     </PropertyGroup>
 
     <MSBuild Projects="@(UnitTestProjectFiles)"
+             Targets="DispatchToInnerBuilds;Build"
              ContinueOnError="false"
-             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
              ToolsVersion="%(UnitTestProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
 
     <MSBuild Projects="@(IntegrationTestProjectFiles)"
+             Targets="DispatchToInnerBuilds;Build"
              ContinueOnError="false"
-             Properties="Configuration=$(ConfigurationID);AssemblyOriginatorKeyFile=$(SolutionKeyFile);"
              ToolsVersion="%(IntegrationTestProjectFiles.MSBuildToolsVersion)">
       <Output ItemName="TestOutputFiles" TaskParameter="TargetOutputs"/>
     </MSBuild>
@@ -205,7 +203,13 @@
     <Message Text="Done building test projects, ConfigurationID=$(ConfigurationID)" Importance="High"/>
   </Target>
 
-  <Target Name="UpdateReleaseProjectFiles" Outputs="%(ReleaseProjectFiles.Identity)" Condition="'@(UnitTestProjectFiles)' != ''">
+  <Target Name="UpdateReleaseProjectFiles"
+      Outputs="%(ReleaseProjectFiles.Identity)"
+      Condition="'@(ReleaseProjectFiles)' != ''"
+      DependsOnTargets="PrepareCommonBuildProperties">
+
+    <Error Text="The property 'CommonBuildProperties' is not set." Condition="'$(CommonBuildProperties)' == ''" />
+
     <ItemGroup>
       <_namespaces Remove="@(_namespaces)"/>
       <_namespaces Include="MSBuild">
@@ -232,18 +236,30 @@
       <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <PropertyGroup>
+      <_additionalBuildProperties>$(CommonBuildProperties)</_additionalBuildProperties>
+    </PropertyGroup>
+
     <ItemGroup>
       <ReleaseProjectFiles Condition="'%(ReleaseProjectFiles.Identity)' == '%(Identity)'" >
         <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>$(_additionalBuildProperties)</AdditionalProperties>
       </ReleaseProjectFiles>
     </ItemGroup>
 
     <PropertyGroup>
       <_msBuildToolsVersion></_msBuildToolsVersion>
+      <_additionalBuildProperties></_additionalBuildProperties>
     </PropertyGroup>
   </Target>
 
-  <Target Name="UpdateUnitTestProjectFiles" Outputs="%(UnitTestProjectFiles.Identity)" Condition="'@(UnitTestProjectFiles)' != ''">
+  <Target Name="UpdateUnitTestProjectFiles"
+      Outputs="%(UnitTestProjectFiles.Identity)"
+      Condition="'@(UnitTestProjectFiles)' != ''"
+      DependsOnTargets="PrepareCommonBuildProperties">
+
+    <Error Text="The property 'CommonBuildProperties' is not set." Condition="'$(CommonBuildProperties)' == ''" />
+
     <ItemGroup>
       <_namespaces Remove="@(_namespaces)"/>
       <_namespaces Include="MSBuild">
@@ -270,18 +286,30 @@
       <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <PropertyGroup>
+      <_additionalBuildProperties>$(CommonBuildProperties)</_additionalBuildProperties>
+    </PropertyGroup>
+
     <ItemGroup>
       <UnitTestProjectFiles Condition="'%(UnitTestProjectFiles.Identity)' == '%(Identity)'" >
         <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>$(_additionalBuildProperties)</AdditionalProperties>
       </UnitTestProjectFiles>
     </ItemGroup>
 
     <PropertyGroup>
       <_msBuildToolsVersion></_msBuildToolsVersion>
+      <_additionalBuildProperties></_additionalBuildProperties>
     </PropertyGroup>
   </Target>
 
-  <Target Name="UpdateIntegrationTestProjectFiles" Outputs="%(IntegrationTestProjectFiles.Identity)" Condition="'@(IntegrationTestProjectFiles)' != ''">
+  <Target Name="UpdateIntegrationTestProjectFiles"
+      Outputs="%(IntegrationTestProjectFiles.Identity)"
+      Condition="'@(IntegrationTestProjectFiles)' != ''"
+      DependsOnTargets="PrepareCommonBuildProperties">
+
+    <Error Text="The property 'CommonBuildProperties' is not set." Condition="'$(CommonBuildProperties)' == ''" />
+
     <ItemGroup>
       <_namespaces Remove="@(_namespaces)"/>
       <_namespaces Include="MSBuild">
@@ -308,15 +336,48 @@
       <Output TaskParameter="Value" PropertyName="_msBuildToolsVersion" />
     </MSBuild.ExtensionPack.Xml.XmlFile>
 
+    <PropertyGroup>
+      <_additionalBuildProperties>$(CommonBuildProperties)</_additionalBuildProperties>
+    </PropertyGroup>
+
     <ItemGroup>
       <IntegrationTestProjectFiles Condition="'%(IntegrationTestProjectFiles.Identity)' == '%(Identity)'" >
         <MSBuildToolsVersion>$(_msBuildToolsVersion)</MSBuildToolsVersion>
+        <AdditionalProperties>$(_additionalBuildProperties)</AdditionalProperties>
       </IntegrationTestProjectFiles>
     </ItemGroup>
 
     <PropertyGroup>
       <_msBuildToolsVersion></_msBuildToolsVersion>
+      <_additionalBuildProperties></_additionalBuildProperties>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareCommonBuildProperties"
+      DependsOnTargets="CheckVersion;PrepareAssemblyVersion;PrepareAssemblyFileVersion;PrepareAssemblyInformationalVersion;PrepareAssemblyNuGetVersion;">
+
+    <Error Text="The property 'ConfigurationID' is not set." Condition="'$(ConfigurationID)' == ''" />
+    <Error Text="The property 'SolutionKeyFile' is not set." Condition="'$(SolutionKeyFile)' == ''" />
+    <Error Text="The property 'Version' is not set." Condition="'$(Version)' == ''" />
+    <Error Text="The property 'AssemblyVersion' is not set." Condition="'$(AssemblyVersion)' == ''" />
+    <Error Text="The property 'AssemblyFileVersion' is not set." Condition="'$(AssemblyFileVersion)' == ''" />
+    <Error Text="The property 'AssemblyInformationalVersion' is not set." Condition="'$(AssemblyInformationalVersion)' == ''" />
+    <Error Text="The property 'AssemblyNuGetVersion' is not set." Condition="'$(AssemblyNuGetVersion)' == ''" />
+
+    <PropertyGroup>
+      <CommonBuildProperties>
+        Configuration=$(ConfigurationID);
+        AssemblyOriginatorKeyFile=$(SolutionKeyFile);
+        Version=$(Version);
+        AssemblyVersion=$(AssemblyVersion);
+        FileVersion=$(AssemblyFileVersion);
+        InformationalVersion=$(AssemblyInformationalVersion);
+        PackageVersion=$(AssemblyNuGetVersion);
+        ContinuousIntegrationBuild=true;
+        CommitID=$(CommitID)
+      </CommonBuildProperties>
+    </PropertyGroup>
+
   </Target>
 
 </Project>
