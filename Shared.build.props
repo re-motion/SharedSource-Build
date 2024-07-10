@@ -1,0 +1,15 @@
+<Project>
+
+  <Import Project="$(MSBuildThisFileDirectory)Build\Customizations\Properties.props" />
+  <Import Project="$(MSBuildThisFileDirectory)Build\Customizations\Version.props" Condition="'$(Version)' == ''" />
+
+  <PropertyGroup>
+    <Product>$(ProductName)</Product>
+    <Company>$(CompanyName)</Company>
+    <Copyright>$(Copyright)</Copyright>
+    <Authors>$(Company)</Authors>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>http://www.re-motion.org</PackageProjectUrl>
+  </PropertyGroup>
+
+</Project>

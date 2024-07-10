@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <Import Project="..\Shared.build.props" />
 
   <ItemGroup>
     <None Include="..\license\Apache-2.0.licenseheader" Link="Apache-2.0.licenseheader" />

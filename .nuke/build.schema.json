@@ -1,19 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Build Schema",
   "$ref": "#/definitions/build",
+  "title": "Build Schema",
   "definitions": {
     "build": {
       "type": "object",
       "properties": {
-        "Browsers": {
-          "type": "array",
-          "description": "Browser available for the build to use for test running",
-          "items": {
-            "type": "string"
-          }
+        "AdditionalBuildMetadata": {
+          "type": "string",
+          "description": "Additional build metadata that is attached to the assembly informational version"
         },
-        "Configuration": {
+        "AssemblySigningKeyFile": {
+          "type": "string",
+          "description": "Path to the key file containing the signing key"
+        },
+        "Configurations": {
           "type": "array",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
           "items": {
@@ -23,20 +24,6 @@
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
-        },
-        "DatabaseSystems": {
-          "type": "array",
-          "description": "Database runtimes available for the build to use for test running",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ExecutionRuntimes": {
-          "type": "array",
-          "description": "Execution runtimes available for the build to use for test running",
-          "items": {
-            "type": "string"
-          }
         },
         "Help": {
           "type": "boolean",
@@ -49,6 +36,7 @@
             "AppVeyor",
             "AzurePipelines",
             "Bamboo",
+            "Bitbucket",
             "Bitrise",
             "GitHubActions",
             "GitLab",
@@ -57,18 +45,23 @@
             "SpaceAutomation",
             "TeamCity",
             "Terminal",
+            "TestHost",
             "TravisCI",
             "VisualStudio",
             "VSCode"
           ]
         },
-        "MSBuildExtensionPackPath": {
+        "LogFolder": {
           "type": "string",
-          "description": "Path to MSBuildExtensionPack for running the TestSetupBuildFile"
+          "description": "Path to the log folder where log files are put"
         },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
+        },
+        "OutputFolder": {
+          "type": "string",
+          "description": "Path to the output folder where build artifacts are put"
         },
         "Partition": {
           "type": "string",
@@ -77,13 +70,6 @@
         "Plan": {
           "type": "boolean",
           "description": "Shows the execution plan (HTML)"
-        },
-        "Platforms": {
-          "type": "array",
-          "description": "Platforms available for the build to use for test running",
-          "items": {
-            "type": "string"
-          }
         },
         "Profile": {
           "type": "array",
@@ -102,35 +88,20 @@
           "items": {
             "type": "string",
             "enum": [
-              "CleanFolders",
-              "CompileReleaseBuild",
-              "CompileTestBuild",
-              "GenerateDocumentation",
-              "GenerateNuGetPackagesWithDebugSymbols",
-              "GenerateNuGetPackagesWithSymbolServerSupport",
-              "ReadConfiguration",
+              "Build",
+              "CIBuild",
+              "Clean",
+              "CreateTestMatrix",
+              "DetermineBuildMetadata",
+              "DetermineProjectMetadata",
+              "FullBuild",
+              "NightlyBuild",
+              "Pack",
               "Restore",
-              "RestoreReleaseBuild",
-              "RestoreTestBuild",
-              "RunTests"
+              "Test",
+              "VerifyTestParameters"
             ]
           }
-        },
-        "SkipDocumentation": {
-          "type": "boolean",
-          "description": "Skip generating documentation - true / false"
-        },
-        "SkipNuGet": {
-          "type": "boolean",
-          "description": "Skip generation of nuget package with debug symbols - true / false"
-        },
-        "SkipNuGetOrg": {
-          "type": "boolean",
-          "description": "Skip generation of nuget package with symbol server support - true / false"
-        },
-        "SkipTests": {
-          "type": "boolean",
-          "description": "Skip compiling and running of tests - true / false"
         },
         "Solution": {
           "type": "string",
@@ -142,40 +113,92 @@
           "items": {
             "type": "string",
             "enum": [
-              "CleanFolders",
-              "CompileReleaseBuild",
-              "CompileTestBuild",
-              "GenerateDocumentation",
-              "GenerateNuGetPackagesWithDebugSymbols",
-              "GenerateNuGetPackagesWithSymbolServerSupport",
-              "ReadConfiguration",
+              "Build",
+              "CIBuild",
+              "Clean",
+              "CreateTestMatrix",
+              "DetermineBuildMetadata",
+              "DetermineProjectMetadata",
+              "FullBuild",
+              "NightlyBuild",
+              "Pack",
               "Restore",
-              "RestoreReleaseBuild",
-              "RestoreTestBuild",
-              "RunTests"
+              "Test",
+              "VerifyTestParameters"
             ]
           }
         },
-        "TargetRuntimes": {
+        "TempFolder": {
+          "type": "string",
+          "description": "Path to the temp folder where temporary build files are put"
+        },
+        "TestConfigurations": {
           "type": "array",
-          "description": "Target runtimes available for the build to use for test running",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Debug",
+              "Docker_Win_NET8_0",
+              "EnforcedLocalMachine",
+              "LocalMachine",
+              "NET8_0",
+              "Release",
+              "x64"
+            ]
           }
         },
-        "TestCategoriesToExclude": {
+        "TestExecutionRuntimes": {
           "type": "array",
-          "description": "Test Categories to exclude for test running",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Debug",
+              "Docker_Win_NET8_0",
+              "EnforcedLocalMachine",
+              "LocalMachine",
+              "NET8_0",
+              "Release",
+              "x64"
+            ]
           }
         },
-        "TestCategoriesToInclude": {
+        "TestFilter": {
+          "type": "string",
+          "description": "Executes only tests that match the specified test filter"
+        },
+        "TestPlatforms": {
           "type": "array",
-          "description": "Test Categories to include for test running",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Debug",
+              "Docker_Win_NET8_0",
+              "EnforcedLocalMachine",
+              "LocalMachine",
+              "NET8_0",
+              "Release",
+              "x64"
+            ]
           }
+        },
+        "TestTargetRuntimes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Debug",
+              "Docker_Win_NET8_0",
+              "EnforcedLocalMachine",
+              "LocalMachine",
+              "NET8_0",
+              "Release",
+              "x64"
+            ]
+          }
+        },
+        "UseReleaseVersioning": {
+          "type": "boolean",
+          "description": "Uses release instead of debug versioning when determining the build versions"
         },
         "Verbosity": {
           "type": "string",

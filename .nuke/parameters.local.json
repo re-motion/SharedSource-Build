@@ -1,0 +1,10 @@
+{
+  "$schema": "./build.schema.json",
+  "Solution": "SharedSource-Build.sln",
+  "Target": [ "CIBuild" ],
+  "AssemblySigningKeyFile": "",
+  "TestConfigurations": [ "Debug" ],
+  "TestExecutionRuntimes": [ "LocalMachine" ],
+  "TestPlatforms": [ "x64" ],
+  "TestTargetRuntimes": [ "NET8_0" ]
+}

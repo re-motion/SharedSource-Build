@@ -1,0 +1,11 @@
+{
+  "$schema": "./build.schema.json",
+  "Solution": "SharedSource-Build.sln",
+  "Target": [ "FullBuild" ],
+  "UseReleaseVersioning": true,
+  "AssemblySigningKeyFile": "",
+  "TestConfigurations": [ "Debug", "Release" ],
+  "TestExecutionRuntimes": [ "Docker_Win_NET8_0", "EnforcedLocalMachine" ],
+  "TestPlatforms": [ "x64" ],
+  "TestTargetRuntimes": [ "NET8_0" ]
+}

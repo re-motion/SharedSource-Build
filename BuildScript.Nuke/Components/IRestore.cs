@@ -1,4 +1,4 @@
-// Copyright (c) rubicon IT GmbH, www.rubicon.eu
+﻿// Copyright (c) rubicon IT GmbH, www.rubicon.eu
 // 
 // See the NOTICE file distributed with this work for additional information
 // regarding copyright ownership.  rubicon licenses this file to you under
@@ -13,12 +13,10 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
 
-using System;
 using JetBrains.Annotations;
 using Nuke.Common;
-using Remotion.BuildScript.Components.Tasks;
+using Nuke.Common.Tools.DotNet;
 
 namespace Remotion.BuildScript.Components;
 
@@ -27,21 +25,11 @@ public interface IRestore : IBaseBuild
   [PublicAPI]
   public Target Restore => _ => _
       .Description("Restores all projects")
-      .DependsOn(RestoreReleaseBuild, RestoreTestBuild);
-
-  public Target RestoreReleaseBuild => _ => _
-      .DependsOn<IReadConfiguration>(x => x.ReadConfiguration)
-      .Unlisted()
+      .After<IClean>()
       .Executes(() =>
       {
-        RestoreTask.RestoreProject(ConfigurationData.ReleaseProjectFiles, Directories);
-      });
-
-  public Target RestoreTestBuild => _ => _
-      .DependsOn<IReadConfiguration>(x => x.ReadConfiguration)
-      .Unlisted()
-      .Executes(() =>
-      {
-        RestoreTask.RestoreProject(ConfigurationData.TestProjectFiles, Directories);
+        DotNetTasks.DotNetRestore(s => s
+            .SetProjectFile(Solution)
+        );
       });
 }
