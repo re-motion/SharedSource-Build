@@ -32,7 +32,7 @@ public sealed class Platforms : TestDimension, IConfigureTestSettings
   public static readonly Platforms x64 = new(nameof(x64));
 
   public Platforms (string value)
-      : base(value)
+      : base(nameof(Platforms), value)
   {
   }
 

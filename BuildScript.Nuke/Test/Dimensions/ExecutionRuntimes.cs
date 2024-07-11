@@ -22,23 +22,23 @@ namespace Remotion.BuildScript.Test.Dimensions;
 // ReSharper disable InconsistentNaming
 
 [PublicAPI]
-public sealed class ExecutionRuntimes : TestDimension
+public class ExecutionRuntimes : TestDimension
 {
   public static readonly ExecutionRuntimes LocalMachine = new(nameof(LocalMachine));
   public static readonly ExecutionRuntimes EnforcedLocalMachine = new(nameof(EnforcedLocalMachine));
 
-  public static readonly ExecutionRuntimes Docker_Win_NET462 = new(nameof(Docker_Win_NET462));
-  public static readonly ExecutionRuntimes Docker_Win_NET472 = new(nameof(Docker_Win_NET472));
-  public static readonly ExecutionRuntimes Docker_Win_NET48 = new(nameof(Docker_Win_NET48));
-  public static readonly ExecutionRuntimes Docker_Win_NET481 = new(nameof(Docker_Win_NET481));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET462 = new(nameof(Docker_Win_NET462));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET472 = new(nameof(Docker_Win_NET472));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET48 = new(nameof(Docker_Win_NET48));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET481 = new(nameof(Docker_Win_NET481));
 
-  public static readonly ExecutionRuntimes Docker_Win_NET6_0 = new(nameof(Docker_Win_NET6_0));
-  public static readonly ExecutionRuntimes Docker_Win_NET7_0 = new(nameof(Docker_Win_NET7_0));
-  public static readonly ExecutionRuntimes Docker_Win_NET8_0 = new(nameof(Docker_Win_NET8_0));
-  public static readonly ExecutionRuntimes Docker_Win_NET9_0 = new(nameof(Docker_Win_NET9_0));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET6_0 = new(nameof(Docker_Win_NET6_0));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET7_0 = new(nameof(Docker_Win_NET7_0));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET8_0 = new(nameof(Docker_Win_NET8_0));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET9_0 = new(nameof(Docker_Win_NET9_0));
 
   public ExecutionRuntimes (string value)
-      : base(value)
+      : base(nameof(ExecutionRuntimes), value)
   {
   }
 }

@@ -17,30 +17,16 @@
 using System;
 using Remotion.BuildScript.Test.Dimensions;
 using Remotion.BuildScript.Test.Runtimes;
+using DockerExecutionRuntime = Remotion.BuildScript.Test.Runtimes.DockerExecutionRuntime;
 
 namespace Remotion.BuildScript.Test;
 
-public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory, IRequiresTestParameters
+public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
 {
-  private const string c_imageParameterName = "Image";
-  private const string c_isolationModeParameterName = "IsolationMode";
-
   public static readonly DefaultTestExecutionRuntimeFactory Instance = new();
 
   private DefaultTestExecutionRuntimeFactory ()
   {
-  }
-
-  public void ConfigureTestParameters (TestParameterBuilder builder)
-  {
-    foreach (var executionRuntime in builder.EnabledTestDimensions.OfType<ExecutionRuntimes>())
-    {
-      if (!executionRuntime.Value.StartsWith("Docker_"))
-        continue;
-
-      builder.AddRequiredParameter(executionRuntime, c_imageParameterName);
-      builder.AddOptionalParameter(executionRuntime, c_isolationModeParameterName, "");
-    }
   }
 
   public ITestExecutionRuntime CreateTestExecutionRuntime (TestExecutionContext context)
@@ -51,10 +37,10 @@ public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory, 
       return new LocalExecutionRuntime();
     }
 
-    if (executionRuntime.Value.StartsWith("Docker_"))
+    if (executionRuntime is DockerExecutionRuntimes dockerExecutionRuntimes)
     {
-      var dockerImage = context.GetTestParameter(executionRuntime, c_imageParameterName);
-      var dockerIsolationMode = context.GetTestParameter(executionRuntime, c_isolationModeParameterName);
+      var dockerImage = dockerExecutionRuntimes.GetImage(context);
+      var dockerIsolationMode = dockerExecutionRuntimes.GetIsolationMode(context);
       return new DockerExecutionRuntime(
           dockerImage,
           dockerIsolationMode);
