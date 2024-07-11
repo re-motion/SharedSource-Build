@@ -56,7 +56,7 @@ public class TestMatricesBuilder
       {
         var value = matrix[x, y];
         if (!addedTestDimensionNames.Add(value.Name))
-          Assert.Fail($"Test matrix '{name}' contains a duplicate test dimension '{value.GetType().Name}' in row {x}.");
+          Assert.Fail($"Test matrix '{name}' contains a duplicate test dimension '{value.Name}' in row {x}.");
 
         if (!_supportedTestDimensions.IsSupported(value))
           Assert.Fail($"The value '{value}' is not a supported value.");
