@@ -38,7 +38,7 @@ public class TestMatrixRow
   public T? GetDimensionOrDefault<T> ()
     where T : TestDimension
   {
-    return (T?)Elements.SingleOrDefault(e => e.GetType() == typeof(T));
+    return (T?)Elements.SingleOrDefault(e => e.GetType().IsAssignableTo(typeof(T)));
   }
 
   public override string ToString ()
