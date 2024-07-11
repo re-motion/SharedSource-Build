@@ -49,13 +49,13 @@ public class TestMatricesBuilder
     var rowBuilder = ImmutableArray.CreateBuilder<TestMatrixRow>();
     for (var x = 0; x < matrix.GetLength(0); x++)
     {
-      var addedTestDimensions = new HashSet<Type>();
+      var addedTestDimensionNames = new HashSet<string>();
       var testDimensionBuilder = ImmutableArray.CreateBuilder<TestDimension>();
 
       for (var y = 0; y < matrix.GetLength(1); y++)
       {
         var value = matrix[x, y];
-        if (!addedTestDimensions.Add(value.GetType()))
+        if (!addedTestDimensionNames.Add(value.Name))
           Assert.Fail($"Test matrix '{name}' contains a duplicate test dimension '{value.GetType().Name}' in row {x}.");
 
         if (!_supportedTestDimensions.IsSupported(value))
@@ -65,15 +65,15 @@ public class TestMatricesBuilder
       }
 
       // Check if all the values are supported dimensions values
-      if (!addedTestDimensions.SetEquals(_supportedTestDimensions.ByType))
+      if (!addedTestDimensionNames.SetEquals(_supportedTestDimensions.Names))
       {
-        var missing = _supportedTestDimensions.ByType.Except(addedTestDimensions);
-        var added = addedTestDimensions.Except(_supportedTestDimensions.ByType);
+        var missing = _supportedTestDimensions.Names.Except(addedTestDimensionNames);
+        var added = addedTestDimensionNames.Except(_supportedTestDimensions.Names);
 
         throw new InvalidOperationException(
             $"Test matrix '{name}' contains invalid dimension values in row {x}. "
-            + $"Missing: [{string.Join(", ", missing.Select(e => e.Name))}]. "
-            + $"Additional: [{string.Join(", ", added.Select(e => e.Name))}]");
+            + $"Missing: [{string.Join(", ", missing)}]. "
+            + $"Additional: [{string.Join(", ", added)}]");
       }
 
       // Check if all the values are actually enabled

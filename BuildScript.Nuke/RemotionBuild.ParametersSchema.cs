@@ -37,6 +37,6 @@ public partial class RemotionBuild
     ConfigureSupportedTestDimensions(supportedTestDimensionsBuilder);
 
     var supportedTestDimensions = supportedTestDimensionsBuilder.Build();
-    return supportedTestDimensions.ByName.Values.Select(e => e.ToString());
+    return supportedTestDimensions.Values.Values.OfType<T>().Select(e => e!.ToString()!);
   }
 }

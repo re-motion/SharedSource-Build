@@ -17,45 +17,67 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensions
 {
-  public static readonly SupportedTestDimensions Empty = new(ImmutableHashSet<Type>.Empty, ImmutableDictionary<string, TestDimension>.Empty);
+  public static readonly SupportedTestDimensions Empty = new(ImmutableDictionary<string, TestDimension>.Empty);
 
-  public ImmutableHashSet<Type> ByType { get; }
-
-  public ImmutableDictionary<string, TestDimension> ByName { get; }
-
-  public SupportedTestDimensions (
-      ImmutableHashSet<Type> byType,
-      ImmutableDictionary<string, TestDimension> byName)
+  private static IEnumerable<Type> GetRelevantTestDimensionTypes (TestDimension testDimension)
   {
-    ByType = byType;
-    ByName = byName;
+    ArgumentNullException.ThrowIfNull(testDimension);
+
+    var current = testDimension.GetType();
+    while (current != typeof(TestDimension))
+    {
+      yield return current;
+      current = current.BaseType!;
+
+      Debug.Assert(current != null, "current != null");
+    }
   }
 
-  public bool IsSupported(TestDimension value)
+  public ImmutableDictionary<string, TestDimension> Values { get; }
+
+  public ImmutableHashSet<Type> Types { get; }
+
+  public ImmutableHashSet<string> Names { get; }
+
+  public SupportedTestDimensions (ImmutableDictionary<string, TestDimension> values)
   {
-    return ByName.TryGetValue(value.Value, out var existingValue) && value == existingValue;
+    Values = values;
+
+    Types = Values.Values
+        .SelectMany(GetRelevantTestDimensionTypes)
+        .ToImmutableHashSet();
+
+    Names = Values.Values
+        .Select(e => e.Name)
+        .ToImmutableHashSet();
+  }
+
+  public bool IsSupported (TestDimension value)
+  {
+    return Values.TryGetValue(value.Value, out var existingValue) && value == existingValue;
   }
 
   public bool IsSupported<T> ()
-    where T : TestDimension
+      where T : TestDimension
   {
-    return ByType.Contains(typeof(T));
+    return Types.Contains(typeof(T));
   }
 
   public IEnumerable<T> OfType<T> ()
-    where T : TestDimension
+      where T : TestDimension
   {
-    return ByName.Values.OfType<T>();
+    return Values.Values.OfType<T>();
   }
 
   public T[]? ParseTestDimensionValuesOrDefault<T> (string[] values)
-    where T : TestDimension
+      where T : TestDimension
   {
     if (values.Length == 0)
       return null;
@@ -64,7 +86,7 @@ public class SupportedTestDimensions
     for (var i = 0; i < values.Length; i++)
     {
       var dimensionString = values[i].Trim();
-      if (!ByName.TryGetValue(dimensionString, out var testDimension))
+      if (!Values.TryGetValue(dimensionString, out var testDimension))
         throw new InvalidOperationException($"The supplied test dimension '{dimensionString}' is not supported.");
       if (testDimension is not T concreteTestDimension)
         throw new InvalidOperationException($"The supplied test dimension '{dimensionString}' is not of the dimension type '{typeof(T).Name}'.");

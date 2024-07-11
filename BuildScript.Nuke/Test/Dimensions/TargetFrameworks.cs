@@ -46,7 +46,7 @@ public sealed class TargetFrameworks : TestDimension, IConfigureTestSettings
   public bool IsNetFramework { get; }
 
   public TargetFrameworks (string value, string identifier, bool isNetFramework)
-      : base(value)
+      : base(nameof(TargetFrameworks), value)
   {
     Identifier = identifier;
     IsNetFramework = isNetFramework;

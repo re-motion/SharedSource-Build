@@ -21,7 +21,6 @@ namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensionsBuilder
 {
-  private readonly ImmutableHashSet<Type>.Builder _supportedTestDimensionTypes = ImmutableHashSet.CreateBuilder<Type>();
   private readonly ImmutableDictionary<string, TestDimension>.Builder _supportedTestDimensionsByName = ImmutableDictionary.CreateBuilder<string, TestDimension>();
 
   public void AddSupportedDimension<T>(params T[] supportedValues)
@@ -42,15 +41,13 @@ public class SupportedTestDimensionsBuilder
         continue;
       }
 
-      _supportedTestDimensionTypes.Add(supportedValue.GetType());
       _supportedTestDimensionsByName.Add(dimensionValueName, supportedValue);
     }
   }
 
   public SupportedTestDimensions Build ()
   {
-    return new SupportedTestDimensions(
-        _supportedTestDimensionTypes.ToImmutable(),
-        _supportedTestDimensionsByName.ToImmutable());
+    var values = _supportedTestDimensionsByName.ToImmutable();
+    return new SupportedTestDimensions(values);
   }
 }

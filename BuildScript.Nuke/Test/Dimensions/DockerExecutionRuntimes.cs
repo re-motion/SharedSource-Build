@@ -14,25 +14,31 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System;
-using JetBrains.Annotations;
-using Nuke.Common.Tools.DotNet;
-
 namespace Remotion.BuildScript.Test.Dimensions;
 
-[PublicAPI]
-public sealed class Configurations : TestDimension, IConfigureTestSettings
+public class DockerExecutionRuntimes : ExecutionRuntimes, IRequiresTestParameters
 {
-  public static readonly Configurations Debug = new(nameof(Debug));
-  public static readonly Configurations Release = new(nameof(Release));
+  private const string c_imageParameterName = "Image";
+  private const string c_isolationModeParameterName = "IsolationMode";
 
-  public Configurations (string value)
-      : base(nameof(Configurations), value)
+  public DockerExecutionRuntimes (string value)
+      : base(value)
   {
   }
 
-  DotNetTestSettings IConfigureTestSettings.ConfigureTestSettings (DotNetTestSettings settings)
+  public void ConfigureTestParameters (TestParameterBuilder builder)
   {
-    return settings.SetConfiguration(Value);
+    builder.AddRequiredParameter(this, c_imageParameterName);
+    builder.AddOptionalParameter(this, c_isolationModeParameterName, "");
+  }
+
+  public string GetImage (TestExecutionContext context)
+  {
+    return context.GetTestParameter(this, c_imageParameterName);
+  }
+
+  public string GetIsolationMode (TestExecutionContext context)
+  {
+    return context.GetTestParameter(this, c_isolationModeParameterName);
   }
 }

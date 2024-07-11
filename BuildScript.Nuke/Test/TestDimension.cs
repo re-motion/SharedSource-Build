@@ -21,10 +21,13 @@ namespace Remotion.BuildScript.Test;
 public abstract class TestDimension
     : IEquatable<TestDimension>
 {
+  public string Name { get; }
+
   public string Value { get; }
 
-  protected TestDimension (string value)
+  protected TestDimension (string name, string value)
   {
+    Name = name;
     Value = value;
   }
 
@@ -35,7 +38,8 @@ public abstract class TestDimension
     if (ReferenceEquals(this, other))
       return true;
 
-    return Value == other.Value;
+    return Name == other.Name
+        && Value == other.Value;
   }
 
   public override bool Equals (object? obj)
@@ -44,10 +48,10 @@ public abstract class TestDimension
       return false;
     if (ReferenceEquals(this, obj))
       return true;
-    if (obj.GetType() != GetType())
+    if (obj is not TestDimension otherTestDimension)
       return false;
 
-    return Equals((TestDimension) obj);
+    return Equals(otherTestDimension);
   }
 
   public override int GetHashCode () => Value.GetHashCode();
