@@ -15,6 +15,8 @@
 // under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
@@ -43,114 +45,16 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
       .Description("Runs all tests")
       .Executes(() =>
       {
-        bool fatalFailure = false;
-        int passedTestCount = 0, failedTestCount = 0, totalTestCount = 0;
-        foreach (var projectMetadata in ProjectMetadata)
-        {
-          var testConfiguration = projectMetadata.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestConfiguration);
-          if (testConfiguration == null)
-            continue;
+        var testGroups = CreateTestGroups();
+        // todo print test grouping
 
-          var testMatrix = testConfiguration.TestMatrix;
-          if (testMatrix.IsEmpty)
-          {
-            Log.Information($"Skipped test project '{projectMetadata.Name}' as there are no test configurations");
-            continue;
-          }
+        var testContext = CreateTestContext();
+        foreach (var testGroup in testGroups)
+          testGroup.Execute(testContext);
 
-          var supportedTargetFrameworks = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks);
-
-          using var _ = GroupingBlock.Start($"Test project '{projectMetadata.Name}' with {testMatrix.Rows.Length} test configurations");
-          Log.Information($"Testing project '{projectMetadata.Name}' in {testMatrix.Rows.Length} test configurations.");
-          foreach (var row in testMatrix.Rows)
-          {
-            var targetFramework = row.GetDimensionOrDefault<TargetFrameworks>();
-            if (targetFramework != null && !supportedTargetFrameworks.Contains(targetFramework.Identifier))
-            {
-              Log.Warning($"Skipped test configuration '{row}' as the target framework '{targetFramework.Identifier}' is not supported. "
-                              + $"Supported are: '{supportedTargetFrameworks}'");
-              continue;
-            }
-
-            using var __ = GroupingBlock.Start($"Test configuration '{row}'");
-            Log.Information($"Run test configuration '{row}':");
-
-            var assemblyName = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.AssemblyName);
-            var resultFileName = $"{assemblyName}.{string.Join(".", row.Elements)}.xml";
-            var resultFilePath = LogFolder / resultFileName;
-
-            var dotNetTestSettings = new DotNetTestSettings()
-                .SetProjectFile(projectMetadata.FilePath)
-                .AddLoggers($"trx;LogFileName={resultFilePath}")
-                .EnableNoRestore()
-                .EnableNoBuild()
-                .When(!string.IsNullOrEmpty(TestFilter), s => s
-                    .SetFilter(TestFilter)
-                );
-
-            foreach (var configure in row.Elements.OfType<IConfigureTestSettings>())
-              dotNetTestSettings = configure.ConfigureTestSettings(dotNetTestSettings);
-
-            var testExecutionContext = new TestExecutionContext(this, projectMetadata, TestParameters, row, dotNetTestSettings);
-            var testExecutionRuntime = testConfiguration.TestExecutionRuntimeFactory.CreateTestExecutionRuntime(testExecutionContext);
-
-            Action<TestExecutionContext> next = context => testExecutionRuntime.ExecuteTests(context);
-            foreach (var testExecutionWrapper in testConfiguration.TestExecutionWrappers.Reverse())
-            {
-              var myNext = next;
-              next = context => testExecutionWrapper.ExecuteTests(context, myNext);
-            }
-
-            next(testExecutionContext);
-
-            // For unexpected exit code we want the build to fail after all tests are executed to ensure that the error is inspected
-            var exitCode = testExecutionContext.ExitCode;
-            if (exitCode != 0 && exitCode != 1)
-            {
-              Log.Fatal($"Test execution for '{projectMetadata.Name}' with '{row}' failed with exit code {exitCode}.");
-              fatalFailure = true;
-              continue;
-            }
-
-            if (resultFilePath.FileExists())
-            {
-              var passedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@passed")!);
-              var failedTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@failed")!);
-              var totalTests = int.Parse(XmlTasks.XmlPeekSingle(resultFilePath, "//@total")!);
-
-              if (exitCode == 0)
-              {
-                Log.Information($"Test execution for '{projectMetadata.Name}' with '{row}' succeeded. ({totalTests} tests)");
-              }
-              else
-              {
-                Log.Error($"Test execution for '{projectMetadata.Name}' with '{row}' failed. ({failedTests}/{totalTests} failed tests)");
-              }
-
-              TeamCity.Instance?.ImportData(TeamCityImportType.mstest, resultFilePath, verbose: true, action: TeamCityNoDataPublishedAction.error);
-
-              passedTestCount += passedTests;
-              failedTestCount += failedTests;
-              totalTestCount += totalTests;
-            }
-            else
-            {
-              if (exitCode == 0)
-              {
-                Log.Warning(
-                    $"Test execution for '{projectMetadata.Name}' with '{row}' did not produce an output file but reported exit code = 0. "
-                    + "This can be correct if the target framework is not supported or if there are no tests to execute.");
-              }
-              else
-              {
-                Log.Error($"Test execution for '{projectMetadata.Name}' with '{row}' did not produce any outputs.");
-              }
-            }
-          }
-        }
-
-        var finalMessage = $"Test execution finished. Failed: {failedTestCount}, Passed: {passedTestCount}, Total: {totalTestCount}";
-        if (failedTestCount > 0)
+        var finalMessage = $"Test execution finished. Failed: {testContext.FailedTestCount},"
+                           + $" Passed: {testContext.PassedTestCount}, Total: {testContext.TotalTestCount}";
+        if (testContext.FailedTestCount > 0)
         {
           Log.Error(finalMessage);
         }
@@ -159,6 +63,56 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
           Log.Information(finalMessage);
         }
 
-        Assert.False(fatalFailure, "One or more test projects failed fatally.");
+        Assert.False(testContext.FatalFailure, "One or more test projects failed fatally.");
       });
+
+  ITestContext CreateTestContext () => new TestContext(this);
+
+  ImmutableArray<TestGroup> CreateTestGroups ()
+  {
+    var testGroups = ImmutableArray.CreateBuilder<TestGroup>();
+    var testCases = ImmutableArray.CreateBuilder<ITestItem>();
+
+    foreach (var projectMetadata in ProjectMetadata)
+    {
+      var testConfiguration = projectMetadata.GetMetadataOrDefault(RemotionBuildMetadataProperties.TestConfiguration);
+      if (testConfiguration == null)
+        continue;
+
+      var testMatrix = testConfiguration.TestMatrix;
+      if (testMatrix.IsEmpty)
+      {
+        Log.Information($"Skipped test project '{projectMetadata.Name}' as there are no test configurations.");
+        continue;
+      }
+
+      var supportedTargetFrameworks = projectMetadata.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks);
+      foreach (var row in testMatrix.Rows)
+      {
+        var targetFramework = row.GetDimensionOrDefault<TargetFrameworks>();
+        if (targetFramework != null && !supportedTargetFrameworks.Contains(targetFramework.Identifier))
+        {
+          Log.Warning($"Skipped test configuration '{row}' as the target framework '{targetFramework.Identifier}' is not supported. "
+                      + $"Supported are: '{supportedTargetFrameworks}'");
+          continue;
+        }
+
+        var testCase = new TestCase(
+            row.ToString(),
+            projectMetadata,
+            row,
+            testConfiguration.TestExecutionRuntimeFactory,
+            testConfiguration.TestExecutionWrappers);
+        testCases.Add(testCase);
+      }
+
+      if (testCases.Count > 0)
+      {
+        testGroups.Add(new SerialTestGroup(projectMetadata.Name, testCases.ToImmutable()));
+        testCases.Clear();
+      }
+    }
+
+    return testGroups.ToImmutable();
+  }
 }

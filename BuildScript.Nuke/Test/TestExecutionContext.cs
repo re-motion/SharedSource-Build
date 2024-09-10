@@ -24,29 +24,33 @@ namespace Remotion.BuildScript.Test;
 
 public class TestExecutionContext
 {
-  public IBaseBuild Build { get; }
+  public ITest ITest { get; }
 
-  public ProjectMetadata Project { get; }
+  public TestCase TestCase { get; }
 
-  public TestMatrixRow TestMatrixRow { get; }
+  public IBaseBuild Build => ITest;
 
-  public ImmutableDictionary<string, string> TestParameters { get; }
+  public ProjectMetadata Project => TestCase.Project;
+
+  public TestMatrixRow TestMatrixRow => TestCase.Row;
+
+  public ImmutableDictionary<string, string> TestParameters => ITest.TestParameters;
 
   public DotNetTestSettings DotNetTestSettings { get; }
 
   public int ExitCode { get; set; } = -1;
 
   public TestExecutionContext (
-      IBaseBuild build,
-      ProjectMetadata project,
-      ImmutableDictionary<string, string> testParameters,
-      TestMatrixRow testMatrixRow,
+      ITest iTest,
+      TestCase testCase,
       DotNetTestSettings dotNetTestSettings)
   {
-    Build = build;
-    Project = project;
-    TestParameters = testParameters;
-    TestMatrixRow = testMatrixRow;
+    ArgumentNullException.ThrowIfNull(iTest);
+    ArgumentNullException.ThrowIfNull(testCase);
+    ArgumentNullException.ThrowIfNull(dotNetTestSettings);
+
+    ITest = iTest;
+    TestCase = testCase;
     DotNetTestSettings = dotNetTestSettings;
   }
 
