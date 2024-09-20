@@ -17,13 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
-using Nuke.Common.CI.TeamCity;
-using Nuke.Common.IO;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Test.Dimensions;
 using Remotion.BuildScript.Util;
@@ -33,6 +28,49 @@ namespace Remotion.BuildScript.Components;
 
 public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
 {
+  private class ParallelGroupIdentifier
+  {
+    public static readonly ParallelGroupIdentifier Empty = new(ImmutableHashSet<string>.Empty);
+
+    private int? _hashCode;
+
+    public ImmutableHashSet<string> Values { get; }
+
+    public ParallelGroupIdentifier (ImmutableHashSet<string> values)
+    {
+      Values = values;
+    }
+
+    public override int GetHashCode ()
+    {
+      // ReSharper disable NonReadonlyMemberInGetHashCode
+      if (_hashCode != null)
+        return _hashCode.Value;
+
+      // Not ideal hash code combination but we want to ensure that the order of
+      // elements does not matter and I am not sure that HashCode.Combine guarantees that
+      var hashCode = 0;
+      foreach (var element in Values)
+      {
+        unchecked
+        {
+          hashCode += element.GetHashCode();
+        }
+      }
+
+      _hashCode = hashCode;
+      return hashCode;
+    }
+
+    public override bool Equals (object? obj)
+    {
+      if (obj is ParallelGroupIdentifier other)
+        return Values.SetEquals(other.Values);
+
+      return false;
+    }
+  }
+
   [Parameter("Executes only tests that match the specified test filter.")]
   public string TestFilter => TryGetValue(() => TestFilter) ?? "";
 
@@ -46,7 +84,11 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
       .Executes(() =>
       {
         var testGroups = CreateTestGroups();
-        // todo print test grouping
+        using (GroupingBlock.Start("Test execution plan"))
+        {
+          foreach (var testGroup in testGroups)
+            PrintTestGroupsRecursive(testGroup, " ");
+        }
 
         var testContext = CreateTestContext();
         foreach (var testGroup in testGroups)
@@ -70,7 +112,15 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
 
   ImmutableArray<TestGroup> CreateTestGroups ()
   {
-    var testGroups = ImmutableArray.CreateBuilder<TestGroup>();
+    // Each project has a list of shared resources (string identifiers) that it has a dependency on
+    // Projects that do not depend on the same shared resource can run in parallel.
+    // Creating a perfect parallel execution plan is a bit complex so we do a simpler version that should still be pretty good:
+    //  1. Group all projects with the same set of shared resources into SerialTestGroups
+    //  2. Now we sort all the groups by their number of shared resources low -> high (keeping the 0 shared resource projects separate)
+    //  3. Picking the first one, we try to add more groups as long as the shared resources don't overlap, creating ParallelTestGroups
+    //     Elements with 0 shared resources can be added to any parallel group. Repeat this step until no more groups are left.
+    var serialTestGroups = ImmutableArray.CreateBuilder<TestGroup>();
+    var parallelGroupLookup = new Dictionary<ParallelGroupIdentifier, ImmutableArray<TestGroup>.Builder>();
     var testCases = ImmutableArray.CreateBuilder<ITestItem>();
 
     foreach (var projectMetadata in ProjectMetadata)
@@ -108,11 +158,51 @@ public interface ITest : IBuild, IProjectMetadata, ITestMatrix, ITestParameters
 
       if (testCases.Count > 0)
       {
-        testGroups.Add(new SerialTestGroup(projectMetadata.Name, testCases.ToImmutable()));
+        var projectTestGroup = new SerialTestGroup(projectMetadata.Name, testCases.ToImmutable());
         testCases.Clear();
+
+        // 1) Group according to their parallel identifier
+        var parallelGroupIdentifier = GetParallelGroupIdentifier(projectMetadata);
+        if (parallelGroupIdentifier == null)
+        {
+          serialTestGroups.Add(projectTestGroup);
+        }
+        else
+        {
+          if (!parallelGroupLookup.TryGetValue(parallelGroupIdentifier, out var parallelGroup))
+          {
+            parallelGroup = ImmutableArray.CreateBuilder<TestGroup>();
+            parallelGroupLookup.Add(parallelGroupIdentifier, parallelGroup);
+          }
+
+          parallelGroup.Add(projectTestGroup);
+        }
       }
     }
 
+
+
     return testGroups.ToImmutable();
+  }
+
+  private static void PrintTestGroupsRecursive (TestGroup testGroup, string prefix)
+  {
+    Console.WriteLine($"{prefix}> {testGroup}");
+    foreach (var testItem in testGroup.TestItems)
+    {
+      if (testItem is TestGroup childItem)
+      {
+        PrintTestGroupsRecursive(childItem, prefix + "|");
+      }
+      else
+      {
+        Console.WriteLine($"{prefix} - '{testItem.Name}'");
+      }
+    }
+  }
+
+  private static ParallelGroupIdentifier GetParallelGroupIdentifier (ProjectMetadata project)
+  {
+    project.GetMetadata(RemotionBuildMetadataProperties.)
   }
 }

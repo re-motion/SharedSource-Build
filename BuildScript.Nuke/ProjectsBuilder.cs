@@ -59,6 +59,14 @@ public class ProjectsBuilder
     var assemblyName = msBuildProject.GetProperty("AssemblyName").NotNull().EvaluatedValue;
     projectBuilder.SetMetadata(RemotionBuildMetadataProperties.AssemblyName, assemblyName);
 
+    var evaluatedValue = msBuildProject.GetProperty("RemotionBuildParallelTests")?.EvaluatedValue.Equals("true", StringComparison.OrdinalIgnoreCase);
+    if (evaluatedValue.HasValue)
+      projectBuilder.SetMetadata(RemotionBuildMetadataProperties.ParallelTests, evaluatedValue.Value);
+
+    var testResources = msBuildProject.GetProperty("RemotionBuildTestSharedResources")?.EvaluatedValue;
+    if (!string.IsNullOrWhiteSpace(testResources))
+      projectBuilder.SetMetadata(RemotionBuildMetadataProperties.SharedTestResources, CreateSharedTestResourcesArray(testResources));
+
     Log.Information($"Determined project metadata for project '{project.Name}'.");
 
     return projectBuilder;
@@ -83,5 +91,15 @@ public class ProjectsBuilder
   public ImmutableArray<ProjectMetadata> Build ()
   {
     return _projects.Values.Select(e => e.Build()).ToImmutableArray();
+  }
+
+  private static ImmutableHashSet<string> CreateSharedTestResourcesArray (string value)
+  {
+    return [
+        ..value.Split(';')
+            .Select(e => e.ToLower())
+            .Distinct()
+            .OrderBy(e => e)
+    ];
   }
 }

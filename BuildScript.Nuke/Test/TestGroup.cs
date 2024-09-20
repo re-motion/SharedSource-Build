@@ -34,4 +34,6 @@ public abstract class TestGroup : ITestItem
   }
 
   public abstract void Execute (ITestContext context);
+
+  public override string ToString () => $"{GetType().Name} '{Name}' with {TestItems.Length} items";
 }

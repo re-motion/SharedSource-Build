@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Immutable;
 using Remotion.BuildScript.Test;
 
 namespace Remotion.BuildScript;
@@ -26,6 +27,8 @@ public static class RemotionBuildMetadataProperties
 
   // Testing
   public static readonly ProjectMetadataProperty<TestConfiguration> TestConfiguration = ProjectMetadataProperty.Create<TestConfiguration>(nameof(TestConfiguration));
+  public static readonly ProjectMetadataProperty<bool> ParallelTests = ProjectMetadataProperty.CreateWithDefault(nameof(ParallelTests), false);
+  public static readonly ProjectMetadataProperty<ImmutableHashSet<string>> SharedTestResources = ProjectMetadataProperty.CreateWithDefault(nameof(SharedTestResources), ImmutableHashSet<string>.Empty);
 
   // Packaging
   public static readonly ProjectMetadataProperty<bool> CreateNugetPackage = ProjectMetadataProperty.CreateWithDefault(nameof(CreateNugetPackage), false);
