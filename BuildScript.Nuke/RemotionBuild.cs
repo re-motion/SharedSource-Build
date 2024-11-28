@@ -30,6 +30,7 @@ public abstract partial class RemotionBuild
         IRestore,
         IBuild,
         IPack,
+        IGenerateSbom,
         ITest
 {
   ImmutableDictionary<string, BuildMetadata> IBuildMetadata.BuildMetadataPerConfiguration { get; set; } = ImmutableDictionary<string, BuildMetadata>.Empty;

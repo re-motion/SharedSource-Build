@@ -99,7 +99,8 @@
               "PreparePack",
               "Restore",
               "Test",
-              "VerifyTestParameters"
+              "VerifyTestParameters",
+              "GenerateSbom"
             ]
           }
         },
@@ -125,7 +126,8 @@
               "PreparePack",
               "Restore",
               "Test",
-              "VerifyTestParameters"
+              "VerifyTestParameters",
+              "GenerateSbom"
             ]
           }
         },

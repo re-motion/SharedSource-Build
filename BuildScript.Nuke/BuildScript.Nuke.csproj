@@ -17,12 +17,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CycloneDX.Utils" Version="8.0.3" />
     <PackageReference Include="Nuke.Build" Version="8.0.0" />
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
+    <PackageReference Include="SbomCleaner.Library" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="BuildScript.Nuke.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CycloneDX" Version="4.0.0" ExcludeAssets="all" />
   </ItemGroup>
 
 </Project>

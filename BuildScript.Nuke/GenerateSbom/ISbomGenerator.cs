@@ -14,30 +14,13 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common;
-using Remotion.BuildScript.Components;
+using Nuke.Common.Tooling;
 
-namespace Remotion.BuildScript;
+namespace Remotion.BuildScript.GenerateSbom;
 
-public partial class RemotionBuild
+public interface ISbomGenerator
 {
-  public Target CIBuild => _ => _
-      .DependsOn<IClean>()
-      .DependsOn<IBuild>()
-      .DependsOn<IPack>()
-      .DependsOn<ITest>();
+  SbomGeneration SbomGeneration { get; }
 
-  public Target NightlyBuild => _ => _
-      .DependsOn<IClean>()
-      .DependsOn<IBuild>()
-      .DependsOn<IPack>()
-      .DependsOn<ITest>()
-      .DependsOn<IGenerateSbom>();
-
-  public Target FullBuild => _ => _
-      .DependsOn<IClean>()
-      .DependsOn<IBuild>()
-      .DependsOn<IPack>()
-      .DependsOn<ITest>()
-      .DependsOn<IGenerateSbom>();
+  void Generate (Tool cycloneDX);
 }
