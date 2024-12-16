@@ -17,15 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using CycloneDX.Models;
 using CycloneDX.Utils;
 using CycloneDX.Xml;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
@@ -51,12 +45,14 @@ public class SolutionSbomGenerator: ISbomGenerator
   private readonly AbsolutePath _outputFile;
 
   private readonly Solution _solution;
+  private readonly string _version;
   private readonly AbsolutePath _workingDirectory;
 
   private readonly AbsolutePath? _pathToPackageJson;
 
   public SolutionSbomGenerator (
       Solution solution,
+      string version,
       AbsolutePath workingDirectory,
       AbsolutePath outputFile,
       FilterList packageBlackList,
@@ -66,6 +62,7 @@ public class SolutionSbomGenerator: ISbomGenerator
       string githubAccessToken)
   {
     _solution = solution;
+    _version = version;
     _workingDirectory = workingDirectory;
     _outputFile = outputFile;
     _projectBlacklist = projectBlacklist;
@@ -83,7 +80,15 @@ public class SolutionSbomGenerator: ISbomGenerator
 
     cycloneDxTool.Invoke(
         arguments:
-        $"-o . --disable-package-restore --exclude-dev --exclude-test-projects -gu {_githubUsername} -gt {_githubAccessToken} -f \"{uncleanedSbomFilename}\" {_solution.Path}",
+        $"-o . "
+        + $"--disable-package-restore "
+        + $"--exclude-dev "
+        + $"--exclude-test-projects "
+        + $"-gu {_githubUsername} "
+        + $"-gt {_githubAccessToken} "
+        + $"-f \"{uncleanedSbomFilename}\" "
+        + $"-sv \"{_version}\" "
+        + $"{_solution.Path}",
         workingDirectory: _workingDirectory
     );
 
@@ -110,6 +115,8 @@ public class SolutionSbomGenerator: ISbomGenerator
     else
     {
       Log.Information("No package json file specified, will therefore not create combined sbom.");
+
+      Directory.CreateDirectory(_outputFile.Parent);
 
       File.Copy(_workingDirectory / cleanedSbomFileName, _outputFile, overwrite: true);
 
