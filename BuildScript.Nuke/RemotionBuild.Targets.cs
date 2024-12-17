@@ -32,12 +32,14 @@ public partial class RemotionBuild
       .DependsOn<IBuild>()
       .DependsOn<IPack>()
       .DependsOn<ITest>()
-      .DependsOn<IGenerateSbom>();
+      .DependsOn<IGenerateSbom>()
+      .TryDependsOn<IDependDB>();
 
   public Target FullBuild => _ => _
       .DependsOn<IClean>()
       .DependsOn<IBuild>()
       .DependsOn<IPack>()
       .DependsOn<ITest>()
-      .DependsOn<IGenerateSbom>();
+      .DependsOn<IGenerateSbom>()
+      .TryDependsOn<IDependDB>();
 }
