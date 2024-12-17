@@ -14,16 +14,20 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Remotion.BuildScript.GenerateSbom;
+using SbomCleaner.Library;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
-public interface IGenerateSbom: IBuild
+public interface IGenerateSbom: IBuild, IProjectMetadata
 {
   [NuGetPackage(
       packageId: "CycloneDX",
@@ -35,8 +39,23 @@ public interface IGenerateSbom: IBuild
   [PublicAPI]
   public Target GenerateSbom => _ => _
       .DependsOn<IBuild>()
+      .DependsOn<IProjectMetadata>()
       .Executes(() =>
       {
+        var projects =
+            ProjectMetadata
+                .Select(p =>
+                {
+                  var outputPath = Path.Combine(
+                    p.FolderPath,
+                    p.GetMetadata(RemotionBuildMetadataProperties.OutputPath),
+                    p.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks).First());
+
+                  var assemblyName = p.GetMetadata(RemotionBuildMetadataProperties.AssemblyName);
+                  return new ProjectInfo(assemblyName, outputPath);
+                })
+                .ToList();
+
         var sbomGenerationInfo = ConfigureSbomGenerationInfoBuilder(Solution).Build();
         if (sbomGenerationInfo.SbomGeneration is SbomGeneration.None)
         {
@@ -50,6 +69,6 @@ public interface IGenerateSbom: IBuild
           return;
         }
 
-        sbomGenerationInfo.Generate(CycloneDX);
+        sbomGenerationInfo.Generate(CycloneDX, projects);
       });
 }

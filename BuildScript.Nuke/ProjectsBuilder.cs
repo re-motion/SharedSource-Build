@@ -46,15 +46,20 @@ public class ProjectsBuilder
     if (project == null)
       throw new InvalidOperationException($"The project '{name}' could not be found in the solution.");
 
+
     var msBuildProject = ProjectModelTasks.ParseProject(project.Path);
 
     var projectBuilder = new ProjectBuilder(project.Name, project.Path, msBuildProject);
     _projects.Add(name, projectBuilder);
 
+
     var targetFrameworks = msBuildProject.GetProperty("TargetFrameworks")?.EvaluatedValue
                            ?? msBuildProject.GetProperty("TargetFramework")?.EvaluatedValue;
     targetFrameworks.NotNull($"Could not determine target framework for project '{project.Name}'");
     projectBuilder.SetMetadata(RemotionBuildMetadataProperties.TargetFrameworks, TargetFrameworkSet.Parse(targetFrameworks!));
+
+    var outputPath = msBuildProject.GetProperty("OutputPath").NotNull().EvaluatedValue;
+    projectBuilder.SetMetadata(RemotionBuildMetadataProperties.OutputPath, outputPath);
 
     var assemblyName = msBuildProject.GetProperty("AssemblyName").NotNull().EvaluatedValue;
     projectBuilder.SetMetadata(RemotionBuildMetadataProperties.AssemblyName, assemblyName);
