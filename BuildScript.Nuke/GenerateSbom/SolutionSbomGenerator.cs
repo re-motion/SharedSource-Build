@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using CycloneDX.Models;
 using CycloneDX.Utils;
 using CycloneDX.Xml;
 using Nuke.Common.IO;
@@ -25,7 +24,6 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Tools.PowerShell;
-using Octokit;
 using SbomCleaner.Library;
 using Serilog;
 using Tool = Nuke.Common.Tooling.Tool;
