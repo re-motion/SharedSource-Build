@@ -25,6 +25,7 @@ namespace Remotion.BuildScript.GenerateSbom;
 public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
 {
   private readonly Solution _solution;
+  private readonly string _version;
   private readonly List<string> _packageBlackList = new();
   private readonly List<string> _projectBlackList = new();
 
@@ -35,9 +36,10 @@ public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
   private readonly string _githubUsername;
   private readonly string _githubAccessToken;
 
-  public SolutionSbomGeneratorBuilder (Solution solution, AbsolutePath tempDirectory, AbsolutePath outputFile, string githubUsername, string githubAccessToken)
+  public SolutionSbomGeneratorBuilder (Solution solution, string version, AbsolutePath tempDirectory, AbsolutePath outputFile, string githubUsername, string githubAccessToken)
   {
     _solution = solution;
+    _version = version;
     _tempDirectory = tempDirectory;
     _outputFile = outputFile;
 
@@ -67,6 +69,7 @@ public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
   {
     return new SolutionSbomGenerator(
         _solution,
+        _version,
         _tempDirectory,
         _outputFile,
         new FilterList(_packageBlackList),
