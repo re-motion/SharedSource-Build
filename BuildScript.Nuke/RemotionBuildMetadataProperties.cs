@@ -23,6 +23,7 @@ public static class RemotionBuildMetadataProperties
   // General
   public static readonly ProjectMetadataProperty<string> AssemblyName = ProjectMetadataProperty.Create<string>(nameof(AssemblyName));
   public static readonly ProjectMetadataProperty<TargetFrameworkSet> TargetFrameworks = ProjectMetadataProperty.Create<TargetFrameworkSet>(nameof(TargetFrameworks));
+  public static readonly ProjectMetadataProperty<string> OutputPath = ProjectMetadataProperty.Create<string>(nameof(OutputPath));
 
   // Testing
   public static readonly ProjectMetadataProperty<TestConfiguration> TestConfiguration = ProjectMetadataProperty.Create<TestConfiguration>(nameof(TestConfiguration));

@@ -14,7 +14,9 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Generic;
 using Nuke.Common.Tooling;
+using SbomCleaner.Library;
 
 namespace Remotion.BuildScript.GenerateSbom;
 
@@ -22,5 +24,5 @@ public interface ISbomGenerator
 {
   SbomGeneration SbomGeneration { get; }
 
-  void Generate (Tool cycloneDX);
+  void Generate (Tool cycloneDX, IReadOnlyCollection<ProjectInfo> projects);
 }

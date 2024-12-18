@@ -15,6 +15,7 @@
 // under the License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -30,6 +31,7 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Tools.PowerShell;
+using Octokit;
 using SbomCleaner.Library;
 using Serilog;
 using Tool = Nuke.Common.Tooling.Tool;
@@ -73,7 +75,7 @@ public class SolutionSbomGenerator: ISbomGenerator
     _githubAccessToken = githubAccessToken;
   }
 
-  public void Generate (Tool cycloneDxTool)
+  public void Generate (Tool cycloneDxTool, IReadOnlyCollection<ProjectInfo> projects)
   {
     var uncleanedSbomFilename = "uncleaned-sbom.xml";
 
@@ -92,7 +94,7 @@ public class SolutionSbomGenerator: ISbomGenerator
 
     cleaner.CleanSolutionSbom(
         _workingDirectory / uncleanedSbomFilename,
-        _solution.Path,
+        projects,
         _packageBlackList,
         _projectBlacklist,
         _workingDirectory / cleanedSbomFileName);
@@ -109,13 +111,13 @@ public class SolutionSbomGenerator: ISbomGenerator
     {
       Log.Information("No package json file specified, will therefore not create combined sbom.");
 
-      File.Copy(_workingDirectory / cleanedSbomFileName, _outputFile);
+      File.Copy(_workingDirectory / cleanedSbomFileName, _outputFile, overwrite: true);
 
       Log.Information($"Cleaned sbom has been copied to '{_outputFile}'.");
     }
   }
 
-  private void MergeSboms (string cleanedSbomFileName, string npmSbomFileName, string outputFile)
+  private void MergeSboms (string cleanedSbomFileName, string npmSbomFileName, AbsolutePath outputFile)
   {
     using var mainSbomFileStream = File.OpenRead(_workingDirectory / cleanedSbomFileName);
     using var npmSbomFileStream = File.OpenRead(_workingDirectory / npmSbomFileName);
@@ -123,13 +125,9 @@ public class SolutionSbomGenerator: ISbomGenerator
     var mainSbom = Serializer.Deserialize(mainSbomFileStream);
     var npmSbom = Serializer.Deserialize(npmSbomFileStream);
 
-    var combinedSbom =
-        CycloneDXUtils.HierarchicalMerge(new[] { mainSbom, npmSbom }, new Component
-                                                               {
-                                                                 Name = _solution.Name
-                                                               });
+    var combinedSbom = CycloneDXUtils.HierarchicalMerge([mainSbom, npmSbom], mainSbom.Metadata.Component);
 
-    using var outputFileStream = File.OpenWrite(outputFile);
+    using var outputFileStream = File.Create(outputFile);
 
     Serializer.Serialize(combinedSbom, outputFileStream);
     outputFileStream.Close();
