@@ -116,7 +116,7 @@ public class SolutionSbomGenerator: ISbomGenerator
     {
       Log.Information("No package json file specified, will therefore not create combined sbom.");
 
-      Directory.CreateDirectory(_outputFile.Parent);
+      _outputFile.Parent.CreateDirectory();
 
       File.Copy(_workingDirectory / cleanedSbomFileName, _outputFile, overwrite: true);
 
