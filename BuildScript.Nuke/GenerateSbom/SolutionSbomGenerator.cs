@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using CycloneDX.Models;
 using CycloneDX.Utils;
-using CycloneDX.Xml;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
@@ -26,6 +26,8 @@ using Nuke.Common.Tools.Npm;
 using Nuke.Common.Tools.PowerShell;
 using SbomCleaner.Library;
 using Serilog;
+using XMLSerializer = CycloneDX.Xml.Serializer;
+using JsonSerializer = CycloneDX.Json.Serializer;
 using Tool = Nuke.Common.Tooling.Tool;
 
 namespace Remotion.BuildScript.GenerateSbom;
@@ -92,7 +94,7 @@ public class SolutionSbomGenerator: ISbomGenerator
 
     Log.Information("Cleaning sbom...");
 
-    var cleanedSbomFileName = "cleaned-sbom.xml";
+    var cleanedSbomFile = _workingDirectory / "cleaned-sbom.xml";
     var cleaner = new Cleaner();
 
     cleaner.CleanSolutionSbom(
@@ -100,15 +102,15 @@ public class SolutionSbomGenerator: ISbomGenerator
         projects,
         _packageBlackList,
         _projectBlacklist,
-        _workingDirectory / cleanedSbomFileName);
+        cleanedSbomFile);
 
-    Log.Information("Created cleaned sbom '{_outputFile}'.", _workingDirectory / cleanedSbomFileName);
+    Log.Information("Created cleaned sbom '{_outputFile}'.", cleanedSbomFile);
 
     if (_pathToPackageJson != null)
     {
       var npmSbomFileName = CreateNPMSbom();
 
-      MergeSboms(cleanedSbomFileName, npmSbomFileName, _outputFile);
+      MergeSboms(cleanedSbomFile, npmSbomFileName, _outputFile);
     }
     else
     {
@@ -116,31 +118,65 @@ public class SolutionSbomGenerator: ISbomGenerator
 
       _outputFile.Parent.CreateDirectory();
 
-      File.Copy(_workingDirectory / cleanedSbomFileName, _outputFile, overwrite: true);
+      //The sbom cleaner only works with xml files, so we need to convert the sbom if we want a different format.
+      //Given a requested xml file, we can just copy
+      if (_outputFile.Extension == ".xml")
+      {
+        File.Copy(cleanedSbomFile, _outputFile, overwrite: true);
+      }
+      else if (_outputFile.Extension == ".json")
+      {
+        DuplicateAsJsonToOutputFile(cleanedSbomFile, _outputFile);
+      }
 
       Log.Information($"Cleaned sbom has been copied to '{_outputFile}'.");
     }
   }
 
-  private void MergeSboms (string cleanedSbomFileName, string npmSbomFileName, AbsolutePath outputFile)
+  private void DuplicateAsJsonToOutputFile (AbsolutePath sbomFileToConvert, AbsolutePath finalJsonSbomLocation)
   {
-    using var mainSbomFileStream = File.OpenRead(_workingDirectory / cleanedSbomFileName);
-    using var npmSbomFileStream = File.OpenRead(_workingDirectory / npmSbomFileName);
+    using var cleanedBomStream = File.OpenRead(sbomFileToConvert);
+    var finalBom = XMLSerializer.Deserialize(cleanedBomStream);
 
-    var mainSbom = Serializer.Deserialize(mainSbomFileStream);
-    var npmSbom = Serializer.Deserialize(npmSbomFileStream);
+    using var outputSbomJsonStream = File.Create(finalJsonSbomLocation);
 
-    var combinedSbom = CycloneDXUtils.HierarchicalMerge([mainSbom, npmSbom], mainSbom.Metadata.Component);
+    JsonSerializer.SerializeAsync(finalBom, outputSbomJsonStream).GetAwaiter().GetResult();
+  }
+
+  private void MergeSboms (AbsolutePath cleanedSbomFile, AbsolutePath npmSbomFile, AbsolutePath outputFile)
+  {
+    using var mainSbomFileStream = File.OpenRead(cleanedSbomFile);
+    using var npmSbomFileStream = File.OpenRead(npmSbomFile);
+
+    var mainSbom = XMLSerializer.Deserialize(mainSbomFileStream);
+    var npmSbom = XMLSerializer.Deserialize(npmSbomFileStream);
+
+    var component = new Component
+    {
+      Type = Component.Classification.Library,
+      Name = _solution.Name + "-root-component",
+      Version = _version
+    };
+
+    var combinedSbom = CycloneDXUtils.FlatMerge([mainSbom, npmSbom], component);
 
     using var outputFileStream = File.Create(outputFile);
 
-    Serializer.Serialize(combinedSbom, outputFileStream);
+    if (outputFile.Extension == ".xml")
+    {
+      XMLSerializer.Serialize(combinedSbom, outputFileStream);
+    }
+    if (outputFile.Extension == ".json")
+    {
+      JsonSerializer.SerializeAsync(combinedSbom, outputFileStream).GetAwaiter().GetResult();
+    }
+
     outputFileStream.Close();
 
     Log.Information("Merged sbom created at {0}", outputFile);
   }
 
-  private string CreateNPMSbom ()
+  private AbsolutePath CreateNPMSbom ()
   {
     Log.Information("Downloading npm sbom tool...");
 
@@ -155,14 +191,16 @@ public class SolutionSbomGenerator: ISbomGenerator
         .SetProcessWorkingDirectory(_workingDirectory));
 
     var npmSbomFileName = "npm-sbom.xml";
+    var npmSbomFile = _workingDirectory / npmSbomFileName;
 
     Log.Information("Creating npm sbom...");
 
     PowerShellTasks.PowerShell(_ => _
-        .SetCommand($".\\node_modules\\.bin\\cyclonedx-npm.ps1 {packageJsonFolder /"package.json"} --omit dev --output-format xml --output-file '{npmSbomFileName}'")
+        .SetCommand($".\\node_modules\\.bin\\cyclonedx-npm.ps1 {packageJsonFolder /"package.json"} --omit dev --output-format xml --output-file '{npmSbomFile}'")
         .SetProcessWorkingDirectory(_workingDirectory));
 
-    Log.Information("Created npm sbom at '{npmSbomLocation}'.", _workingDirectory / npmSbomFileName);
-    return npmSbomFileName;
+    Log.Information("Created npm sbom at '{npmSbomLocation}'.", npmSbomFile);
+
+    return npmSbomFile;
   }
 }
