@@ -24,13 +24,14 @@ using Serilog;
 
 namespace Remotion.BuildScript.Components;
 
-public interface ITestParameters : IBaseBuild, IProjectMetadata
+public interface ITestParameters : IBaseBuild, IProjectMetadata, ITestResources
 {
   public ImmutableDictionary<string, string> TestParameters { get; set; }
 
   [PublicAPI]
   public Target VerifyTestParameters => _ => _
-      .TryDependsOn<IProjectMetadata>()
+      .DependsOn<IProjectMetadata>()
+      .DependsOn<ITestResources>()
       .Executes(() =>
       {
         var parameters = this is ITestMatrix testMatrix
@@ -62,6 +63,9 @@ public interface ITestParameters : IBaseBuild, IProjectMetadata
                     .SelectMany(e => e.TestExecutionWrappers)
                     // ReSharper disable once SuspiciousTypeConversion.Global
                     .OfType<IRequiresTestParameters>()
+            )
+            .Concat(
+                TestResourceFactories
             )
             .Distinct();
 
