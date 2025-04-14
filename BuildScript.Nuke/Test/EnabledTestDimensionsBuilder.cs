@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Immutable;
+using Remotion.BuildScript.Test.Dimensions;
 
 namespace Remotion.BuildScript.Test;
 
@@ -25,6 +26,14 @@ public class EnabledTestDimensionsBuilder
 
   public EnabledTestDimensionsBuilder ()
   {
+  }
+
+  public void AddEnabledOperatingSystems ()
+  {
+    AddEnabledDimension<OperatingSystems>(
+        OperatingSystem.IsWindows()
+        ? [OperatingSystems.AnyOs, OperatingSystems.Windows]
+        : [OperatingSystems.AnyOs, OperatingSystems.Linux]);
   }
 
   public void AddEnabledDimension<T> (params T[] enabledValues)
