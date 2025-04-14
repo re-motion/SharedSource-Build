@@ -38,9 +38,16 @@ public sealed class Platforms : TestDimension, IConfigureTestSettings
 
   DotNetTestSettings IConfigureTestSettings.ConfigureTestSettings (DotNetTestSettings settings)
   {
-    var dotnetExePath = DotnetUtil.GetDotnetExePath(this);
-    Assert.FileExists(dotnetExePath, $"The .NET SDK ({ToString()}) needs to be installed.");
+    if (OperatingSystem.IsWindows())
+    {
+      var dotnetExePath = DotnetUtil.GetDotnetExePath(this);
+      Assert.FileExists(dotnetExePath, $"The .NET SDK ({ToString()}) needs to be installed.");
 
-    return settings.SetProcessToolPath(dotnetExePath);
+      return settings.SetProcessToolPath(dotnetExePath);
+    }
+
+    Assert.True(this == x64, "Only x64 is supported on non-windows platforms");
+
+    return settings;
   }
 }
