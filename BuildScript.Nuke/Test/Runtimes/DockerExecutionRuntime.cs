@@ -57,7 +57,12 @@ public class DockerExecutionRuntime : ITestExecutionRuntime
         })
         .SetEntrypoint(context.DotNetTestSettings.ProcessToolPath)
         .SetArgs(context.DotNetTestSettings.GetProcessArguments().AsArguments().RenderAsArray())
-        .SetProcessArgumentConfigurator(arguments => arguments.InsertAt(1, "--quiet"));
+        .SetProcessArgumentConfigurator(arguments =>
+        {
+          return OperatingSystem.IsWindows()
+              ? arguments.InsertAt(1, "--quiet")
+              : arguments;
+        });
 
     var process = ProcessTasks.StartProcess(dockerRunSettings);
     process.WaitForExit();

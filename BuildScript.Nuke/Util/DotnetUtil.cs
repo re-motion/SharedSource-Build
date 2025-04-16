@@ -24,6 +24,9 @@ public static class DotnetUtil
 {
   public static AbsolutePath GetDotnetPath (Platforms platform)
   {
+    if (!OperatingSystem.IsWindows())
+      throw new InvalidOperationException("Retrieving the dotnet path is only supported for Windows.");
+
     var specialFolder = platform == Platforms.x86
         ? Environment.SpecialFolder.ProgramFilesX86
         : Environment.SpecialFolder.ProgramFiles;
@@ -31,8 +34,14 @@ public static class DotnetUtil
     return AbsolutePath.Create(Environment.GetFolderPath(specialFolder)) / "dotnet";
   }
 
-  public static AbsolutePath GetDotnetExePath (Platforms platform)
+  public static string GetDotnetExePath (Platforms platform)
   {
-    return GetDotnetPath(platform) / "dotnet.exe";
+    if (OperatingSystem.IsWindows())
+    {
+      return GetDotnetPath(platform) / "dotnet.exe";
+    }
+
+    // Else we assume it is in the path
+    return "dotnet";
   }
 }
