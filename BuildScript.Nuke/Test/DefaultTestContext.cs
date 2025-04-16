@@ -14,53 +14,40 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using System;
 using System.Collections.Immutable;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
 using Remotion.BuildScript.Components;
+using Remotion.BuildScript.TestPlan;
 
 namespace Remotion.BuildScript.Test;
 
-public class TestExecutionContext
+public class DefaultTestContext : ITestContext
 {
   public ITest Build { get; }
-
-  public ProjectMetadata Project { get; }
-
-  public TestMatrixRow TestMatrixRow { get; }
 
   public ImmutableDictionary<string, string> TestParameters { get; }
 
   public ImmutableArray<ITestResource> TestResources { get; }
 
-  public DotNetTestSettings DotNetTestSettings { get; }
+  public bool FatalFailure { get; set; }
 
-  public int ExitCode { get; set; } = -1;
+  public int PassedTestCount { get; set; }
 
-  public TestExecutionContext (
+  public int FailedTestCount { get; set; }
+
+  public int TotalTestCount { get; set; }
+
+  public DefaultTestContext (
       ITest build,
-      ProjectMetadata project,
       ImmutableDictionary<string, string> testParameters,
-      ImmutableArray<ITestResource> testResources,
-      TestMatrixRow testMatrixRow,
-      DotNetTestSettings dotNetTestSettings)
+      ImmutableArray<ITestResource> testResources)
   {
     Build = build;
-    Project = project;
     TestParameters = testParameters;
     TestResources = testResources;
-    TestMatrixRow = testMatrixRow;
-    DotNetTestSettings = dotNetTestSettings;
   }
 
-  public string GetTestParameter(TestDimension testDimension, string name)
+  public void ExecuteTestItem (ITestItem testItem)
   {
-    return TestParameters.GetTestParameter(testDimension, name);
-  }
-
-  public string GetTestParameter (string name)
-  {
-    return TestParameters.GetTestParameter(name);
+    testItem.Execute(this);
   }
 }
