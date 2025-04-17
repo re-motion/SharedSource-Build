@@ -14,11 +14,26 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Immutable;
+using Remotion.BuildScript.Components;
+
 namespace Remotion.BuildScript.Test;
 
-public interface ITestResourceFactory : IRequiresTestParameters
+public class TestResourceFactoryContext
 {
-  string Name { get; }
+  public ITest Build { get; }
 
-  ITestResource Start (TestResourceFactoryContext context);
+  public ImmutableDictionary<string, string> TestParameters { get; }
+
+  public ImmutableArray<ITestResource> TestResources { get; }
+
+  public TestResourceFactoryContext (
+      ITest build,
+      ImmutableDictionary<string, string> testParameters,
+      ImmutableArray<ITestResource> testResources)
+  {
+    Build = build;
+    TestParameters = testParameters;
+    TestResources = testResources;
+  }
 }
