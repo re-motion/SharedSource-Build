@@ -25,8 +25,16 @@ public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
 {
   public static readonly DefaultTestExecutionRuntimeFactory Instance = new();
 
+  private readonly IDockerRunSettingsCustomizer _dockerRunSettingsCustomizer;
+
   private DefaultTestExecutionRuntimeFactory ()
+      : this(NullDockerRunSettingsCustomizer.Instance)
   {
+  }
+
+  public DefaultTestExecutionRuntimeFactory (IDockerRunSettingsCustomizer dockerRunSettingsCustomizer)
+  {
+    _dockerRunSettingsCustomizer = dockerRunSettingsCustomizer;
   }
 
   public ITestExecutionRuntime CreateTestExecutionRuntime (TestExecutionContext context)
@@ -43,7 +51,8 @@ public class DefaultTestExecutionRuntimeFactory : ITestExecutionRuntimeFactory
       var dockerIsolationMode = dockerExecutionRuntimes.GetIsolationMode(context);
       return new DockerExecutionRuntime(
           dockerImage,
-          dockerIsolationMode);
+          dockerIsolationMode,
+          _dockerRunSettingsCustomizer);
     }
 
     throw new NotSupportedException($"The specified execution runtime '{executionRuntime}' is not supported.");

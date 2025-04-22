@@ -27,11 +27,13 @@ public class DockerExecutionRuntime : ITestExecutionRuntime
 {
   private readonly string _image;
   private readonly string _isolationMode;
+  private readonly IDockerRunSettingsCustomizer _dockerRunSettingsCustomizer;
 
-  public DockerExecutionRuntime (string image, string isolationMode)
+  public DockerExecutionRuntime (string image, string isolationMode, IDockerRunSettingsCustomizer dockerRunSettingsCustomizer)
   {
     _image = image;
     _isolationMode = isolationMode;
+    _dockerRunSettingsCustomizer = dockerRunSettingsCustomizer;
   }
 
   public void ExecuteTests (TestExecutionContext context)
@@ -63,6 +65,8 @@ public class DockerExecutionRuntime : ITestExecutionRuntime
               ? arguments.InsertAt(1, "--quiet")
               : arguments;
         });
+
+    dockerRunSettings = _dockerRunSettingsCustomizer.CustomizeDockerRunSettings(context, dockerRunSettings);
 
     var process = ProcessTasks.StartProcess(dockerRunSettings);
     process.WaitForExit();
