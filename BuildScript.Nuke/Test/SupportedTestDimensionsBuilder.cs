@@ -16,12 +16,18 @@
 
 using System;
 using System.Collections.Immutable;
+using Remotion.BuildScript.Test.Dimensions;
 
 namespace Remotion.BuildScript.Test;
 
 public class SupportedTestDimensionsBuilder
 {
   private readonly ImmutableDictionary<string, TestDimension>.Builder _supportedTestDimensionsByName = ImmutableDictionary.CreateBuilder<string, TestDimension>();
+
+  public void AddOperatingSystemsDimension ()
+  {
+    AddSupportedDimension(OperatingSystems.AnyOs, OperatingSystems.Linux, OperatingSystems.Windows);
+  }
 
   public void AddSupportedDimension<T>(params T[] supportedValues)
     where T : TestDimension
