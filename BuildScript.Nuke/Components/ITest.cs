@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Remotion.BuildScript.Test;
@@ -37,19 +38,20 @@ public interface ITest : ITestPlan, ITestParameters
       .Executes(() =>
       {
         var testParameters = TestParameters;
-        List<ITestResource> testResources = [];
+        var testResources = ImmutableArray.CreateBuilder<ITestResource>();
         try
         {
           foreach (var testResourceFactory in TestResourceFactories)
           {
             using var _ = GroupingBlock.Start($"Starting test resource '{testResourceFactory.Name}'.");
-            testResources.Add(testResourceFactory.Start(this, testParameters));
+            var testResourceFactoryContext = new TestResourceFactoryContext(this, testParameters, testResources.ToImmutable());
+            testResources.Add(testResourceFactory.Start(testResourceFactoryContext));
           }
 
           var testContext = TestContextFactory.CreateTestContext(
               this,
               testParameters,
-              [..testResources]);
+              testResources.ToImmutable());
 
           PreTest(testContext);
           foreach (var testItem in TestItems)
