@@ -38,20 +38,20 @@ public interface ITest : ITestPlan, ITestParameters
       .Executes(() =>
       {
         var testParameters = TestParameters;
-        var testResources = ImmutableArray.CreateBuilder<ITestResource>();
+        var testResources = new List<ITestResource>();
         try
         {
           foreach (var testResourceFactory in TestResourceFactories)
           {
             using var _ = GroupingBlock.Start($"Starting test resource '{testResourceFactory.Name}'.");
-            var testResourceFactoryContext = new TestResourceFactoryContext(this, testParameters, testResources.ToImmutable());
-            testResources.Add(testResourceFactory.Start(testResourceFactoryContext));
+            var testResourceFactoryContext = new TestResourceFactoryContext(this, testParameters, testResources);
+            testResourceFactory.Start(testResourceFactoryContext);
           }
 
           var testContext = TestContextFactory.CreateTestContext(
               this,
               testParameters,
-              testResources.ToImmutable());
+              [..testResources]);
 
           PreTest(testContext);
           foreach (var testItem in TestItems)

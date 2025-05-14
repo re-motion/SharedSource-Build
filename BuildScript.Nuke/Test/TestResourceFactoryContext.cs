@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Remotion.BuildScript.Components;
 
@@ -25,12 +26,12 @@ public class TestResourceFactoryContext
 
   public ImmutableDictionary<string, string> TestParameters { get; }
 
-  public ImmutableArray<ITestResource> TestResources { get; }
+  public IList<ITestResource> TestResources { get; }
 
   public TestResourceFactoryContext (
       ITest build,
       ImmutableDictionary<string, string> testParameters,
-      ImmutableArray<ITestResource> testResources)
+      IList<ITestResource> testResources)
   {
     Build = build;
     TestParameters = testParameters;
