@@ -20,5 +20,5 @@ public interface ITestResourceFactory : IRequiresTestParameters
 {
   string Name { get; }
 
-  ITestResource Start (TestResourceFactoryContext context);
+  void Start (TestResourceFactoryContext context);
 }
