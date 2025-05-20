@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text.Json;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
@@ -41,26 +43,44 @@ public interface IBuildMetadata : IBaseBuild
       .Unlisted()
       .Executes(() =>
       {
-        var versionString = GetBaseVersion();
-
-        var buildNumber = TeamCity.Instance?.BuildNumber ?? "0";
-        var remotionBuildVersion = RemotionBuildVersionFormatter.Instance.FormatRemotionBuildVersion(
-            versionString,
-            IsServerBuild,
-            UseReleaseVersioning,
-            buildNumber);
-        TeamCity.Instance?.SetBuildNumber(remotionBuildVersion.Version);
-
-        var buildMetadataPerConfigurationBuilder = ImmutableDictionary.CreateBuilder<string, BuildMetadata>();
-        Configurations.ForEach(configuration =>
+        // As this build step has side effects we only want to do the logic once in a build chain.
+        // As such, we save the build metadata to allow following builds to reuse the build metadata.
+        var tempMetadata = TempFolder / ".buildMetadata";
+        if (tempMetadata.FileExists())
         {
-          var buildMetadata = CreateBuildMetadataForConfiguration(configuration, remotionBuildVersion);
-          buildMetadataPerConfigurationBuilder[configuration] = buildMetadata;
-        });
-        ConfigureBuildMetadata(buildMetadataPerConfigurationBuilder);
-        BuildMetadataPerConfiguration = buildMetadataPerConfigurationBuilder.ToImmutable();
+          BuildMetadataPerConfiguration = JsonSerializer.Deserialize<ImmutableDictionary<string, BuildMetadata>>(tempMetadata.ReadAllText())!;
 
-        Log.Information($"Determined build metadata ({nameof(UseReleaseVersioning)} = {UseReleaseVersioning}).");
+          if (BuildMetadataPerConfiguration.Count > 0)
+            TeamCity.Instance?.SetBuildNumber(BuildMetadataPerConfiguration.Values.First().Version);
+        }
+        else
+        {
+          var versionString = GetBaseVersion();
+
+          var buildNumber = TeamCity.Instance?.BuildNumber ?? "0";
+          var remotionBuildVersion = RemotionBuildVersionFormatter.Instance.FormatRemotionBuildVersion(
+              versionString,
+              IsServerBuild,
+              UseReleaseVersioning,
+              buildNumber);
+          TeamCity.Instance?.SetBuildNumber(remotionBuildVersion.Version);
+
+          var buildMetadataPerConfigurationBuilder = ImmutableDictionary.CreateBuilder<string, BuildMetadata>();
+          Configurations.ForEach(configuration =>
+          {
+            var buildMetadata = CreateBuildMetadataForConfiguration(configuration, remotionBuildVersion);
+            buildMetadataPerConfigurationBuilder[configuration] = buildMetadata;
+          });
+          ConfigureBuildMetadata(buildMetadataPerConfigurationBuilder);
+          BuildMetadataPerConfiguration = buildMetadataPerConfigurationBuilder.ToImmutable();
+
+          // We only save the build metadata for server builds as we don't delete the file automatically
+          if (IsServerBuild)
+            tempMetadata.WriteAllText(JsonSerializer.Serialize(BuildMetadataPerConfiguration));
+
+          Log.Information($"Determined build metadata ({nameof(UseReleaseVersioning)} = {UseReleaseVersioning}).");
+        }
+
         Configurations.ForEach(configuration =>
         {
           var buildMetadata = GetBuildMetadata(configuration);

@@ -27,7 +27,7 @@ public interface IProjectMetadata : IBaseBuild
 
   [PublicAPI]
   public Target DetermineProjectMetadata => _ => _
-      .TryDependsOn<ITestMatrix>()
+      .TryAfter<ITestMatrix>()
       .Description("Determines metadata for projects in the solution")
       .Executes(() =>
       {

@@ -20,6 +20,16 @@ namespace Remotion.BuildScript.Test;
 
 public class TestConfiguration
 {
+  public TestConfiguration? CreateForMatrix (
+      TestMatrix? matrix,
+      ITestExecutionRuntimeFactory testExecutionRuntimeFactory,
+      ImmutableArray<ITestExecutionWrapper> testExecutionWrappers)
+  {
+    return matrix != null
+        ? new TestConfiguration(testExecutionRuntimeFactory, matrix, testExecutionWrappers)
+        : null;
+  }
+
   public ITestExecutionRuntimeFactory TestExecutionRuntimeFactory { get; }
 
   public TestMatrix TestMatrix { get; }
