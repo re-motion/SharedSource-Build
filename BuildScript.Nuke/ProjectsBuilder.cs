@@ -77,12 +77,14 @@ public class ProjectsBuilder
         .SetMetadata(RemotionBuildMetadataProperties.CreateNugetPackage, true);
   }
 
-  public ProjectBuilder AddUnitTestProject (string name, TestConfiguration testConfiguration)
+  public ProjectBuilder AddUnitTestProject (string name, TestConfiguration? testConfiguration)
   {
     ArgumentNullException.ThrowIfNull(name);
 
-    return AddProject(name)
-        .SetMetadata(RemotionBuildMetadataProperties.TestConfiguration, testConfiguration);
+    var project = AddProject(name);
+    return testConfiguration != null
+        ? project.SetMetadata(RemotionBuildMetadataProperties.TestConfiguration, testConfiguration)
+        : project;
   }
 
   public ImmutableArray<ProjectMetadata> Build ()
