@@ -20,7 +20,7 @@ namespace Remotion.BuildScript.Test;
 
 public class TestConfiguration
 {
-  public TestConfiguration? CreateForMatrix (
+  public static TestConfiguration? CreateForMatrix (
       TestMatrix? matrix,
       ITestExecutionRuntimeFactory testExecutionRuntimeFactory,
       ImmutableArray<ITestExecutionWrapper> testExecutionWrappers)
