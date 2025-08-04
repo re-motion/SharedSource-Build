@@ -36,6 +36,7 @@ public class ExecutionRuntimes : TestDimension
   public static readonly DockerExecutionRuntimes Docker_Win_NET7_0 = new(nameof(Docker_Win_NET7_0));
   public static readonly DockerExecutionRuntimes Docker_Win_NET8_0 = new(nameof(Docker_Win_NET8_0));
   public static readonly DockerExecutionRuntimes Docker_Win_NET9_0 = new(nameof(Docker_Win_NET9_0));
+  public static readonly DockerExecutionRuntimes Docker_Win_NET10_0 = new(nameof(Docker_Win_NET10_0));
 
   public ExecutionRuntimes (string value)
       : base(nameof(ExecutionRuntimes), value)
