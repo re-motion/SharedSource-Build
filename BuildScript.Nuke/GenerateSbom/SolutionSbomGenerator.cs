@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using CycloneDX.Models;
 using CycloneDX.Utils;
+using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
@@ -72,6 +73,8 @@ public class SolutionSbomGenerator: ISbomGenerator
     _githubAccessToken = githubAccessToken;
   }
 
+  public ISbomCleaner? SbomCleaner { get; init; } = new SbomCleanerAdapter(new Cleaner());
+
   public void Generate (Tool cycloneDxTool, IReadOnlyCollection<ProjectInfo> projects)
   {
     var uncleanedSbomFilename = "uncleaned-sbom.xml";
@@ -92,25 +95,34 @@ public class SolutionSbomGenerator: ISbomGenerator
         workingDirectory: _workingDirectory
     );
 
-    Log.Information("Cleaning sbom...");
+    var processedFile = _workingDirectory / uncleanedSbomFilename;
+    Assert.FileExists(processedFile, "CycloneDX did not produce an output.");
 
-    var cleanedSbomFile = _workingDirectory / "cleaned-sbom.xml";
-    var cleaner = new Cleaner();
+    if (SbomCleaner != null)
+    {
+      Log.Information("Cleaning sbom...");
 
-    cleaner.CleanSolutionSbom(
-        _workingDirectory / uncleanedSbomFilename,
-        projects,
-        _packageBlackList,
-        _projectBlacklist,
-        cleanedSbomFile);
+      var cleanedSbomFile = _workingDirectory / "cleaned-sbom.xml";
 
-    Log.Information("Created cleaned sbom '{_outputFile}'.", cleanedSbomFile);
+      SbomCleaner.CleanSolution(
+          processedFile,
+          projects,
+          _packageBlackList,
+          _projectBlacklist,
+          cleanedSbomFile);
+
+      Log.Information("Created cleaned sbom '{_outputFile}'.", cleanedSbomFile);
+
+      processedFile = cleanedSbomFile;
+      Assert.FileExists(processedFile, "SBOM cleaning did not produce an output");
+    }
+
 
     if (_pathToPackageJson != null)
     {
       var npmSbomFileName = CreateNPMSbom();
 
-      MergeSboms(cleanedSbomFile, npmSbomFileName, _outputFile);
+      MergeSboms(processedFile, npmSbomFileName, _outputFile);
     }
     else
     {
@@ -122,11 +134,11 @@ public class SolutionSbomGenerator: ISbomGenerator
       //Given a requested xml file, we can just copy
       if (_outputFile.Extension == ".xml")
       {
-        File.Copy(cleanedSbomFile, _outputFile, overwrite: true);
+        File.Copy(processedFile, _outputFile, overwrite: true);
       }
       else if (_outputFile.Extension == ".json")
       {
-        DuplicateAsJsonToOutputFile(cleanedSbomFile, _outputFile);
+        DuplicateAsJsonToOutputFile(processedFile, _outputFile);
       }
 
       Log.Information($"Cleaned sbom has been copied to '{_outputFile}'.");

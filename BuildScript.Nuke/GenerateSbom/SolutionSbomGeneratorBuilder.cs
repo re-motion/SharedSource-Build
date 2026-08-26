@@ -36,6 +36,8 @@ public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
   private readonly string _githubUsername;
   private readonly string _githubAccessToken;
 
+  private ISbomCleaner _sbomCleaner = new SbomCleanerAdapter(new Cleaner());
+
   public SolutionSbomGeneratorBuilder (Solution solution, string version, AbsolutePath tempDirectory, AbsolutePath outputFile, string githubUsername, string githubAccessToken)
   {
     _solution = solution;
@@ -65,6 +67,12 @@ public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
     return this;
   }
 
+  public SolutionSbomGeneratorBuilder WithSbomCleaner (ISbomCleaner? sbomCleaner)
+  {
+    _sbomCleaner = sbomCleaner;
+    return this;
+  }
+
   public ISbomGenerator Build ()
   {
     return new SolutionSbomGenerator(
@@ -76,6 +84,9 @@ public class SolutionSbomGeneratorBuilder : ISbomGeneratorBuilder
         new FilterList(_projectBlackList),
         _pathToPackageJson,
         _githubUsername,
-        _githubAccessToken);
+        _githubAccessToken)
+           {
+               SbomCleaner = _sbomCleaner
+           };
   }
 }
