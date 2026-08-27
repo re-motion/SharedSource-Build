@@ -42,6 +42,8 @@ public sealed class TargetFrameworks : TestDimension, IConfigureTestSettings
   public static readonly TargetFrameworks NET9_0_WINDOWS = new(nameof(NET9_0_WINDOWS), "net9.0-windows", false);
   public static readonly TargetFrameworks NET10_0 = new(nameof(NET10_0), "net10.0", false);
   public static readonly TargetFrameworks NET10_0_WINDOWS = new(nameof(NET10_0_WINDOWS), "net10.0-windows", false);
+  public static readonly TargetFrameworks NET11_0 = new(nameof(NET11_0), "net11.0", false);
+  public static readonly TargetFrameworks NET11_0_WINDOWS = new(nameof(NET11_0_WINDOWS), "net11.0-windows", false);
 
   public string Identifier { get; }
 
