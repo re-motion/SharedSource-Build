@@ -20,6 +20,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Remotion.BuildScript.Test;
+using Remotion.BuildScript.Util;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;
@@ -67,7 +68,7 @@ public interface ITestParameters : IBaseBuild, IProjectMetadata, ITestResources
             .Concat(
                 TestResourceFactories
             )
-            .Distinct();
+            .Distinct(new ReferenceEqualityProvider<IRequiresTestParameters>());
 
         foreach (var requiresTestParameters in relevantRequiresTestParameters)
           requiresTestParameters.ConfigureTestParameters(parameters);
