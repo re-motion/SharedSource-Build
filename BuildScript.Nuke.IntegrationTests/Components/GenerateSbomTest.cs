@@ -83,4 +83,30 @@ public class GenerateSbomTest : IntegrationTestBase
     Assert.That(metadataComponent.GetProperty("name").GetString(), Is.EqualTo("TestSolution"));
     Assert.That(metadataComponent.GetProperty("version").GetString(), Is.EqualTo("1.2.3"));
   }
+
+  [Test]
+  public void GenerateSbom_WithPackageJsonFile_CreatesCombinedSbom ()
+  {
+    var sbomFile = TestSolutionDirectory / "MySbom" / "sbom.xml";
+    var packageJsonFile = TestSolutionDirectory / "JavaScriptDependencies" / "package.json";
+    Assert.That(sbomFile.FileExists(), Is.False);
+
+    RunBuildCmd(
+        $"{GenerateSbomTargets}"
+        + $" --SbomOutputFile {sbomFile.ToString().DoubleQuote()}"
+        + $" --SbomPackageJsonFile {packageJsonFile.ToString().DoubleQuote()}");
+
+    Assert.That(sbomFile.FileExists(), Is.True);
+
+    var document = XDocument.Load(sbomFile);
+    var ns = document.Root!.Name.Namespace;
+
+    var metadataComponent = document.Root.Element(ns + "metadata")?.Element(ns + "component");
+    Assert.That(metadataComponent, Is.Not.Null);
+    Assert.That(metadataComponent!.Element(ns + "name")?.Value, Is.EqualTo("TestSolution-root-component"));
+    Assert.That(metadataComponent.Element(ns + "version")?.Value, Is.EqualTo("1.2.3"));
+
+    var componentNames = document.Root.Element(ns + "components")?.Elements(ns + "component").Select(e => e.Element(ns + "name")?.Value).ToArray();
+    Assert.That(componentNames, Does.Contain("is-number"));
+  }
 }

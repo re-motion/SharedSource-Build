@@ -200,7 +200,7 @@ public class SolutionSbomGenerator: ISbomGenerator
     NpmTasks.Npm("install", packageJsonFolder);
 
     NpmTasks.NpmInstall(_ => _
-        .SetPackages("@cyclonedx/cyclonedx-npm")
+        .SetPackages("@cyclonedx/cyclonedx-npm@6")
         .SetProcessWorkingDirectory(_workingDirectory));
 
     var npmSbomFileName = "npm-sbom.xml";

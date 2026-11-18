@@ -32,7 +32,8 @@ public interface IGenerateSbom: IBuild, IProjectMetadata
 {
   [NuGetPackage(
       packageId: "CycloneDX",
-      packageExecutable: "CycloneDX.dll")]
+      packageExecutable: "CycloneDX.dll",
+      Version = "4.0.0")]
   Tool? CycloneDX => TryGetValue(() => CycloneDX);
 
   ISbomGeneratorBuilder ConfigureSbomGenerationInfoBuilder(Solution solution);

@@ -20,6 +20,9 @@ public class Build : RemotionBuild
   [Parameter("Enables SBOM generation and writes the SBOM to the specified file (.xml or .json).")]
   readonly AbsolutePath SbomOutputFile;
 
+  [Parameter("Includes the npm dependencies of the specified package.json file in the generated SBOM.")]
+  readonly AbsolutePath SbomPackageJsonFile;
+
   public override ISbomGeneratorBuilder ConfigureSbomGenerationInfoBuilder(Solution solution)
   {
     if (SbomOutputFile == null)
@@ -34,6 +37,9 @@ public class Build : RemotionBuild
         githubAccessToken: "")
         // The SBOM cleaner requires a .deps.json file, which is not generated for .NET Framework projects
         .WithProjectsBlackListed("DocumentationTestProject", "UnitTestNet48Project");
+
+    if (SbomPackageJsonFile != null)
+      builder.WithPackageJsonFile(SbomPackageJsonFile);
 
     return builder;
   }
