@@ -172,6 +172,7 @@ public class SolutionSbomGenerator: ISbomGenerator
 
     var combinedSbom = CycloneDXUtils.FlatMerge([mainSbom, npmSbom], component);
 
+    outputFile.Parent.CreateDirectory();
     using var outputFileStream = File.Create(outputFile);
 
     if (outputFile.Extension == ".xml")

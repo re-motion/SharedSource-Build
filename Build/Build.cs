@@ -71,9 +71,8 @@ class Build : RemotionBuild, IBuildMetadata
         "LocalOnlyTestMatrix",
         new TestDimension[,]
         {
-            // TODO RMSRCBUILD-308: Fix integration tests on TeamCity
-            // { EnforcedLocalMachine, NET8_0, Debug, x64 },
-            // { EnforcedLocalMachine, NET8_0, Release, x64 },
+            { EnforcedLocalMachine, NET8_0, Debug, x64 },
+            { EnforcedLocalMachine, NET8_0, Release, x64 },
 
             // Local
             { LocalMachine, NET8_0, Debug, x64 },

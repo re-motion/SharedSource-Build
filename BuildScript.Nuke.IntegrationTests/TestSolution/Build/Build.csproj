@@ -18,6 +18,11 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Build" Version="8.0.0" />
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
+    <!-- Mirror the NuGet dependencies of Remotion.BuildScript.Nuke that are not brought in by Nuke itself,
+         otherwise older transitive versions (e.g. Serilog) from Nuke win over the ones Remotion.BuildScript.Nuke.dll was compiled against. -->
+    <PackageReference Include="Remotion.Infrastructure.SbomCleaner.Library" Version="2.0.1" />
+    <!-- Tool used by IGenerateSbom, version must match its NuGetPackage attribute -->
+    <PackageDownload Include="CycloneDX" Version="[4.0.0]" />
   </ItemGroup>
 
   <ItemGroup>

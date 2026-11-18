@@ -14,6 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,10 +47,12 @@ public interface IGenerateSbom: IBuild, IProjectMetadata
             ProjectMetadata
                 .Select(p =>
                 {
-                  var outputPath = Path.Combine(
-                    p.FolderPath,
-                    p.GetMetadata(RemotionBuildMetadataProperties.OutputPath),
-                    p.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks).First());
+                  var outputPath = Path.Combine(p.FolderPath, p.GetMetadata(RemotionBuildMetadataProperties.OutputPath));
+
+                  // For projects with a single target framework, the evaluated output path already contains the target framework
+                  var targetFramework = p.GetMetadata(RemotionBuildMetadataProperties.TargetFrameworks).First();
+                  if (!Path.TrimEndingDirectorySeparator(outputPath).EndsWith(targetFramework, StringComparison.OrdinalIgnoreCase))
+                    outputPath = Path.Combine(outputPath, targetFramework);
 
                   var assemblyName = p.GetMetadata(RemotionBuildMetadataProperties.AssemblyName);
                   return new ProjectInfo(assemblyName, outputPath);

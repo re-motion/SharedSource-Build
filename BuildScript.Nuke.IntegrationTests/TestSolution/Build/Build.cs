@@ -1,6 +1,11 @@
 using System.Collections.Immutable;
 using System.Linq;
+using Nuke.Common;
+using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
 using Remotion.BuildScript;
+using Remotion.BuildScript.Components;
+using Remotion.BuildScript.GenerateSbom;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Test.Dimensions;
 using static Remotion.BuildScript.Test.Dimensions.Configurations;
@@ -12,6 +17,27 @@ public class Build : RemotionBuild
 {
   public static int Main() => Execute<Build>();
 
+  [Parameter("Enables SBOM generation and writes the SBOM to the specified file (.xml or .json).")]
+  readonly AbsolutePath SbomOutputFile;
+
+  public override ISbomGeneratorBuilder ConfigureSbomGenerationInfoBuilder(Solution solution)
+  {
+    if (SbomOutputFile == null)
+      return base.ConfigureSbomGenerationInfoBuilder(solution);
+
+    var builder = new SolutionSbomGeneratorBuilder(
+        solution,
+        "1.2.3",
+        ((IBaseBuild)this).TempFolder / "Sbom",
+        SbomOutputFile,
+        githubUsername: "",
+        githubAccessToken: "")
+        // The SBOM cleaner requires a .deps.json file, which is not generated for .NET Framework projects
+        .WithProjectsBlackListed("DocumentationTestProject", "UnitTestNet48Project");
+
+    return builder;
+  }
+
   public override void ConfigureProjects(ProjectsBuilder projects)
   {
     var normalTestConfiguration = new TestConfiguration(
@@ -20,7 +46,7 @@ public class Build : RemotionBuild
       ImmutableArray<ITestExecutionWrapper>.Empty);
 
     projects.AddReleaseProject("SdkTestProject");
-    projects.AddReleaseProject("NonSdkTestProject");
+    projects.AddReleaseProject("DocumentationTestProject");
     projects.AddReleaseProject("MultiTargetFrameworksTestProject");
     projects.AddUnitTestProject("UnitTestNet48Project", normalTestConfiguration);
   }
