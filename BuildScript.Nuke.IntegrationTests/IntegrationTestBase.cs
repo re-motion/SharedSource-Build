@@ -104,6 +104,9 @@ public abstract class IntegrationTestBase
                                WorkingDirectory = TestSolutionDirectory,
                            };
     processStartInfo.EnvironmentVariables.Add("NUKE_TEST_HOST", "true");
+    // Reused MSBuild nodes outlive the build and inherit its redirected output handles,
+    // causing NUKE (and this method) to wait for the end of the output stream forever.
+    processStartInfo.EnvironmentVariables["MSBUILDDISABLENODEREUSE"] = "1";
 
     var processOutput = new StringBuilder();
 

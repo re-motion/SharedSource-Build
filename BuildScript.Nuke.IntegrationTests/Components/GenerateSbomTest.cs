@@ -33,7 +33,7 @@ public class GenerateSbomTest : IntegrationTestBase
       + " --TestConfigurations Debug+Release"
       + " --TestExecutionRuntimes LocalMachine"
       + " --TestPlatforms x86+x64"
-      + " --TestTargetRuntimes NET48+NET8_0";
+      + " --TestTargetRuntimes NET48+NET10_0";
 
   [Test]
   public void GenerateSbom_WithoutConfiguration_DoesNotRun ()
