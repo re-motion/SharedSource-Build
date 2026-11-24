@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using Nuke.Common.IO;
+using Fallout.Common.IO;
 using NUnit.Framework;
 
 namespace BuildScript.Nuke.IntegrationTests.Components;

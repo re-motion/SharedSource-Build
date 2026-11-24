@@ -18,14 +18,15 @@
 using System;
 using System.Collections.Immutable;
 using System.Reflection;
-using Nuke.Common;
+using Fallout.Common;
+using Fallout.Solutions;
 using Remotion.BuildScript.Components;
 using Serilog;
 
 namespace Remotion.BuildScript;
 
 public abstract partial class RemotionBuild
-    : NukeBuild,
+    : FalloutBuild,
         IClean,
         IRestore,
         IBuild,
@@ -33,6 +34,14 @@ public abstract partial class RemotionBuild
         IGenerateSbom,
         ITest
 {
+  static RemotionBuild ()
+  {
+    // Fallout registers MSBuild (MSBuildLocator) in a module initializer of Fallout.ProjectModel, which only runs once code
+    // from that assembly executes. Methods using Microsoft.Build types (e.g. ParseProject(...).Properties) are JIT-compiled
+    // before that and fail to load Microsoft.Build, as it is not part of the build output. Force the registration upfront.
+    ProjectModelTasks.Initialize();
+  }
+
   ImmutableDictionary<string, BuildMetadata> IBuildMetadata.BuildMetadataPerConfiguration { get; set; } = ImmutableDictionary<string, BuildMetadata>.Empty;
 
   [Parameter("Uses release instead of debug versioning when determining the build versions.")]

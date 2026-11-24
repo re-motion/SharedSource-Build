@@ -15,7 +15,7 @@
 // under the License.
 
 using System.Collections.Generic;
-using Nuke.Common.Tooling;
+using Fallout.Common.Tooling;
 using SbomCleaner.Library;
 
 namespace Remotion.BuildScript.GenerateSbom;

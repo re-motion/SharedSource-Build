@@ -15,7 +15,7 @@
 // under the License.
 
 using System;
-using Nuke.Common.CI.TeamCity;
+using Fallout.Common.CI.TeamCity;
 
 namespace Remotion.BuildScript.Util;
 

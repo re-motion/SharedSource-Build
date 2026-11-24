@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Nuke.Common;
-using Nuke.Common.ProjectModel;
+using Fallout.Common;
+using Fallout.Solutions;
 using Remotion.BuildScript.Test;
 using Serilog;
+using Solution = Fallout.Common.ProjectModel.Solution;
 
 namespace Remotion.BuildScript;
 

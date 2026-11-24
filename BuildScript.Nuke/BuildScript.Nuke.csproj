@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="CycloneDX.Utils" Version="8.0.3" />
-    <PackageReference Include="Nuke.Build" Version="10.1.0" />
-    <PackageReference Include="Nuke.Common" Version="10.1.0" />
+    <PackageReference Include="Fallout.Build" Version="10.5.0" />
+    <PackageReference Include="Fallout.Common" Version="10.5.0" />
     <!-- Nuke 10.1.0 brings in NuGet.* 6.12.1. The copies in the build output win over the NuGet assemblies of the
          .NET SDK that MSBuild project evaluation (Nuke.ProjectModel) needs, so they must be at least as new as the SDK's. -->
     <PackageReference Include="NuGet.Packaging" Version="7.9.0" />

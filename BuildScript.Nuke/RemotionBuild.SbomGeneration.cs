@@ -14,7 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common.ProjectModel;
+using Fallout.Common.ProjectModel;
 using Remotion.BuildScript.GenerateSbom;
 
 namespace Remotion.BuildScript;

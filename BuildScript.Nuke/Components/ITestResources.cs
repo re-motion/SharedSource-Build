@@ -16,7 +16,7 @@
 
 using System.Collections.Immutable;
 using JetBrains.Annotations;
-using Nuke.Common;
+using Fallout.Common;
 using Remotion.BuildScript.Test;
 
 namespace Remotion.BuildScript.Components;

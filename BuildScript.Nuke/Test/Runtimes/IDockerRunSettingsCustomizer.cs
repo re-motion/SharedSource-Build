@@ -14,7 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common.Tools.Docker;
+using Fallout.Common.Tools.Docker;
 
 namespace Remotion.BuildScript.Test.Runtimes;
 

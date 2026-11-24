@@ -16,7 +16,7 @@
 
 using System.Collections.Immutable;
 using JetBrains.Annotations;
-using Nuke.Common;
+using Fallout.Common;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;

@@ -16,8 +16,8 @@
 
 using System;
 using System.Collections.Immutable;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common;
+using Fallout.Common.Tools.DotNet;
 using Remotion.BuildScript.Components;
 
 namespace Remotion.BuildScript.Test;

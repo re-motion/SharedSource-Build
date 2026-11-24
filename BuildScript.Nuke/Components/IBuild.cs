@@ -16,10 +16,10 @@
 
 using System;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Common.Utilities.Collections;
 
 namespace Remotion.BuildScript.Components;
 

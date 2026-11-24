@@ -15,14 +15,14 @@
 // under the License.
 
 using System;
-using Nuke.Common;
-using Nuke.Common.Git;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
+using Fallout.Common;
+using Fallout.Common.Git;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
 
 namespace Remotion.BuildScript.Components;
 
-public interface IBaseBuild : INukeBuild
+public interface IBaseBuild : IFalloutBuild
 {
   private static readonly string[] s_defaultBuildConfigurations = new[] { "Debug", "Release" };
 

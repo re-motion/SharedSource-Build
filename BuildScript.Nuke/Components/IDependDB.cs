@@ -18,9 +18,9 @@ using System;
 using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.Tooling;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Common.Tooling;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;

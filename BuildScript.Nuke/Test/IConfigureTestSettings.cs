@@ -15,7 +15,7 @@
 // under the License.
 
 using System;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common.Tools.DotNet;
 
 namespace Remotion.BuildScript.Test;
 

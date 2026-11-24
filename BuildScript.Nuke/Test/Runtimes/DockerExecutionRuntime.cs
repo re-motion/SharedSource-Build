@@ -15,9 +15,9 @@
 // under the License.
 
 using System;
-using Nuke.Common;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.Docker;
+using Fallout.Common;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.Docker;
 using Remotion.BuildScript.Test.Dimensions;
 using Remotion.BuildScript.Util;
 

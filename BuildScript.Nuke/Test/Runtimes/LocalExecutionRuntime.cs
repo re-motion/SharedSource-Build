@@ -15,9 +15,9 @@
 // under the License.
 
 using System;
-using Nuke.Common;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
 
 namespace Remotion.BuildScript.Test.Runtimes;
 

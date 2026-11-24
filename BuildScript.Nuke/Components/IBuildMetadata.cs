@@ -19,11 +19,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.Json;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.CI.TeamCity;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common;
+using Fallout.Common.CI.TeamCity;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
+using Fallout.Common.Utilities.Collections;
+using Fallout.Solutions;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;

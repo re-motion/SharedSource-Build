@@ -15,7 +15,7 @@
 // under the License.
 
 using System.Collections.Immutable;
-using Nuke.Common.IO;
+using Fallout.Common.IO;
 
 namespace BuildScript.Nuke.IntegrationTests;
 

@@ -15,7 +15,7 @@
 // under the License.
 
 using System;
-using Nuke.Common.IO;
+using Fallout.Common.IO;
 using Remotion.BuildScript.Test.Dimensions;
 
 namespace Remotion.BuildScript.Util;

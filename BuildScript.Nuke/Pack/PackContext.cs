@@ -14,7 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common.Tools.DotNet;
 using Remotion.BuildScript.Components;
 
 namespace Remotion.BuildScript.Pack;

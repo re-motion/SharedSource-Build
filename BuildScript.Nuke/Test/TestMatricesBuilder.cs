@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Nuke.Common;
+using Fallout.Common;
 using Serilog;
 
 namespace Remotion.BuildScript.Test;

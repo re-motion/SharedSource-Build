@@ -16,7 +16,7 @@
 
 using System;
 using System.Linq;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common.Utilities.Collections;
 
 namespace BuildScript.Nuke.IntegrationTests;
 

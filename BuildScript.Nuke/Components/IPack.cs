@@ -17,9 +17,9 @@
 using System.Collections.Immutable;
 using System.Linq;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Common.Utilities.Collections;
 using Remotion.BuildScript.Pack;
 using Serilog;
 

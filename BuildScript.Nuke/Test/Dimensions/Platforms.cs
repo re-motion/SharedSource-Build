@@ -16,9 +16,9 @@
 
 using System;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
 using Remotion.BuildScript.Util;
 
 namespace Remotion.BuildScript.Test.Dimensions;

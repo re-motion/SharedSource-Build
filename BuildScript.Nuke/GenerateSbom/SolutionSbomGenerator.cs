@@ -19,17 +19,17 @@ using System.Collections.Generic;
 using System.IO;
 using CycloneDX.Models;
 using CycloneDX.Utils;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.Npm;
-using Nuke.Common.Tools.PowerShell;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.Npm;
+using Fallout.Common.Tools.PowerShell;
 using SbomCleaner.Library;
 using Serilog;
 using XMLSerializer = CycloneDX.Xml.Serializer;
 using JsonSerializer = CycloneDX.Json.Serializer;
-using Tool = Nuke.Common.Tooling.Tool;
+using Tool = Fallout.Common.Tooling.Tool;
 
 namespace Remotion.BuildScript.GenerateSbom;
 

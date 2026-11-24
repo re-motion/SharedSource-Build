@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Linq;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
 using Remotion.BuildScript;
 using Remotion.BuildScript.Components;
 using Remotion.BuildScript.GenerateSbom;

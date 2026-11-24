@@ -14,7 +14,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common;
+using Fallout.Common;
 using Remotion.BuildScript.Components;
 
 namespace Remotion.BuildScript;

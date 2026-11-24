@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using JetBrains.Annotations;
-using Nuke.Common;
+using Fallout.Common;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Util;
 using Serilog;

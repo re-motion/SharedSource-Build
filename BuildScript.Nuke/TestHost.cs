@@ -16,9 +16,9 @@
 
 using System;
 using JetBrains.Annotations;
-using Nuke.Common.CI;
-using Nuke.Common.Execution;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common.CI;
+using Fallout.Common.Execution;
+using Fallout.Common.Utilities.Collections;
 
 namespace Remotion.BuildScript;
 

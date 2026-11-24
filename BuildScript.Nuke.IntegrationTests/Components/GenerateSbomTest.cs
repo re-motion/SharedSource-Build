@@ -17,8 +17,8 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Nuke.Common.IO;
-using Nuke.Common.Utilities;
+using Fallout.Common.IO;
+using Fallout.Common.Utilities;
 using NUnit.Framework;
 
 namespace BuildScript.Nuke.IntegrationTests.Components;

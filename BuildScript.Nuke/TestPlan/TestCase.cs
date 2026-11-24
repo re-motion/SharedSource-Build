@@ -16,10 +16,10 @@
 
 using System;
 using System.Linq;
-using Nuke.Common.CI.TeamCity;
-using Nuke.Common.IO;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common.CI.TeamCity;
+using Fallout.Common.IO;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Util;
 using Serilog;

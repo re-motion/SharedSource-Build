@@ -16,8 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
 using SbomCleaner.Library;
 
 namespace Remotion.BuildScript.GenerateSbom;

@@ -15,8 +15,8 @@
 // under the License.
 
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
+using Fallout.Common;
+using Fallout.Common.Tools.DotNet;
 
 namespace Remotion.BuildScript.Components;
 

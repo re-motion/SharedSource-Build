@@ -16,8 +16,8 @@
 
 using System.Linq;
 using JetBrains.Annotations;
-using Nuke.Common;
-using Nuke.Common.IO;
+using Fallout.Common;
+using Fallout.Common.IO;
 using Serilog;
 
 namespace Remotion.BuildScript.Components;

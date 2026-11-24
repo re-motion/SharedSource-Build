@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Build" Version="10.1.0" />
-    <PackageReference Include="Nuke.Common" Version="10.1.0" />
+    <PackageReference Include="Fallout.Build" Version="10.5.0" />
+    <PackageReference Include="Fallout.Common" Version="10.5.0" />
     <!-- Mirror the NuGet dependencies of Remotion.BuildScript.Nuke that are not brought in by Nuke itself,
          otherwise older transitive versions (e.g. Serilog) from Nuke win over the ones Remotion.BuildScript.Nuke.dll was compiled against. -->
     <PackageReference Include="Remotion.Infrastructure.SbomCleaner.Library" Version="2.0.1" />

@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Nuke.Common.Tooling;
+using Fallout.Common.Tooling;
 
 namespace Remotion.BuildScript.Util;
 

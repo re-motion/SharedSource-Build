@@ -18,7 +18,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
-using Nuke.Common.IO;
+using Fallout.Common.IO;
 
 namespace Remotion.BuildScript;
 

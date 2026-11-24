@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Immutable;
 using JetBrains.Annotations;
-using Nuke.Common;
+using Fallout.Common;
 using Remotion.BuildScript.Test;
 using Remotion.BuildScript.Test.Dimensions;
 using Remotion.BuildScript.TestPlan;
