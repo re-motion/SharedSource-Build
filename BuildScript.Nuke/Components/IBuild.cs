@@ -50,7 +50,7 @@ public interface IBuild : IBaseBuild, IBuildMetadata, IRestore
               .SetFileVersion(buildMetadata.AssemblyFileVersion)
               .SetInformationalVersion(buildMetadata.AssemblyInformationalVersion)
               .SetProperty("PackageVersion", buildMetadata.AssemblyNuGetVersion)
-              .When(!string.IsNullOrEmpty(AssemblySigningKeyFile), s => s
+              .When(_ => !string.IsNullOrEmpty(AssemblySigningKeyFile), s => s
                   .SetProperty("AssemblyOriginatorKeyFile", AssemblySigningKeyFile)
               )
               // Disable SourceLink's changes to the informational version as we already add the commit hash ourselves

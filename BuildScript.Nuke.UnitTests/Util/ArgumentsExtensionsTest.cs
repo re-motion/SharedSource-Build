@@ -14,9 +14,8 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-using Nuke.Common.Tooling;
 using NUnit.Framework;
-using Remotion.BuildScript.Util;
+using Remotion.BuildScript;
 
 namespace BuildScript.Nuke.UnitTests.Util;
 
@@ -27,12 +26,12 @@ public class ArgumentsExtensionsTest
   public void InsertAt ()
   {
     var arguments = new Arguments()
-        .Add("run")
+        .AddLiteral("run")
         .Add("--name {value}", "Max Muster")
-        .InsertAt(1, "--quiet");
+        .InsertLiteral(1, "--quiet");
 
     Assert.That(
-        arguments.RenderForExecution(),
+        arguments.ToString(),
         Is.EqualTo("run --quiet --name \"Max Muster\""));
   }
 
@@ -40,7 +39,7 @@ public class ArgumentsExtensionsTest
   public void RenderAsArray ()
   {
     var arguments = new Arguments()
-        .Add("run")
+        .AddLiteral("run")
         .Add("--name {value}", "Max Muster")
         .Add("{value}", "My value")
         .Add("{value}", "arg");

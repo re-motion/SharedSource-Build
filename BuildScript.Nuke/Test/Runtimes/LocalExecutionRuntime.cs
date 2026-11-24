@@ -15,7 +15,9 @@
 // under the License.
 
 using System;
+using Nuke.Common;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 
 namespace Remotion.BuildScript.Test.Runtimes;
 
@@ -23,9 +25,14 @@ public class LocalExecutionRuntime : ITestExecutionRuntime
 {
   public void ExecuteTests (TestExecutionContext context)
   {
-    var process = ProcessTasks.StartProcess(context.DotNetTestSettings);
-    process.WaitForExit();
+    var processExited = true;
+    DotNetTasks.DotNetTest(context.DotNetTestSettings
+        .SetProcessExitHandler(p =>
+        {
+          context.ExitCode = p.ExitCode;
+          processExited = true;
+        }));
 
-    context.ExitCode = process.ExitCode;
+    Assert.True(processExited);
   }
 }

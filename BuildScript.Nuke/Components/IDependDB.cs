@@ -122,7 +122,7 @@ public interface IDependDB : IBaseBuild, IBuildMetadata, IPack
                       .Add("--project-name={value}", DependDBProjectName)
                       .Add("--project-branch={value}", DependDBProjectBranch)
                       .Add("--project-version={value}", projectVersion)
-                      .Add("--retention-time={value}", retentionTime)
+                      .Add("--retention-time={value}", retentionTime.ToString())
                       .Add("--notification-address-to={value}", DependDBProjectImportNotificationMailAddress)
                       .Add("--temp-directory={value}", TempFolder)
                       .Add("--processor-output-directory={value}", outputFolder)
@@ -148,7 +148,7 @@ public interface IDependDB : IBaseBuild, IBuildMetadata, IPack
               // `arguments.RenderForOutput()` to the tool because the string would be escaped as a single argument.
               // As such, we need to manually create the interpolated string handler to use the literal string
               var argumentStringHandler = new ArgumentStringHandler(1, 0, out var _);
-              argumentStringHandler.AppendLiteral(arguments.RenderForOutput());
+              argumentStringHandler.AppendLiteral(arguments.ToString());
 
               NugetPreProcessor(
                       argumentStringHandler,

@@ -43,8 +43,8 @@ public abstract class IntegrationTestBase
   public void SetUp ()
   {
     var outputFolder = (AbsolutePath)Path.GetDirectoryName(typeof(IntegrationTestBase).Assembly.Location);
-    var testSolutionTemplateFolder = Path.GetFullPath(outputFolder + "../../../../TestSolution");
-    if (!Directory.Exists(testSolutionTemplateFolder))
+    var testSolutionTemplateFolder = (AbsolutePath)Path.GetFullPath(outputFolder + "../../../../TestSolution");
+    if (!testSolutionTemplateFolder.DirectoryExists())
       throw new InvalidOperationException($"Cannot find the test solution template '{testSolutionTemplateFolder}'.");
 
     // Use hash for folder names to prevent running into path length problems
@@ -59,7 +59,7 @@ public abstract class IntegrationTestBase
 
     TestSolutionDirectory.DeleteDirectory();
 
-    FileSystemTasks.CopyDirectoryRecursively(testSolutionTemplateFolder, TestSolutionDirectory);
+    testSolutionTemplateFolder.Copy(TestSolutionDirectory);
 
     TestSolutionModel = TestSolutionModel.Create(TestSolutionDirectory);
   }

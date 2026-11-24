@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Remotion.BuildScript</RootNamespace>
     <AssemblyName>Remotion.BuildScript.Nuke</AssemblyName>
     <NoWarn>CS0649</NoWarn>
@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="CycloneDX.Utils" Version="8.0.3" />
-    <PackageReference Include="Nuke.Build" Version="8.0.0" />
-    <PackageReference Include="Nuke.Common" Version="8.0.0" />
+    <PackageReference Include="Nuke.Build" Version="10.1.0" />
+    <PackageReference Include="Nuke.Common" Version="10.1.0" />
     <PackageReference Include="Remotion.Infrastructure.SbomCleaner.Library" Version="2.0.1" />
   </ItemGroup>
 

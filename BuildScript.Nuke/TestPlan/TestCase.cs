@@ -128,7 +128,7 @@ public class TestCase : ITestCase
         .AddLoggers($"trx;LogFileName={resultFilePath}")
         .EnableNoRestore()
         .EnableNoBuild()
-        .When(!string.IsNullOrEmpty(testContext.Build.TestFilter), s => s
+        .When(_ => !string.IsNullOrEmpty(testContext.Build.TestFilter), s => s
             .SetFilter(testContext.Build.TestFilter)
         );
 

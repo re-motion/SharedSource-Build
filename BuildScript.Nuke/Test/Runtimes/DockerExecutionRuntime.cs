@@ -41,15 +41,15 @@ public class DockerExecutionRuntime : ITestExecutionRuntime
     var solutionFolder = context.Build.Solution.Directory;
 
     var dockerRunSettings = new DockerRunSettings()
-        .EnableProcessLogOutput()
+        .EnableProcessOutputLogging()
         .SetImage(_image)
-        .When(!string.IsNullOrEmpty(_isolationMode), s => s
+        .When(_ => !string.IsNullOrEmpty(_isolationMode), s => s
             .SetIsolation(_isolationMode)
         )
         .EnableRm()
         .AddVolume($"{solutionFolder}:{solutionFolder}")
         .AddVolume($"{context.Build.LogFolder}:{context.Build.LogFolder}")
-        .When(context.TestMatrixRow.GetDimension<TargetFrameworks>().IsNetFramework, s =>
+        .When(_ => context.TestMatrixRow.GetDimension<TargetFrameworks>().IsNetFramework, s =>
         {
           var platform = context.TestMatrixRow.GetDimension<Platforms>();
           var dotnetPath = DotnetUtil.GetDotnetPath(platform);
@@ -58,19 +58,21 @@ public class DockerExecutionRuntime : ITestExecutionRuntime
           return s.AddVolume($"{dotnetPath}:{dotnetPath}");
         })
         .SetEntrypoint(context.DotNetTestSettings.ProcessToolPath)
-        .SetArgs(context.DotNetTestSettings.GetProcessArguments().AsArguments().RenderAsArray())
-        .SetProcessArgumentConfigurator(arguments =>
-        {
-          return OperatingSystem.IsWindows()
-              ? arguments.InsertAt(1, "--quiet")
-              : arguments;
-        });
+        .SetArgs(context.DotNetTestSettings.GetProcessArguments())
+        .When(_ => OperatingSystem.IsWindows(), s => s
+            .SetProcessAdditionalArguments("--quiet")
+        );
 
     dockerRunSettings = _dockerRunSettingsCustomizer.CustomizeDockerRunSettings(context, dockerRunSettings);
 
-    var process = ProcessTasks.StartProcess(dockerRunSettings);
-    process.WaitForExit();
+    var processExited = true;
+    DockerTasks.DockerRun(dockerRunSettings
+        .SetProcessExitHandler(p =>
+        {
+          context.ExitCode = p.ExitCode;
+          processExited = true;
+        }));
 
-    context.ExitCode = process.ExitCode;
+    Assert.True(processExited);
   }
 }

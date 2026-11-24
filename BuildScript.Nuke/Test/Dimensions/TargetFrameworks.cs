@@ -32,18 +32,14 @@ public sealed class TargetFrameworks : TestDimension, IConfigureTestSettings
   public static readonly TargetFrameworks NET481 = new(nameof(NET481), "net481", true);
 
   // .NET
-  public static readonly TargetFrameworks NET6_0 = new(nameof(NET6_0), "net6.0", false);
-  public static readonly TargetFrameworks NET6_0_WINDOWS = new(nameof(NET6_0_WINDOWS), "net6.0-windows", false);
-  public static readonly TargetFrameworks NET7_0 = new(nameof(NET7_0), "net7.0", false);
-  public static readonly TargetFrameworks NET7_0_WINDOWS = new(nameof(NET7_0_WINDOWS), "net7.0-windows", false);
-  public static readonly TargetFrameworks NET8_0 = new(nameof(NET8_0), "net8.0", false);
-  public static readonly TargetFrameworks NET8_0_WINDOWS = new(nameof(NET8_0_WINDOWS), "net8.0-windows", false);
-  public static readonly TargetFrameworks NET9_0 = new(nameof(NET9_0), "net9.0", false);
-  public static readonly TargetFrameworks NET9_0_WINDOWS = new(nameof(NET9_0_WINDOWS), "net9.0-windows", false);
   public static readonly TargetFrameworks NET10_0 = new(nameof(NET10_0), "net10.0", false);
   public static readonly TargetFrameworks NET10_0_WINDOWS = new(nameof(NET10_0_WINDOWS), "net10.0-windows", false);
   public static readonly TargetFrameworks NET11_0 = new(nameof(NET11_0), "net11.0", false);
   public static readonly TargetFrameworks NET11_0_WINDOWS = new(nameof(NET11_0_WINDOWS), "net11.0-windows", false);
+  public static readonly TargetFrameworks NET12_0 = new(nameof(NET12_0), "net12.0", false);
+  public static readonly TargetFrameworks NET12_0_WINDOWS = new(nameof(NET12_0_WINDOWS), "net12.0-windows", false);
+  public static readonly TargetFrameworks NET13_0 = new(nameof(NET13_0), "net13.0", false);
+  public static readonly TargetFrameworks NET13_0_WINDOWS = new(nameof(NET13_0_WINDOWS), "net13.0-windows", false);
 
   public string Identifier { get; }
 

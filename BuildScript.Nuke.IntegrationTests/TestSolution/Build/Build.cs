@@ -60,7 +60,7 @@ public class Build : RemotionBuild
   public override void ConfigureSupportedTestDimensions(SupportedTestDimensionsBuilder supportedTestDimensions)
   {
     supportedTestDimensions.AddSupportedDimension<ExecutionRuntimes>(LocalMachine);
-    supportedTestDimensions.AddSupportedDimension<TargetFrameworks>(NET48, NET8_0);
+    supportedTestDimensions.AddSupportedDimension<TargetFrameworks>(NET48, NET10_0);
     supportedTestDimensions.AddSupportedDimension<Configurations>(Debug, Release);
     supportedTestDimensions.AddSupportedDimension<Platforms>(x86, x64);
   }
@@ -73,8 +73,8 @@ public class Build : RemotionBuild
       {
         { LocalMachine, NET48, Debug, x86 },
         { LocalMachine, NET48, Release, x64 },
-        { LocalMachine, NET8_0, Debug, x86 },
-        { LocalMachine, NET8_0, Release, x64 }
+        { LocalMachine, NET10_0, Debug, x86 },
+        { LocalMachine, NET10_0, Release, x64 }
       });
   }
 }
